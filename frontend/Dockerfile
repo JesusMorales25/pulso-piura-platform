@@ -1,0 +1,33 @@
+FROM node:24-alpine AS dependencies
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+FROM node:24-alpine AS build
+WORKDIR /app
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_OIDC_ISSUER
+ARG NEXT_PUBLIC_OIDC_CLIENT_ID=pulso-web
+ARG NEXT_PUBLIC_GOOGLE_LOGIN_ENABLED=true
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_OIDC_ISSUER=$NEXT_PUBLIC_OIDC_ISSUER
+ENV NEXT_PUBLIC_OIDC_CLIENT_ID=$NEXT_PUBLIC_OIDC_CLIENT_ID
+ENV NEXT_PUBLIC_GOOGLE_LOGIN_ENABLED=$NEXT_PUBLIC_GOOGLE_LOGIN_ENABLED
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY . ./
+RUN npm run build
+
+FROM node:24-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+RUN addgroup -S nextjs && adduser -S -G nextjs -u 10001 nextjs
+COPY --from=build --chown=nextjs:nextjs /app/public ./public
+COPY --from=build --chown=nextjs:nextjs /app/.next/standalone ./
+COPY --from=build --chown=nextjs:nextjs /app/.next/static ./.next/static
+USER 10001
+EXPOSE 3000
+CMD ["node", "server.js"]

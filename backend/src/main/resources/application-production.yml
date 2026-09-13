@@ -1,0 +1,27 @@
+spring:
+  config:
+    activate:
+      on-profile: production
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI}
+          jwk-set-uri: ${OIDC_JWK_SET_URI}
+          audiences: ${OIDC_AUDIENCE}
+app:
+  web:
+    allowed-origin: ${WEB_ALLOWED_ORIGIN}
+  payments:
+    mode: ${PAYMENTS_MODE:disabled}
+server:
+  forward-headers-strategy: framework
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: never

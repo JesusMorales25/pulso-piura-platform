@@ -1,0 +1,174 @@
+services:
+  app-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - app_postgres:/var/lib/postgresql/data
+    networks: [private]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 1g
+
+  identity-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - identity_postgres:/var/lib/postgresql/data
+    networks: [private]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 1g
+
+  identity:
+    image: quay.io/keycloak/keycloak:26.7.3
+    command: start --import-realm
+    restart: unless-stopped
+    depends_on:
+      identity-db:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://identity-db:5432/${KEYCLOAK_DB}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: https://${AUTH_DOMAIN}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ../../infra/keycloak/realm-pulso-piura.json:/opt/keycloak/data/import/realm.json:ro
+    networks: [private, edge]
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    mem_limit: 2g
+
+  identity-bootstrap:
+    image: quay.io/keycloak/keycloak:26.7.3
+    profiles: ["bootstrap"]
+    depends_on:
+      identity:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_INTERNAL_URL: http://identity:8080
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_PUBLIC_URL: https://${AUTH_DOMAIN}
+      FRONTEND_PUBLIC_URL: https://${APP_DOMAIN}
+      PASSWORD_REGISTRATION_ENABLED: ${PASSWORD_REGISTRATION_ENABLED:-false}
+      LOCAL_REQUIRE_EMAIL_VERIFICATION: "true"
+      LOCAL_DEMO_USERS_ENABLED: "false"
+      TEST_USER_EMAIL: ${PLATFORM_ADMIN_EMAIL}
+      TEST_USER_PASSWORD: ${PLATFORM_ADMIN_INITIAL_PASSWORD}
+      DEMO_PLATFORM_ADMIN_EMAIL: ${PLATFORM_ADMIN_EMAIL}
+      GOOGLE_LOGIN_ENABLED: ${GOOGLE_LOGIN_ENABLED:-true}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      RESET_BOOTSTRAP_USER_PASSWORDS: "false"
+    volumes:
+      - ../../infra/keycloak/bootstrap.sh:/opt/keycloak/bootstrap/bootstrap.sh:ro
+    entrypoint: ["/bin/bash", "/opt/keycloak/bootstrap/bootstrap.sh"]
+    networks: [private]
+
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      app-db:
+        condition: service_healthy
+      identity:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+      DATABASE_URL: jdbc:postgresql://app-db:5432/${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      OIDC_ISSUER_URI: https://${AUTH_DOMAIN}/realms/pulso-piura
+      OIDC_JWK_SET_URI: http://identity:8080/realms/pulso-piura/protocol/openid-connect/certs
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-pulso-api}
+      WEB_ALLOWED_ORIGIN: https://${APP_DOMAIN}
+      RESERVATION_HOLD_DURATION: ${RESERVATION_HOLD_DURATION:-PT5M}
+      RESERVATION_MAX_ACTIVE_TEMPORARY_PER_CUSTOMER: ${RESERVATION_MAX_ACTIVE_TEMPORARY_PER_CUSTOMER:-3}
+      PAYMENTS_MODE: ${PAYMENTS_MODE:-disabled}
+    networks: [private]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    mem_limit: 2g
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: https://${APP_DOMAIN}/api/v1
+        NEXT_PUBLIC_OIDC_ISSUER: https://${AUTH_DOMAIN}/realms/pulso-piura
+        NEXT_PUBLIC_OIDC_CLIENT_ID: pulso-web
+        NEXT_PUBLIC_GOOGLE_LOGIN_ENABLED: ${GOOGLE_LOGIN_ENABLED:-true}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks: [private]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    mem_limit: 1g
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on:
+      frontend:
+        condition: service_healthy
+      identity:
+        condition: service_healthy
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+      AUTH_DOMAIN: ${AUTH_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge, private]
+    mem_limit: 256m
+
+networks:
+  edge:
+  private:
+    internal: true
+
+volumes:
+  app_postgres:
+  identity_postgres:
+  caddy_data:
+  caddy_config:

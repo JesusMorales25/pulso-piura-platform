@@ -1,0 +1,102 @@
+{
+  "realm": "pulso-piura",
+  "enabled": true,
+  "displayName": "Pulso Piura",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "verifyEmail": true,
+  "resetPasswordAllowed": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 28800,
+  "ssoSessionMaxLifespan": 86400,
+  "clientSessionIdleTimeout": 28800,
+  "clientSessionMaxLifespan": 86400,
+  "roles": {
+    "realm": [
+      {
+        "name": "PLATFORM_ADMIN",
+        "description": "Administración excepcional de la plataforma"
+      },
+      {
+        "name": "CAPTAIN",
+        "description": "Capitán que organiza partidos abiertos"
+      },
+      {
+        "name": "TOURNAMENT_ORGANIZER",
+        "description": "Organizador de partidos y campeonatos"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "pulso-web",
+      "name": "Pulso Piura Web",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:3000/auth/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:3000"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "pulso-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "pulso-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "pulso-api",
+      "name": "Pulso Piura API",
+      "enabled": true,
+      "bearerOnly": true
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "profile",
+    "email",
+    "roles",
+    "web-origins"
+  ],
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "failureFactor": 5,
+  "waitIncrementSeconds": 60,
+  "maxFailureWaitSeconds": 900,
+  "maxDeltaTimeSeconds": 43200,
+  "quickLoginCheckMilliSeconds": 1000,
+  "minimumQuickLoginWaitSeconds": 60,
+  "eventsEnabled": true,
+  "eventsExpiration": 604800,
+  "eventsListeners": [
+    "jboss-logging"
+  ],
+  "enabledEventTypes": [
+    "LOGIN",
+    "LOGIN_ERROR",
+    "LOGOUT",
+    "LOGOUT_ERROR",
+    "CODE_TO_TOKEN_ERROR",
+    "REFRESH_TOKEN_ERROR",
+    "REGISTER_ERROR",
+    "IDENTITY_PROVIDER_LOGIN_ERROR",
+    "USER_DISABLED_BY_TEMPORARY_LOCKOUT"
+  ],
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": false
+}

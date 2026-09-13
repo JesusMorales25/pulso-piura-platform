@@ -1,0 +1,330 @@
+.card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  max-width: 720px;
+  border: 1px solid #21506a;
+  border-radius: 8px;
+  background: #061826;
+}
+
+.photo {
+  z-index: -2;
+  object-fit: cover;
+  opacity: 0.12;
+}
+
+.card::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(90deg, #061826 30%, rgb(6 24 38 / 86%));
+  content: "";
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  padding: 14px;
+}
+
+.dateRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 7px 14px 0 2px;
+  border-right: 1px solid #183a4d;
+  text-align: center;
+}
+
+.dateRail > span,
+.dateRail > b,
+.label {
+  color: var(--cyan);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.dateRail > strong {
+  margin: 7px 0;
+  font-family: Impact, "Arial Narrow", sans-serif;
+  font-size: 4.2rem;
+  line-height: 0.95;
+}
+
+.dateRail > i {
+  width: 100%;
+  margin: 20px 0;
+  border-top: 1px solid #1b455b;
+}
+
+.dateRail > p {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.dateRail svg,
+.location svg,
+.location b,
+.label {
+  color: var(--cyan);
+}
+
+.main {
+  min-width: 0;
+  padding-left: 16px;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+.main h2 {
+  margin: 4px 0;
+  font-family: Impact, "Arial Narrow", sans-serif;
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.location,
+.level {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 7px 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 14px 0;
+  border-block: 1px solid #193a4c;
+}
+
+.facts > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+.facts > div + div {
+  border-left: 1px solid #193a4c;
+}
+
+.facts svg {
+  width: 25px;
+  height: 25px;
+  color: #dceaf0;
+}
+
+.facts span,
+.organizer span {
+  display: grid;
+}
+
+.facts small,
+.occupancy > span {
+  color: var(--muted);
+  font-size: 0.58rem;
+}
+
+.facts strong {
+  font-size: 1.25rem;
+}
+
+.facts strong i {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-style: normal;
+}
+
+.occupancy > span {
+  display: flex;
+  justify-content: space-between;
+}
+
+.occupancy > span b {
+  font-weight: 500;
+}
+
+.occupancy > div {
+  height: 5px;
+  margin: 7px 0;
+  border-radius: 9px;
+  background: #173347;
+}
+
+.occupancy > div i {
+  display: block;
+  height: 100%;
+  border-radius: 9px;
+  background: var(--cyan);
+}
+
+.occupancy > p {
+  display: flex;
+  gap: 3px;
+  margin: 8px 0;
+  color: #e9d2b7;
+}
+
+.emptyAvatar {
+  color: #315064;
+}
+
+.playerAvatar {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: none;
+  place-items: center;
+  border: 1px solid #f0d4b2;
+  border-radius: 50%;
+  background-color: #17384a;
+  background-position: center;
+  background-size: cover;
+  color: #fff;
+  font-size: 0.65rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.organizer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-block: 1px solid #193a4c;
+}
+
+.organizer > svg {
+  color: #e4f2f5;
+}
+
+.organizer span {
+  gap: 3px;
+}
+
+.organizer small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.organizer small svg {
+  color: var(--cyan);
+}
+
+.payment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.payment b {
+  color: var(--cyan);
+}
+
+.actions {
+  display: grid;
+  gap: 8px;
+}
+
+.actions button,
+.actions > a,
+.result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  border: 1px solid var(--cyan);
+  border-radius: 6px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.actions button {
+  background: var(--cyan);
+  color: #00151f;
+}
+
+.actions button svg:last-child {
+  margin-left: auto;
+}
+
+.actions > a {
+  background: transparent;
+  color: var(--cyan);
+}
+
+.result {
+  margin: 0;
+  background: rgb(16 198 210 / 12%);
+  color: var(--cyan);
+}
+
+.demo {
+  display: block;
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+@media (max-width: 480px) {
+  .content {
+    grid-template-columns: 76px 1fr;
+    padding: 10px;
+  }
+
+  .dateRail {
+    padding-right: 9px;
+  }
+
+  .dateRail > strong {
+    font-size: 3.2rem;
+  }
+
+  .dateRail > p {
+    font-size: 0.82rem;
+  }
+
+  .main {
+    padding-left: 10px;
+  }
+
+  .main h2 {
+    font-size: 1.8rem;
+  }
+
+  .facts {
+    grid-template-columns: 1fr;
+  }
+
+  .facts > div + div {
+    border-top: 1px solid #193a4c;
+    border-left: 0;
+  }
+
+  .occupancy > span {
+    display: grid;
+    gap: 3px;
+  }
+}

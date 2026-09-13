@@ -1,0 +1,1037 @@
+openapi: 3.1.0
+info:
+  title: Pulso Piura API
+  version: 0.8.0
+servers:
+  - url: http://localhost:8080/api/v1
+paths:
+  /me:
+    get:
+      summary: Aprovisiona y devuelve al usuario autenticado
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Usuario activo}
+        "401": {description: Token ausente o inválido}
+        "403": {description: Cuenta local suspendida o eliminada}
+  /me/profile:
+    get:
+      summary: Obtiene el perfil deportivo actual
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Perfil encontrado}
+    patch:
+      summary: Actualiza perfil y consentimiento de onboarding
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Perfil actualizado}
+        "400": {description: Entrada inválida}
+  /organizations:
+    get:
+      summary: Lista únicamente las organizaciones activas del usuario
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Organizaciones y rol contextual}
+    post:
+      summary: Crea una organización para un dueño aprobado o administrador global
+      security: [{ bearerAuth: [] }]
+      responses:
+        "201": {description: Organización creada}
+        "400": {description: Nombre inválido}
+        "403": {description: La capacidad de dueño de cancha no está aprobada}
+  /organizations/{organizationId}:
+    parameters:
+      - in: path
+        name: organizationId
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      summary: Consulta una organización con membresía activa
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Organización accesible}
+        "403": {description: Sin acceso al tenant solicitado}
+        "404": {description: Organización no encontrada}
+  /organizations/{organizationId}/invitations:
+    post:
+      summary: Invita un administrador u operador por correo
+      security: [{ bearerAuth: [] }]
+      responses:
+        "201": {description: Invitación pendiente creada}
+        "400": {description: Correo o rol inválido, o invitación duplicada}
+        "403": {description: Sin permiso para administrar miembros}
+  /organizations/invitations/{invitationId}/accept:
+    post:
+      summary: Acepta una invitación cuyo correo coincide con el usuario autenticado
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Membresía activada}
+        "403": {description: La invitación pertenece a otro correo}
+        "404": {description: Invitación no encontrada}
+  /organizations/{organizationId}/members:
+    get:
+      summary: Lista miembros activos para propietarios y administradores
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Miembros activos}
+        "403": {description: Sin permiso o acceso a otro tenant}
+  /organizations/{organizationId}/members/{userId}:
+    delete:
+      summary: Revoca una membresía activa, excepto la del propietario
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": {description: Acceso revocado}
+        "400": {description: No se puede revocar al propietario}
+        "403": {description: Sin permiso o acceso a otro tenant}
+        "404": {description: Membresía activa no encontrada}
+  /venue-catalogs:
+    get:
+      summary: Obtiene deportes, modalidades, superficies y amenidades activas
+      description: Catálogo global público para filtros y formularios.
+      responses:
+        "200":
+          description: Catálogos activos
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/VenueCatalog"}
+  /venues:
+    get:
+      summary: Busca sedes publicadas con disponibilidad teórica
+      parameters:
+        - {in: query, name: district, schema: {type: string}}
+        - {in: query, name: sport, schema: {type: string}}
+        - {in: query, name: date, schema: {type: string, format: date}}
+        - {in: query, name: page, schema: {type: integer, minimum: 0, default: 0}}
+        - {in: query, name: size, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}
+      responses:
+        "200":
+          description: Página de sedes publicadas; si se indica fecha, conserva solo sedes con alguna franja teórica libre
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/PublicVenuePage"}
+        "400": {$ref: "#/components/responses/BadRequest"}
+  /venues/{publicSlug}:
+    parameters:
+      - {in: path, name: publicSlug, required: true, schema: {type: string}}
+    get:
+      summary: Obtiene una sede publicada por su identificador público global
+      responses:
+        "200": {description: Sede publicada, content: {application/json: {schema: {$ref: "#/components/schemas/PublicVenue"}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /venues/{publicSlug}/spaces:
+    parameters:
+      - {in: path, name: publicSlug, required: true, schema: {type: string}}
+    get:
+      summary: Lista las canchas publicadas de una sede publicada
+      responses:
+        "200": {description: Canchas públicas, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/PublicSportSpace"}}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /spaces/{spaceId}/availability:
+    parameters:
+      - $ref: "#/components/parameters/SpaceId"
+      - {in: query, name: date, required: true, schema: {type: string, format: date}}
+    get:
+      summary: Calcula franjas teóricas disponibles para una cancha publicada
+      description: Aplica reglas semanales, cierres, mantenimiento y precios especiales en la zona horaria de la organización. Aún no descuenta reservas.
+      responses:
+        "200": {description: Disponibilidad teórica, content: {application/json: {schema: {$ref: "#/components/schemas/PublicAvailability"}}}}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /spaces/{spaceId}/bookable-slots:
+    parameters:
+      - $ref: "#/components/parameters/SpaceId"
+      - {in: query, name: date, required: true, schema: {type: string, format: date}}
+    get:
+      summary: Devuelve franjas realmente reservables de una cancha publicada
+      description: Aplica la configuración y descuenta holds vigentes y reservas bloqueantes.
+      responses:
+        "200": {description: Disponibilidad reservable, content: {application/json: {schema: {$ref: "#/components/schemas/PublicAvailability"}}}}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /reservations:
+    post:
+      summary: Crea un hold idempotente para una franja vigente
+      description: El servidor deriva organización, precio, moneda y vencimiento y limita las reservas temporales activas por cliente.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: {type: string, minLength: 1, maxLength: 100}
+        - in: header
+          name: X-Correlation-Id
+          required: false
+          schema: {type: string, maxLength: 100}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CreateReservationInput"}
+      responses:
+        "201": {description: Hold creado, content: {application/json: {schema: {$ref: "#/components/schemas/Reservation"}}}}
+        "200": {description: Reintento idempotente; devuelve la reserva creada anteriormente, content: {application/json: {schema: {$ref: "#/components/schemas/Reservation"}}}}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "401": {description: Token ausente o inválido}
+        "409": {$ref: "#/components/responses/Conflict"}
+        "422": {description: La franja no coincide con una regla vigente o pertenece al pasado}
+        "429": {description: El cliente alcanzó el máximo de reservas temporales activas}
+  /me/reservations:
+    get:
+      summary: Lista las reservas del usuario autenticado
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - {in: query, name: page, schema: {type: integer, minimum: 0, default: 0}}
+        - {in: query, name: size, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}
+      responses:
+        "200": {description: Historial propio paginado, content: {application/json: {schema: {$ref: "#/components/schemas/ReservationPage"}}}}
+        "401": {description: Token ausente o inválido}
+  /reservations/{reservationId}:
+    parameters:
+      - {in: path, name: reservationId, required: true, schema: {type: string, format: uuid}}
+    get:
+      summary: Consulta una reserva propia o de una organización autorizada
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Reserva visible, content: {application/json: {schema: {$ref: "#/components/schemas/Reservation"}}}}
+        "401": {description: Token ausente o inválido}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /reservations/{reservationId}/confirm:
+    parameters:
+      - {in: path, name: reservationId, required: true, schema: {type: string, format: uuid}}
+    post:
+      summary: Confirma idempotentemente un hold vigente sin adelanto
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Reserva confirmada, content: {application/json: {schema: {$ref: "#/components/schemas/Reservation"}}}}
+        "401": {description: Token ausente o inválido}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /reservations/{reservationId}/cancel:
+    parameters:
+      - {in: path, name: reservationId, required: true, schema: {type: string, format: uuid}}
+    post:
+      summary: Cancela idempotentemente una reserva gestionable
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Reserva cancelada, content: {application/json: {schema: {$ref: "#/components/schemas/Reservation"}}}}
+        "401": {description: Token ausente o inválido}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /reservations/{reservationId}/check-in-pass:
+    parameters:
+      - {in: path, name: reservationId, required: true, schema: {type: string, format: uuid}}
+    post:
+      summary: Emite o rota el pase QR opaco de una reserva propia confirmada
+      description: El valor anterior queda invalidado y el servidor almacena únicamente su hash SHA-256.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Pase emitido, content: {application/json: {schema: {$ref: "#/components/schemas/ReservationCheckInPass"}}}}
+        "401": {description: Token ausente o inválido}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/reservations/check-in/preview:
+    parameters:
+      - {in: path, name: organizationId, required: true, schema: {type: string, format: uuid}}
+    post:
+      summary: Valida un QR y muestra la reserva y su saldo al dueño del complejo
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ReservationCheckInInput"}
+      responses:
+        "200": {description: Reserva válida, content: {application/json: {schema: {$ref: "#/components/schemas/ReservationCheckIn"}}}}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/reservations/check-in:
+    parameters:
+      - {in: path, name: organizationId, required: true, schema: {type: string, format: uuid}}
+    post:
+      summary: Registra idempotentemente la llegada y completa la reserva
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ReservationCheckInInput"}
+      responses:
+        "200": {description: Llegada registrada, content: {application/json: {schema: {$ref: "#/components/schemas/ReservationCheckIn"}}}}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /matches:
+    get:
+      summary: Lista partidos públicos publicados y futuros
+      parameters:
+        - {in: query, name: sport, required: false, schema: {type: string}}
+      responses:
+        "200": {description: Partidos disponibles, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Match"}}}}}
+    post:
+      summary: Crea un partido desde una reserva propia confirmada
+      security: [{ bearerAuth: [] }]
+      responses:
+        "201": {description: Partido creado en borrador, content: {application/json: {schema: {$ref: "#/components/schemas/Match"}}}}
+        "401": {description: Token ausente o inválido}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /matches/{publicSlug}:
+    parameters:
+      - {in: path, name: publicSlug, required: true, schema: {type: string}}
+    get:
+      summary: Devuelve el detalle público de un partido publicado
+      responses:
+        "200": {description: Partido encontrado, content: {application/json: {schema: {$ref: "#/components/schemas/Match"}}}}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /matches/{publicSlug}/participants/me:
+    parameters:
+      - {in: path, name: publicSlug, required: true, schema: {type: string}}
+    post:
+      summary: Confirma un cupo o incorpora al usuario a la lista de espera
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Participación idempotente, content: {application/json: {schema: {$ref: "#/components/schemas/MatchParticipation"}}}}
+        "401": {description: Token ausente o inválido}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+    get:
+      summary: Devuelve la participación activa del jugador en el partido
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Participación activa, content: {application/json: {schema: {$ref: "#/components/schemas/MatchParticipation"}}}}
+        "204": {description: El jugador no tiene una participación activa}
+        "401": {description: Token ausente o inválido}
+        "404": {$ref: "#/components/responses/NotFound"}
+    delete:
+      summary: Retira al usuario y promueve al siguiente de la espera cuando corresponde
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Retiro idempotente, content: {application/json: {schema: {$ref: "#/components/schemas/MatchParticipation"}}}}
+        "401": {description: Token ausente o inválido}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /matches/mine:
+    get:
+      summary: Lista únicamente los partidos publicados por el organizador autenticado
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Partidos propios, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Match"}}}}}
+        "401": {description: Token ausente o inválido}
+        "403": {$ref: "#/components/responses/Forbidden"}
+  /matches/{matchId}/participants:
+    parameters:
+      - {in: path, name: matchId, required: true, schema: {type: string, format: uuid}}
+    get:
+      summary: Lista inscritos y pagos de un partido propiedad del organizador autenticado
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Inscritos del partido, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/MatchParticipantAdmin"}}}}}
+        "401": {description: Token ausente o inválido}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+  /matches/{matchId}/participants/{userId}:
+    parameters:
+      - {in: path, name: matchId, required: true, schema: {type: string, format: uuid}}
+      - {in: path, name: userId, required: true, schema: {type: string, format: uuid}}
+    delete:
+      summary: Retira un inscrito sin pago de un partido propiedad del organizador
+      description: Los pagos confirmados quedan protegidos y no se pueden retirar desde este control.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": {description: Participante retirado}
+        "401": {description: Token ausente o inválido}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/venues:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+    get:
+      summary: Lista las sedes internas de una organización autorizada
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Sedes del tenant
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/Venue"}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+    post:
+      summary: Crea una sede en estado borrador
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/VenueInput"}
+      responses:
+        "201":
+          description: Sede creada
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Venue"}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /matches/participations/me:
+    get:
+      summary: Lista las inscripciones activas del jugador para la sección Actividad
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Inscripciones del jugador, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/MatchActivity"}}}}}
+        "401": {description: Token ausente o inválido}
+  /organizations/{organizationId}/venues/{venueId}:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/VenueId"
+    put:
+      summary: Edita una sede mediante control optimista de versión
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/VenueUpdateInput"}
+      responses:
+        "200": {description: Sede actualizada, content: {application/json: {schema: {$ref: "#/components/schemas/Venue"}}}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+    delete:
+      summary: Archiva una sede sin eliminar su historial
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": {description: Sede archivada}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/venues/{venueId}/publish:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/VenueId"
+    post:
+      summary: Publica una sede borrador
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Sede publicada, content: {application/json: {schema: {$ref: "#/components/schemas/Venue"}}}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/venues/{venueId}/spaces:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/VenueId"
+    get:
+      summary: Lista las canchas internas de una sede autorizada
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Canchas de la sede, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/SportSpace"}}}}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+    post:
+      summary: Crea una cancha en estado borrador
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/SportSpaceInput"}
+      responses:
+        "201": {description: Cancha creada, content: {application/json: {schema: {$ref: "#/components/schemas/SportSpace"}}}}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/spaces/{spaceId}:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/SpaceId"
+    put:
+      summary: Edita una cancha mediante control optimista de versión
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/SportSpaceUpdateInput"}
+      responses:
+        "200": {description: Cancha actualizada, content: {application/json: {schema: {$ref: "#/components/schemas/SportSpace"}}}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+    delete:
+      summary: Archiva una cancha
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": {description: Cancha archivada}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/spaces/{spaceId}/publish:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/SpaceId"
+    post:
+      summary: Publica una cancha cuando su sede ya está publicada
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Cancha publicada, content: {application/json: {schema: {$ref: "#/components/schemas/SportSpace"}}}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/spaces/{spaceId}/availability-rules:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/SpaceId"
+    get:
+      summary: Lista reglas semanales de la cancha
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Reglas configuradas, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/AvailabilityRule"}}}}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+    post:
+      summary: Crea una regla semanal sin superponerse con reglas activas
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/AvailabilityRuleInput"}
+      responses:
+        "201": {description: Regla creada, content: {application/json: {schema: {$ref: "#/components/schemas/AvailabilityRule"}}}}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/spaces/{spaceId}/availability-rules/{ruleId}:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/SpaceId"
+      - {in: path, name: ruleId, required: true, schema: {type: string, format: uuid}}
+      - $ref: "#/components/parameters/Version"
+    delete:
+      summary: Desactiva una regla semanal
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": {description: Regla desactivada}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/spaces/{spaceId}/exceptions:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/SpaceId"
+    get:
+      summary: Lista excepciones puntuales de la cancha
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Excepciones configuradas, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/AvailabilityException"}}}}}
+        "403": {$ref: "#/components/responses/Forbidden"}
+    post:
+      summary: Crea un cierre, mantenimiento o precio especial
+      description: OPERATOR puede crear cierres y mantenimiento; precios especiales requieren OWNER o ADMIN.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/AvailabilityExceptionInput"}
+      responses:
+        "201": {description: Excepción creada, content: {application/json: {schema: {$ref: "#/components/schemas/AvailabilityException"}}}}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+  /organizations/{organizationId}/spaces/{spaceId}/exceptions/{exceptionId}:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/SpaceId"
+      - {in: path, name: exceptionId, required: true, schema: {type: string, format: uuid}}
+      - $ref: "#/components/parameters/Version"
+    delete:
+      summary: Cancela lógicamente una excepción
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": {description: Excepción cancelada}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /businesses:
+    get:
+      summary: Lista los negocios aliados publicados
+      responses:
+        "200": {description: Directorio público, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/PartnerBusiness"}}}}}
+  /platform/summary:
+    get:
+      summary: Devuelve indicadores globales para la consola de plataforma
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Resumen global}
+        "403": {description: Requiere PLATFORM_ADMIN}
+  /platform/users:
+    get:
+      summary: Lista las cuentas y capacidades registradas
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Usuarios de plataforma}
+        "403": {description: Requiere PLATFORM_ADMIN}
+  /platform/capability-requests:
+    get:
+      summary: Lista solicitudes enriquecidas con nombre y correo
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Solicitudes de capacidad}
+        "403": {description: Requiere PLATFORM_ADMIN}
+  /platform/capability-requests/{requestId}/review:
+    parameters:
+      - {in: path, name: requestId, required: true, schema: {type: string, format: uuid}}
+    post:
+      summary: Aprueba o rechaza una solicitud pendiente
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Solicitud revisada}
+        "403": {description: Requiere PLATFORM_ADMIN}
+  /platform/capability-requests/{requestId}/revoke:
+    parameters:
+      - {in: path, name: requestId, required: true, schema: {type: string, format: uuid}}
+    post:
+      summary: Revoca una capacidad aprobada
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Capacidad revocada}
+        "403": {description: Requiere PLATFORM_ADMIN}
+  /platform/organizations:
+    get:
+      summary: Lista organizaciones con sus dueños activos
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Organizaciones y dueños}
+        "403": {description: Requiere PLATFORM_ADMIN}
+  /platform/organizations/{organizationId}/owners:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+    post:
+      summary: Asigna como dueño a una cuenta registrada
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Dueño asignado}
+        "403": {description: Requiere PLATFORM_ADMIN}
+  /platform/organizations/{organizationId}/owners/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - {in: path, name: userId, required: true, schema: {type: string, format: uuid}}
+    delete:
+      summary: Retira un dueño conservando al menos uno activo
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Dueño retirado}
+        "409": {description: No se puede retirar al único dueño}
+        "403": {description: Requiere PLATFORM_ADMIN}
+  /platform/businesses:
+    get:
+      summary: Lista todos los negocios para administración
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Negocios registrados}
+        "403": {description: Requiere PLATFORM_ADMIN}
+    post:
+      summary: Crea un negocio aliado
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: "#/components/schemas/PartnerBusinessInput"}}}
+      responses:
+        "201": {description: Negocio creado}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "403": {description: Requiere PLATFORM_ADMIN}
+  /platform/businesses/{businessId}:
+    parameters:
+      - {in: path, name: businessId, required: true, schema: {type: string, format: uuid}}
+    put:
+      summary: Actualiza o cambia la publicación de un negocio
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: "#/components/schemas/PartnerBusinessInput"}}}
+      responses:
+        "200": {description: Negocio actualizado}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "403": {description: Requiere PLATFORM_ADMIN}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    OrganizationId: {in: path, name: organizationId, required: true, schema: {type: string, format: uuid}}
+    VenueId: {in: path, name: venueId, required: true, schema: {type: string, format: uuid}}
+    SpaceId: {in: path, name: spaceId, required: true, schema: {type: string, format: uuid}}
+    Version: {in: query, name: version, required: true, schema: {type: integer, format: int64, minimum: 0}}
+  responses:
+    BadRequest: {description: Entrada inválida, content: {application/problem+json: {schema: {$ref: "#/components/schemas/Problem"}}}}
+    Forbidden: {description: Sin membresía o permiso en la organización, content: {application/problem+json: {schema: {$ref: "#/components/schemas/Problem"}}}}
+    NotFound: {description: Recurso no encontrado dentro del tenant, content: {application/problem+json: {schema: {$ref: "#/components/schemas/Problem"}}}}
+    Conflict: {description: Estado, versión o dato en conflicto, content: {application/problem+json: {schema: {$ref: "#/components/schemas/Problem"}}}}
+  schemas:
+    Problem:
+      type: object
+      properties:
+        type: {type: string, format: uri}
+        title: {type: string}
+        status: {type: integer}
+        detail: {type: string}
+    VenueInput:
+      type: object
+      required: [name, address, districtCode]
+      properties:
+        name: {type: string, maxLength: 160}
+        address: {type: string, maxLength: 240}
+        districtCode: {type: string, maxLength: 60}
+        latitude: {type: number, minimum: -90, maximum: 90}
+        longitude: {type: number, minimum: -180, maximum: 180}
+        publicPhone: {type: string, maxLength: 30}
+        amenityCodes:
+          type: array
+          uniqueItems: true
+          items: {type: string, maxLength: 40}
+    VenueUpdateInput:
+      allOf:
+        - $ref: "#/components/schemas/VenueInput"
+        - type: object
+          required: [version]
+          properties:
+            version: {type: integer, format: int64, minimum: 0}
+    Venue:
+      allOf:
+        - $ref: "#/components/schemas/VenueUpdateInput"
+        - type: object
+          required: [id, organizationId, slug, publicSlug, status]
+          properties:
+            id: {type: string, format: uuid}
+            organizationId: {type: string, format: uuid}
+            slug: {type: string}
+            publicSlug: {type: string, description: Identificador global estable para rutas públicas}
+            status: {type: string, enum: [DRAFT, PUBLISHED, ARCHIVED]}
+    SportSpaceInput:
+      type: object
+      required: [name, sportCode, formatCode, capacity, indoor]
+      properties:
+        name: {type: string, maxLength: 160}
+        sportCode: {type: string, enum: [FOOTBALL, VOLLEYBALL, BASKETBALL, PADEL, TENNIS]}
+        formatCode: {type: string, maxLength: 40}
+        capacity: {type: integer, minimum: 1}
+        surfaceType: {type: string, maxLength: 40}
+        indoor: {type: boolean}
+        amenityCodes:
+          type: array
+          uniqueItems: true
+          items: {type: string, maxLength: 40}
+    SportSpaceUpdateInput:
+      allOf:
+        - $ref: "#/components/schemas/SportSpaceInput"
+        - type: object
+          required: [version]
+          properties:
+            version: {type: integer, format: int64, minimum: 0}
+    SportSpace:
+      allOf:
+        - $ref: "#/components/schemas/SportSpaceUpdateInput"
+        - type: object
+          required: [id, organizationId, venueId, status]
+          properties:
+            id: {type: string, format: uuid}
+            organizationId: {type: string, format: uuid}
+            venueId: {type: string, format: uuid}
+            status: {type: string, enum: [DRAFT, PUBLISHED, ARCHIVED]}
+    VenueCatalog:
+      type: object
+      required: [sports, formats, surfaces, amenities]
+      properties:
+        sports:
+          type: array
+          items: {$ref: "#/components/schemas/CatalogItem"}
+        formats:
+          type: array
+          items: {$ref: "#/components/schemas/SportFormatItem"}
+        surfaces:
+          type: array
+          items: {$ref: "#/components/schemas/CatalogItem"}
+        amenities:
+          type: array
+          items: {$ref: "#/components/schemas/AmenityItem"}
+    CatalogItem:
+      type: object
+      required: [code, name]
+      properties:
+        code: {type: string}
+        name: {type: string}
+    SportFormatItem:
+      allOf:
+        - $ref: "#/components/schemas/CatalogItem"
+        - type: object
+          required: [sportCode]
+          properties:
+            sportCode: {type: string}
+            recommendedCapacity: {type: [integer, "null"], minimum: 1}
+    AmenityItem:
+      allOf:
+        - $ref: "#/components/schemas/CatalogItem"
+        - type: object
+          required: [scope]
+          properties:
+            scope: {type: string, enum: [VENUE, SPORT_SPACE, BOTH]}
+    PublicVenuePage:
+      type: object
+      required: [items, page, size, total]
+      properties:
+        items: {type: array, items: {$ref: "#/components/schemas/PublicVenue"}}
+        page: {type: integer, minimum: 0}
+        size: {type: integer, minimum: 1, maximum: 50}
+        total: {type: integer, format: int64, minimum: 0}
+    PublicVenue:
+      type: object
+      required: [publicSlug, name, address, districtCode, amenityCodes]
+      properties:
+        publicSlug: {type: string}
+        name: {type: string}
+        address: {type: string}
+        districtCode: {type: string}
+        latitude: {type: [number, "null"]}
+        longitude: {type: [number, "null"]}
+        publicPhone: {type: [string, "null"]}
+        amenityCodes: {type: array, uniqueItems: true, items: {type: string}}
+    PublicSportSpace:
+      type: object
+      required: [id, name, sportCode, formatCode, capacity, indoor, amenityCodes]
+      properties:
+        id: {type: string, format: uuid}
+        name: {type: string}
+        sportCode: {type: string}
+        formatCode: {type: string}
+        capacity: {type: integer, minimum: 1}
+        surfaceType: {type: [string, "null"]}
+        indoor: {type: boolean}
+        amenityCodes: {type: array, uniqueItems: true, items: {type: string}}
+    PublicAvailability:
+      type: object
+      required: [sportSpaceId, timezone, date, slots]
+      properties:
+        sportSpaceId: {type: string, format: uuid}
+        timezone: {type: string, example: America/Lima}
+        date: {type: string, format: date}
+        slots: {type: array, items: {$ref: "#/components/schemas/PublicSlot"}}
+    PublicSlot:
+      type: object
+      required: [startsAt, endsAt, priceMinor, currency]
+      properties:
+        startsAt: {type: string, format: date-time}
+        endsAt: {type: string, format: date-time}
+        priceMinor: {type: integer, format: int64, minimum: 0}
+        currency: {type: string, const: PEN}
+    CreateReservationInput:
+      type: object
+      required: [sportSpaceId, startsAt, endsAt]
+      properties:
+        sportSpaceId: {type: string, format: uuid}
+        startsAt: {type: string, format: date-time}
+        endsAt: {type: string, format: date-time}
+    Reservation:
+      type: object
+      required: [id, sportSpaceId, startsAt, endsAt, status, totalMinor, depositMinor, currency, version]
+      properties:
+        id: {type: string, format: uuid}
+        sportSpaceId: {type: string, format: uuid}
+        startsAt: {type: string, format: date-time}
+        endsAt: {type: string, format: date-time}
+        status: {type: string, enum: [HOLD, PENDING_PAYMENT, CONFIRMED, COMPLETED, CANCELLED, EXPIRED]}
+        totalMinor: {type: integer, format: int64, minimum: 0}
+        depositMinor: {type: integer, format: int64, minimum: 0}
+        currency: {type: string, const: PEN}
+        expiresAt: {type: [string, "null"], format: date-time}
+        version: {type: integer, format: int64, minimum: 0}
+    ReservationPage:
+      type: object
+      required: [items, page, size, total]
+      properties:
+        items: {type: array, items: {$ref: "#/components/schemas/Reservation"}}
+        page: {type: integer, minimum: 0}
+        size: {type: integer, minimum: 1, maximum: 50}
+        total: {type: integer, format: int64, minimum: 0}
+    ReservationCheckInPass:
+      type: object
+      required: [reservationId, payload, issuedAt, validUntil, reservationVersion]
+      properties:
+        reservationId: {type: string, format: uuid}
+        payload: {type: string, pattern: '^PULSO-CHECKIN:[A-Za-z0-9_-]{43}$'}
+        issuedAt: {type: string, format: date-time}
+        validUntil: {type: string, format: date-time}
+        reservationVersion: {type: integer, format: int64, minimum: 0}
+    ReservationCheckInInput:
+      type: object
+      required: [payload]
+      properties:
+        payload: {type: string, minLength: 43, maxLength: 100}
+    ReservationCheckIn:
+      type: object
+      required: [reservationId, venueName, spaceName, customerName, startsAt, endsAt, reservationStatus, totalMinor, paidMinor, balanceMinor, currency, paymentStatus]
+      properties:
+        reservationId: {type: string, format: uuid}
+        venueName: {type: string}
+        spaceName: {type: string}
+        customerName: {type: string}
+        customerEmail: {type: [string, "null"], format: email}
+        startsAt: {type: string, format: date-time}
+        endsAt: {type: string, format: date-time}
+        reservationStatus: {type: string, enum: [CONFIRMED, COMPLETED]}
+        totalMinor: {type: integer, format: int64, minimum: 0}
+        paidMinor: {type: integer, format: int64, minimum: 0}
+        balanceMinor: {type: integer, format: int64, minimum: 0}
+        currency: {type: string, const: PEN}
+        paymentStatus: {type: string, enum: [PAID, PARTIAL, PENDING]}
+        checkedInAt: {type: [string, "null"], format: date-time}
+    Match:
+      type: object
+      required: [id, publicSlug, sportSpaceId, spaceName, venueName, venueAddress, title, sportCode, formatCode, skillLevel, minPlayers, maxPlayers, occupiedPlayers, availablePlayers, priceMinor, currency, visibility, cancellationPolicy, startsAt, endsAt, status, participantPreview, version]
+      properties:
+        id: {type: string, format: uuid}
+        publicSlug: {type: string}
+        sportSpaceId: {type: string, format: uuid}
+        spaceName: {type: string}
+        venueName: {type: string}
+        venueAddress: {type: string}
+        title: {type: string}
+        sportCode: {type: string}
+        formatCode: {type: string}
+        skillLevel: {type: string, enum: [ALL_LEVELS, BEGINNER, INTERMEDIATE, ADVANCED]}
+        minPlayers: {type: integer, minimum: 1}
+        maxPlayers: {type: integer, minimum: 1}
+        occupiedPlayers: {type: integer, minimum: 0}
+        availablePlayers: {type: integer, minimum: 0}
+        priceMinor: {type: integer, format: int64, minimum: 0}
+        currency: {type: string, const: PEN}
+        visibility: {type: string, enum: [PUBLIC, LINK, PRIVATE]}
+        cancellationPolicy: {type: string}
+        startsAt: {type: string, format: date-time}
+        endsAt: {type: string, format: date-time}
+        status: {type: string, enum: [DRAFT, PUBLISHED, CANCELLED]}
+        participantPreview:
+          type: array
+          maxItems: 7
+          items: {$ref: "#/components/schemas/ParticipantPreview"}
+        version: {type: integer, format: int64, minimum: 0}
+    ParticipantPreview:
+      type: object
+      required: [displayName]
+      properties:
+        displayName: {type: string, maxLength: 120}
+        avatarUrl: {type: [string, "null"], maxLength: 500}
+    MatchParticipantAdmin:
+      type: object
+      required: [userId, displayName, email, status, paymentStatus, paidMinor]
+      properties:
+        userId: {type: string, format: uuid}
+        displayName: {type: string, maxLength: 120}
+        email: {type: string, format: email}
+        avatarUrl: {type: [string, "null"], maxLength: 500}
+        status: {type: string, enum: [JOINED, WAITLISTED]}
+        paymentStatus: {type: string, enum: [PAID, PENDING, UNPAID, NOT_REQUIRED]}
+        paidMinor: {type: integer, format: int64, minimum: 0}
+        paymentMethod: {type: [string, "null"], enum: [YAPE, PLIN, null]}
+        paidAt: {type: [string, "null"], format: date-time}
+        joinedAt: {type: [string, "null"], format: date-time}
+    PartnerBusinessInput:
+      type: object
+      required: [name, category, zone, status]
+      properties:
+        name: {type: string, maxLength: 160}
+        category: {type: string, enum: [CHOPERIA, RESTAURANT, SPORTS_BAR, OTHER]}
+        zone: {type: string, maxLength: 180}
+        description: {type: [string, "null"], maxLength: 500}
+        imageUrl: {type: [string, "null"], maxLength: 500}
+        contactPhone: {type: [string, "null"], maxLength: 30}
+        latitude: {type: [number, "null"], minimum: -90, maximum: 90}
+        longitude: {type: [number, "null"], minimum: -180, maximum: 180}
+        status: {type: string, enum: [DRAFT, PUBLISHED, ARCHIVED]}
+    PartnerBusiness:
+      type: object
+      required: [id, name, category, zone, status, updatedAt]
+      properties:
+        id: {type: string, format: uuid}
+        name: {type: string, maxLength: 160}
+        category: {type: string, enum: [CHOPERIA, RESTAURANT, SPORTS_BAR, OTHER]}
+        zone: {type: string, maxLength: 180}
+        description: {type: [string, "null"], maxLength: 500}
+        imageUrl: {type: [string, "null"], maxLength: 500}
+        contactPhone: {type: [string, "null"], maxLength: 30}
+        latitude: {type: [number, "null"], minimum: -90, maximum: 90}
+        longitude: {type: [number, "null"], minimum: -180, maximum: 180}
+        status: {type: string, enum: [DRAFT, PUBLISHED, ARCHIVED]}
+        updatedAt: {type: string, format: date-time}
+    MatchParticipation:
+      type: object
+      required: [matchId, publicSlug, status, occupiedPlayers, availablePlayers]
+      properties:
+        matchId: {type: string, format: uuid}
+        publicSlug: {type: string}
+        status: {type: string, enum: [JOINED, WAITLISTED, WITHDRAWN]}
+        waitlistPosition: {type: [integer, "null"], minimum: 1}
+        occupiedPlayers: {type: integer, minimum: 0}
+        availablePlayers: {type: integer, minimum: 0}
+    MatchActivity:
+      type: object
+      required: [id, publicSlug, title, sportCode, formatCode, spaceName, venueName, venueAddress, startsAt, endsAt, participationStatus, paymentStatus, paidMinor, currency]
+      properties:
+        id: {type: string, format: uuid}
+        publicSlug: {type: string}
+        title: {type: string}
+        sportCode: {type: string}
+        formatCode: {type: string}
+        spaceName: {type: string}
+        venueName: {type: string}
+        venueAddress: {type: string}
+        startsAt: {type: string, format: date-time}
+        endsAt: {type: string, format: date-time}
+        participationStatus: {type: string, enum: [JOINED, WAITLISTED]}
+        paymentStatus: {type: string, enum: [PAID, PENDING, UNPAID, NOT_REQUIRED]}
+        paidMinor: {type: integer, format: int64, minimum: 0}
+        currency: {type: string, const: PEN}
+    AvailabilityRuleInput:
+      type: object
+      required: [dayOfWeek, startLocalTime, endLocalTime, slotMinutes, priceMinor, validFrom]
+      properties:
+        dayOfWeek: {type: integer, minimum: 1, maximum: 7}
+        startLocalTime: {type: string, format: time}
+        endLocalTime: {type: string, format: time}
+        slotMinutes: {type: integer, minimum: 30, maximum: 180}
+        priceMinor: {type: integer, format: int64, minimum: 0}
+        validFrom: {type: string, format: date}
+        validTo: {type: [string, "null"], format: date}
+    AvailabilityRule:
+      allOf:
+        - $ref: "#/components/schemas/AvailabilityRuleInput"
+        - type: object
+          required: [id, sportSpaceId, currency, status, version]
+          properties:
+            id: {type: string, format: uuid}
+            sportSpaceId: {type: string, format: uuid}
+            currency: {type: string, const: PEN}
+            status: {type: string, enum: [ACTIVE, INACTIVE]}
+            version: {type: integer, format: int64, minimum: 0}
+    AvailabilityExceptionInput:
+      type: object
+      required: [startsAt, endsAt, type]
+      properties:
+        startsAt: {type: string, format: date-time}
+        endsAt: {type: string, format: date-time}
+        type: {type: string, enum: [CLOSED, MAINTENANCE, SPECIAL_PRICE]}
+        priceMinor: {type: [integer, "null"], format: int64, minimum: 0}
+        reason: {type: [string, "null"], maxLength: 240}
+    AvailabilityException:
+      allOf:
+        - $ref: "#/components/schemas/AvailabilityExceptionInput"
+        - type: object
+          required: [id, sportSpaceId, status, version]
+          properties:
+            id: {type: string, format: uuid}
+            sportSpaceId: {type: string, format: uuid}
+            currency: {type: [string, "null"], enum: [PEN, null]}
+            status: {type: string, enum: [ACTIVE, CANCELLED]}
+            version: {type: integer, format: int64, minimum: 0}

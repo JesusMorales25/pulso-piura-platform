@@ -1,0 +1,146 @@
+services:
+  app-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pulso_piura
+      POSTGRES_USER: pulso_app
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_64_APP_DB}
+    volumes:
+      - app_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulso_app -d pulso_piura"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 1g
+
+  identity-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_64_IDENTITY_DB}
+    volumes:
+      - identity_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 1g
+
+  identity:
+    build:
+      context: ../../infra/keycloak
+      dockerfile: Dockerfile
+    command: start --import-realm
+    restart: unless-stopped
+    depends_on:
+      identity-db:
+        condition: service_healthy
+    environment:
+      SERVICE_URL_IDENTITY_8080: /
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://identity-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${SERVICE_PASSWORD_64_IDENTITY_DB}
+      KC_BOOTSTRAP_ADMIN_USERNAME: kc_bootstrap_admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_KEYCLOAK_ADMIN}
+      KC_HOSTNAME: https://${SERVICE_FQDN_IDENTITY_8080}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    mem_limit: 2g
+
+  identity-bootstrap:
+    build:
+      context: ../../infra/keycloak
+      dockerfile: Dockerfile
+    restart: "no"
+    exclude_from_hc: true
+    depends_on:
+      identity:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_INTERNAL_URL: http://identity:8080
+      KEYCLOAK_ADMIN: kc_bootstrap_admin
+      KEYCLOAK_ADMIN_PASSWORD: ${SERVICE_PASSWORD_64_KEYCLOAK_ADMIN}
+      KEYCLOAK_PUBLIC_URL: https://${SERVICE_FQDN_IDENTITY_8080}
+      FRONTEND_PUBLIC_URL: https://${SERVICE_FQDN_FRONTEND_3000}
+      PASSWORD_REGISTRATION_ENABLED: "false"
+      LOCAL_REQUIRE_EMAIL_VERIFICATION: "true"
+      LOCAL_DEMO_USERS_ENABLED: "false"
+      TEST_USER_EMAIL: ${PLATFORM_ADMIN_EMAIL:?}
+      TEST_USER_PASSWORD: ${SERVICE_PASSWORD_64_PLATFORM_ADMIN}
+      DEMO_PLATFORM_ADMIN_EMAIL: ${PLATFORM_ADMIN_EMAIL:?}
+      GOOGLE_LOGIN_ENABLED: ${GOOGLE_LOGIN_ENABLED:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      RESET_BOOTSTRAP_USER_PASSWORDS: "false"
+    entrypoint: ["/bin/bash", "/opt/keycloak/bootstrap/bootstrap.sh"]
+
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      app-db:
+        condition: service_healthy
+      identity:
+        condition: service_healthy
+      identity-bootstrap:
+        condition: service_completed_successfully
+    environment:
+      SERVICE_URL_BACKEND_8080: /
+      SPRING_PROFILES_ACTIVE: production
+      DATABASE_URL: jdbc:postgresql://app-db:5432/pulso_piura
+      POSTGRES_USER: pulso_app
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_64_APP_DB}
+      OIDC_ISSUER_URI: https://${SERVICE_FQDN_IDENTITY_8080}/realms/pulso-piura
+      OIDC_JWK_SET_URI: http://identity:8080/realms/pulso-piura/protocol/openid-connect/certs
+      OIDC_AUDIENCE: pulso-api
+      WEB_ALLOWED_ORIGIN: https://${SERVICE_FQDN_FRONTEND_3000}
+      RESERVATION_HOLD_DURATION: PT5M
+      RESERVATION_MAX_ACTIVE_TEMPORARY_PER_CUSTOMER: "3"
+      PAYMENTS_MODE: ${PAYMENTS_MODE:-disabled}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    mem_limit: 2g
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: https://${SERVICE_FQDN_BACKEND_8080}/api/v1
+        NEXT_PUBLIC_OIDC_ISSUER: https://${SERVICE_FQDN_IDENTITY_8080}/realms/pulso-piura
+        NEXT_PUBLIC_OIDC_CLIENT_ID: pulso-web
+        NEXT_PUBLIC_GOOGLE_LOGIN_ENABLED: ${GOOGLE_LOGIN_ENABLED:-false}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      SERVICE_URL_FRONTEND_3000: /
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    mem_limit: 1g
+
+volumes:
+  app_postgres:
+  identity_postgres:

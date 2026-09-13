@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: pulso-piura-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/pulso_piura}
+    username: ${POSTGRES_USER:pulso_app}
+    password: ${POSTGRES_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.default_schema: app
+  flyway:
+    schemas: app
+    default-schema: app
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI:http://localhost:8180/realms/pulso-piura}
+          audiences: ${OIDC_AUDIENCE:pulso-api}
+app:
+  web:
+    allowed-origin: ${WEB_ALLOWED_ORIGIN:http://localhost:3000}
+  reservations:
+    hold-duration: ${RESERVATION_HOLD_DURATION:PT5M}
+    max-active-temporary-per-customer: ${RESERVATION_MAX_ACTIVE_TEMPORARY_PER_CUSTOMER:3}
+  payments:
+    mode: ${PAYMENTS_MODE:disabled}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+server:
+  error:
+    include-message: never
+    include-stacktrace: never

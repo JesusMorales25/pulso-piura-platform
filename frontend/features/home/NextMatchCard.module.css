@@ -1,0 +1,113 @@
+.card {
+  display: grid;
+  grid-template-columns: 58px 42px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #21455c;
+  border-radius: 8px;
+  background: #071b2a;
+  color: var(--white);
+  text-decoration: none;
+}
+
+.date {
+  display: grid;
+  justify-items: center;
+  padding-right: 10px;
+  border-right: 1px solid #1d4054;
+  text-transform: uppercase;
+}
+
+.date span,
+.date b {
+  color: var(--cyan);
+  font-size: 0.6rem;
+}
+
+.date strong {
+  font-family: Impact, "Arial Narrow", sans-serif;
+  font-size: 1.7rem;
+}
+
+.date small {
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.sport {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid #24506a;
+  border-radius: 50%;
+  color: var(--cyan);
+}
+
+.copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.copy > small {
+  color: var(--cyan);
+  font-size: 0.58rem;
+  font-weight: 900;
+}
+
+.copy > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy > span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
+.copy p {
+  margin: 2px 0 0;
+  font-size: 0.7rem;
+}
+
+.copy p b {
+  color: var(--lime);
+}
+
+.people {
+  display: flex;
+  color: #e7d0b5;
+}
+
+.people svg + svg {
+  margin-left: -8px;
+}
+
+.arrow {
+  color: #d7e8ee;
+}
+
+@media (max-width: 480px) {
+  .card {
+    grid-template-columns: 52px 36px 1fr auto;
+  }
+
+  .people {
+    display: none;
+  }
+
+  .copy > strong {
+    max-width: 150px;
+  }
+
+  .arrow {
+    width: 18px;
+  }
+}
