@@ -10,6 +10,7 @@ frontend/node_modules/
 frontend/.npm-cache/
 frontend/.next/
 frontend/out/
+frontend/*.tsbuildinfo
 coverage/
 deploy/oracle/.env.production
 deploy/oracle/backups/

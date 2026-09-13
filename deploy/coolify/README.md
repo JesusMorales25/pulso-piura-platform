@@ -29,7 +29,7 @@ git remote add origin https://github.com/TU_USUARIO/pulso-piura-platform.git
 git push -u origin main
 ```
 
-El repositorio local ya está inicializado sobre `main` y sus 455 archivos permitidos están preparados para el primer commit. Antes del push puedes confirmar las exclusiones con `git status --short --ignored`.
+El repositorio local ya está inicializado sobre `main`. Antes de cada push puedes confirmar las exclusiones con `git status --short --ignored`.
 
 ## 1. Crear la VM en Oracle
 
