@@ -1,4 +1,8 @@
 *
 !Dockerfile
+!Dockerfile.render
 !realm-pulso-piura.json
 !bootstrap.sh
+!render-entrypoint.sh
+!themes/
+!themes/**
