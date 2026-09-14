@@ -177,8 +177,6 @@ configure_google_identity_provider() {
   echo "GOOGLE_REDIRECT_URI|${KEYCLOAK_PUBLIC_URL:-http://localhost:8180}/realms/pulso-piura/broker/google/endpoint"
 }
 
-configure_google_identity_provider
-
 ensure_realm_role() {
   local name="$1"
   local description="$2"
@@ -217,6 +215,12 @@ ensure_user() {
       -s lastName="$last_name" \
       -i)
     user_created=true
+  else
+    "$KCADM" update "users/$user_id" \
+      -r pulso-piura \
+      -s enabled=true \
+      -s emailVerified=true \
+      -s 'requiredActions=[]' >/dev/null
   fi
 
   if [ "$user_created" = "true" ] || [ "${RESET_BOOTSTRAP_USER_PASSWORDS:-false}" = "true" ]; then
@@ -224,6 +228,9 @@ ensure_user() {
       -r pulso-piura \
       --userid "$user_id" \
       --new-password "$TEST_USER_PASSWORD"
+    "$KCADM" delete "attack-detection/brute-force/users/$user_id" \
+      -r pulso-piura >/dev/null 2>&1 || true
+    echo "Contraseña inicial sincronizada para $email."
   fi
 
   if [ "$role" = "PLATFORM_ADMIN" ]; then
@@ -252,5 +259,7 @@ if [ "${LOCAL_DEMO_USERS_ENABLED:-false}" = "true" ]; then
 else
   echo "Usuarios adicionales de demostración desactivados."
 fi
+
+configure_google_identity_provider
 
 echo "Identidades locales preparadas."
