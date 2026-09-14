@@ -72,9 +72,9 @@ services:
       - key: LOCAL_DEMO_USERS_ENABLED
         value: "false"
       - key: RESET_BOOTSTRAP_USER_PASSWORDS
-        value: "false"
+        value: "true"
       - key: DEMO_PLATFORM_ADMIN_EMAIL
-        sync: false
+        value: admin.plataforma.local@pulsopiura.test
       - key: TEST_USER_PASSWORD
         sync: false
       - key: GOOGLE_LOGIN_ENABLED
