@@ -8,7 +8,8 @@ FRONTEND_PUBLIC_URL=${FRONTEND_PUBLIC_URL%/}
 
 authenticate_admin() {
   local attempt=1
-  local max_attempts=20
+  local max_attempts=${KEYCLOAK_BOOTSTRAP_MAX_ATTEMPTS:-20}
+  local retry_seconds=${KEYCLOAK_BOOTSTRAP_RETRY_SECONDS:-3}
   local login_output
 
   while [ "$attempt" -le "$max_attempts" ]; do
@@ -31,7 +32,7 @@ authenticate_admin() {
 
     echo "Keycloak todavía no acepta sesiones administrativas; reintentando ($attempt/$max_attempts)..." >&2
     attempt=$((attempt + 1))
-    sleep 3
+    sleep "$retry_seconds"
   done
 }
 

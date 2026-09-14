@@ -1,6 +1,7 @@
 FROM quay.io/keycloak/keycloak:26.7.3 AS builder
 
-ENV KC_DB=postgres
+ENV KC_DB=postgres \
+    KC_HEALTH_ENABLED=true
 RUN /opt/keycloak/bin/kc.sh build
 
 FROM quay.io/keycloak/keycloak:26.7.3
@@ -17,4 +18,3 @@ USER 1000
 
 EXPOSE 10000
 ENTRYPOINT ["/opt/keycloak/bootstrap/render-entrypoint.sh"]
-

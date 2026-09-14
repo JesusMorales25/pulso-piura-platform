@@ -15,19 +15,16 @@ export KEYCLOAK_INTERNAL_URL="http://127.0.0.1:${render_port}"
 export KEYCLOAK_ADMIN="${KC_BOOTSTRAP_ADMIN_USERNAME:?}"
 export KEYCLOAK_ADMIN_PASSWORD="${KC_BOOTSTRAP_ADMIN_PASSWORD:?}"
 
-/opt/keycloak/bin/kc.sh start --optimized --import-realm &
-keycloak_pid=$!
+keycloak_pid=$$
+bootstrap_after_start() {
+  if /opt/keycloak/bootstrap/bootstrap.sh; then
+    echo "Configuración administrativa de Keycloak completada."
+    return 0
+  fi
 
-terminate() {
+  echo "No se pudo completar la configuración administrativa de Keycloak." >&2
   kill -TERM "$keycloak_pid" 2>/dev/null || true
-  wait "$keycloak_pid" || true
 }
-trap terminate TERM INT
 
-if ! /opt/keycloak/bootstrap/bootstrap.sh; then
-  terminate
-  exit 1
-fi
-
-wait "$keycloak_pid"
-
+bootstrap_after_start &
+exec /opt/keycloak/bin/kc.sh start --optimized --import-realm
