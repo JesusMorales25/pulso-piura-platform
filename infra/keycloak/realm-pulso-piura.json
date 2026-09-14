@@ -40,11 +40,17 @@
       "publicClient": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
-      "redirectUris": ["http://localhost:3000/auth/callback"],
-      "webOrigins": ["http://localhost:3000"],
+      "redirectUris": [
+        "http://localhost:3000/auth/callback",
+        "https://pulso-piura-platform.vercel.app/auth/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "https://pulso-piura-platform.vercel.app"
+      ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:3000/*"
+        "post.logout.redirect.uris": "http://localhost:3000/*##https://pulso-piura-platform.vercel.app/*"
       },
       "protocolMappers": [
         {

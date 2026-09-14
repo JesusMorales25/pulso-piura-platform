@@ -49,16 +49,22 @@ services:
         value: "1"
       - key: KC_DB_POOL_MAX_SIZE
         value: "5"
-      - key: KEYCLOAK_BOOTSTRAP_MAX_ATTEMPTS
+      - key: KEYCLOAK_STARTUP_MAX_ATTEMPTS
         value: "100"
-      - key: KEYCLOAK_BOOTSTRAP_RETRY_SECONDS
+      - key: KEYCLOAK_STARTUP_RETRY_SECONDS
         value: "3"
+      - key: KEYCLOAK_ADMIN_MAX_ATTEMPTS
+        value: "20"
+      - key: KEYCLOAK_ADMIN_RETRY_SECONDS
+        value: "3"
+      - key: KEYCLOAK_CONFIGURATION_MAX_ATTEMPTS
+        value: "5"
       - key: JAVA_OPTS_KC_HEAP
         value: -XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=40 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20
       - key: KEYCLOAK_PUBLIC_URL
         value: https://pulso-piura-identity-jesusmorales25.onrender.com
       - key: FRONTEND_PUBLIC_URL
-        sync: false
+        value: https://pulso-piura-platform.vercel.app
       - key: PASSWORD_REGISTRATION_ENABLED
         value: "false"
       - key: LOCAL_REQUIRE_EMAIL_VERIFICATION
@@ -113,7 +119,7 @@ services:
       - key: OIDC_AUDIENCE
         value: pulso-api
       - key: WEB_ALLOWED_ORIGIN
-        sync: false
+        value: https://pulso-piura-platform.vercel.app
       - key: RESERVATION_HOLD_DURATION
         value: PT5M
       - key: RESERVATION_MAX_ACTIVE_TEMPORARY_PER_CUSTOMER

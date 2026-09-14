@@ -2,14 +2,15 @@
 set -euo pipefail
 
 KCADM=/opt/keycloak/bin/kcadm.sh
+export KC_OPTS="${KCADM_JAVA_OPTS:--Xms8m -Xmx64m -XX:MaxMetaspaceSize=96m -XX:+UseSerialGC}"
 KEYCLOAK_INTERNAL_URL=${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
 FRONTEND_PUBLIC_URL=${FRONTEND_PUBLIC_URL:-http://localhost:3000}
 FRONTEND_PUBLIC_URL=${FRONTEND_PUBLIC_URL%/}
 
 authenticate_admin() {
   local attempt=1
-  local max_attempts=${KEYCLOAK_BOOTSTRAP_MAX_ATTEMPTS:-20}
-  local retry_seconds=${KEYCLOAK_BOOTSTRAP_RETRY_SECONDS:-3}
+  local max_attempts=${KEYCLOAK_ADMIN_MAX_ATTEMPTS:-20}
+  local retry_seconds=${KEYCLOAK_ADMIN_RETRY_SECONDS:-3}
   local login_output
 
   while [ "$attempt" -le "$max_attempts" ]; do
@@ -87,11 +88,13 @@ configure_web_client() {
     exit 1
   fi
 
+  echo "Configurando pulso-web para $FRONTEND_PUBLIC_URL"
   "$KCADM" update "clients/$client_uuid" \
     -r pulso-piura \
     -s "redirectUris=[\"$FRONTEND_PUBLIC_URL/auth/callback\"]" \
     -s "webOrigins=[\"$FRONTEND_PUBLIC_URL\"]" \
     -s "attributes={\"pkce.code.challenge.method\":\"S256\",\"post.logout.redirect.uris\":\"$FRONTEND_PUBLIC_URL/*\"}" >/dev/null
+  echo "Callback de pulso-web configurado."
 }
 
 configure_web_client

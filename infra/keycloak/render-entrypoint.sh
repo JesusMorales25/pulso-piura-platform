@@ -15,11 +15,10 @@ export KEYCLOAK_INTERNAL_URL="http://127.0.0.1:${render_port}"
 export KEYCLOAK_ADMIN="${KC_BOOTSTRAP_ADMIN_USERNAME:?}"
 export KEYCLOAK_ADMIN_PASSWORD="${KC_BOOTSTRAP_ADMIN_PASSWORD:?}"
 
-keycloak_pid=$$
 wait_for_keycloak_port() {
   local attempt=1
-  local max_attempts=${KEYCLOAK_BOOTSTRAP_MAX_ATTEMPTS:-100}
-  local retry_seconds=${KEYCLOAK_BOOTSTRAP_RETRY_SECONDS:-3}
+  local max_attempts=${KEYCLOAK_STARTUP_MAX_ATTEMPTS:-100}
+  local retry_seconds=${KEYCLOAK_STARTUP_RETRY_SECONDS:-3}
 
   while [ "$attempt" -le "$max_attempts" ]; do
     if (: >"/dev/tcp/127.0.0.1/${render_port}") 2>/dev/null; then
@@ -37,13 +36,27 @@ wait_for_keycloak_port() {
 }
 
 bootstrap_after_start() {
-  if wait_for_keycloak_port && /opt/keycloak/bootstrap/bootstrap.sh; then
-    echo "Configuración administrativa de Keycloak completada."
-    return 0
+  local attempt=1
+  local max_attempts=${KEYCLOAK_CONFIGURATION_MAX_ATTEMPTS:-5}
+
+  if ! wait_for_keycloak_port; then
+    echo "No se pudo iniciar la configuración administrativa de Keycloak." >&2
+    return 1
   fi
 
-  echo "No se pudo completar la configuración administrativa de Keycloak." >&2
-  kill -TERM "$keycloak_pid" 2>/dev/null || true
+  while [ "$attempt" -le "$max_attempts" ]; do
+    if /opt/keycloak/bootstrap/bootstrap.sh; then
+      echo "Configuración administrativa de Keycloak completada."
+      return 0
+    fi
+
+    echo "La configuración administrativa falló; reintentando ($attempt/$max_attempts)..." >&2
+    attempt=$((attempt + 1))
+    sleep 30
+  done
+
+  echo "Keycloak seguirá activo, pero su configuración administrativa quedó incompleta." >&2
+  return 1
 }
 
 bootstrap_after_start &
