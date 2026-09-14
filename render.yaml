@@ -73,9 +73,9 @@ services:
         value: "false"
       - key: RESET_BOOTSTRAP_USER_PASSWORDS
         value: "true"
-      - key: DEMO_PLATFORM_ADMIN_EMAIL
-        value: admin.plataforma.local@pulsopiura.test
-      - key: TEST_USER_PASSWORD
+      - key: PLATFORM_ADMIN_EMAIL
+        sync: false
+      - key: PLATFORM_ADMIN_PASSWORD
         sync: false
       - key: GOOGLE_LOGIN_ENABLED
         value: "true"

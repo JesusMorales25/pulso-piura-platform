@@ -6,6 +6,11 @@ export KC_OPTS="${KCADM_JAVA_OPTS:--Xms8m -Xmx64m -XX:MaxMetaspaceSize=96m -XX:+
 KEYCLOAK_INTERNAL_URL=${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
 FRONTEND_PUBLIC_URL=${FRONTEND_PUBLIC_URL:-http://localhost:3000}
 FRONTEND_PUBLIC_URL=${FRONTEND_PUBLIC_URL%/}
+PLATFORM_ADMIN_EMAIL=${PLATFORM_ADMIN_EMAIL:-${DEMO_PLATFORM_ADMIN_EMAIL:-}}
+PLATFORM_ADMIN_PASSWORD=${PLATFORM_ADMIN_PASSWORD:-${TEST_USER_PASSWORD:-}}
+
+: "${PLATFORM_ADMIN_EMAIL:?Falta PLATFORM_ADMIN_EMAIL.}"
+: "${PLATFORM_ADMIN_PASSWORD:?Falta PLATFORM_ADMIN_PASSWORD.}"
 
 authenticate_admin() {
   local attempt=1
@@ -194,6 +199,7 @@ ensure_user() {
   local email="$2"
   local first_name="$3"
   local last_name="$4"
+  local initial_password="${5:-${TEST_USER_PASSWORD:-}}"
   local user_id
   local user_created=false
 
@@ -224,10 +230,14 @@ ensure_user() {
   fi
 
   if [ "$user_created" = "true" ] || [ "${RESET_BOOTSTRAP_USER_PASSWORDS:-false}" = "true" ]; then
+    if [ -z "$initial_password" ]; then
+      echo "No se definió una contraseña inicial para $email." >&2
+      return 1
+    fi
     "$KCADM" set-password \
       -r pulso-piura \
       --userid "$user_id" \
-      --new-password "$TEST_USER_PASSWORD"
+      --new-password "$initial_password"
     "$KCADM" delete "attack-detection/brute-force/users/$user_id" \
       -r pulso-piura >/dev/null 2>&1 || true
     echo "Contraseña inicial sincronizada para $email."
@@ -248,7 +258,7 @@ ensure_user() {
   echo "DEMO_ID|$role|$email|$user_id"
 }
 
-ensure_user PLATFORM_ADMIN "$DEMO_PLATFORM_ADMIN_EMAIL" Plataforma Admin
+ensure_user PLATFORM_ADMIN "$PLATFORM_ADMIN_EMAIL" Plataforma Admin "$PLATFORM_ADMIN_PASSWORD"
 
 if [ "${LOCAL_DEMO_USERS_ENABLED:-false}" = "true" ]; then
   ensure_user PLAYER "$TEST_USER_EMAIL" Jugador Local
