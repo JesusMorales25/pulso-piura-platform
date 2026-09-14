@@ -9,6 +9,8 @@ FROM eclipse-temurin:21-jre-alpine
 RUN addgroup -S pulso && adduser -S -G pulso -u 10001 pulso
 WORKDIR /app
 COPY --from=build /workspace/target/platform-backend-*.jar app.jar
+COPY render-entrypoint.sh /app/render-entrypoint.sh
+RUN chmod 0555 /app/render-entrypoint.sh
 USER 10001
 EXPOSE 8080
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-XX:+ExitOnOutOfMemoryError", "-jar", "/app/app.jar"]
+ENTRYPOINT ["/app/render-entrypoint.sh"]

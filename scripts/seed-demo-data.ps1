@@ -13,22 +13,13 @@ $env:DEMO_OPERATOR_EMAIL = if ($env:DEMO_OPERATOR_EMAIL) { $env:DEMO_OPERATOR_EM
 $env:DEMO_PLATFORM_ADMIN_EMAIL = if ($env:DEMO_PLATFORM_ADMIN_EMAIL) { $env:DEMO_PLATFORM_ADMIN_EMAIL } else { "admin.plataforma.local@pulsopiura.test" }
 $env:LOCAL_DEMO_USERS_ENABLED = "true"
 
-docker compose up -d --wait postgres keycloak
+docker compose up -d --wait --remove-orphans postgres keycloak
 if ($LASTEXITCODE -ne 0) { throw "No se pudieron iniciar PostgreSQL y Keycloak." }
 
-$previousErrorActionPreference = $ErrorActionPreference
 try {
-    # Docker Compose escribe progreso normal por stderr. En Windows PowerShell 5,
-    # redirigirlo durante una asignacion lo convierte en NativeCommandError.
-    $ErrorActionPreference = "Continue"
-    $bootstrapOutput = docker compose --progress quiet --profile bootstrap run --rm keycloak-bootstrap 2>&1
-    $bootstrapExitCode = $LASTEXITCODE
-} finally {
-    $ErrorActionPreference = $previousErrorActionPreference
-}
-if ($bootstrapExitCode -ne 0) {
-    $bootstrapOutput | ForEach-Object { Write-Host $_ }
-    throw "No se pudieron preparar las identidades de demostracion."
+    $bootstrapOutput = @(& "$PSScriptRoot\bootstrap-keycloak-local.ps1")
+} catch {
+    throw "No se pudieron preparar las identidades de demostracion. $($_.Exception.Message)"
 }
 
 $identities = @{}

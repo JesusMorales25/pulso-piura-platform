@@ -3,7 +3,9 @@
 .local/
 *.log
 .idea/
-.vscode/
+.vscode/*
+!.vscode/tasks.json
+!.vscode/settings.json
 backend/target/
 backend/.m2/
 frontend/node_modules/
@@ -24,3 +26,7 @@ desing-qa.md
 DESING.md
 .env.example
 docs/
+!docs/
+docs/*
+!docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md
+!docs/VSCODE_PORT_SHARE.md

@@ -25,6 +25,7 @@ El escenario contiene una organización, dos sedes publicadas, tres espacios dep
 disponibilidad semanal y usuarios `PLAYER`, `OWNER`, `ADMIN`, `OPERATOR` y
 `PLATFORM_ADMIN`. Todos usan `TEST_USER_PASSWORD` de `.env`; los correos pueden
 personalizarse con las variables `DEMO_*_EMAIL` documentadas en `.env.example`.
+
 - `backend/`: Java 21, Spring Boot, Spring Security y Flyway.
 - `infra/keycloak/`: realm local OIDC; preparado para federación con Google.
 - `docs/product/`: documentación funcional y técnica aprobada.
@@ -32,6 +33,9 @@ personalizarse con las variables `DEMO_*_EMAIL` documentadas en `.env.example`.
 - `docs/IDENTITY_LOCAL_SETUP.md`: activación local de Keycloak y Google.
 
 ## Inicio local
+
+La separación exacta entre el entorno local y Oracle/Coolify está documentada en
+[`docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md`](docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md).
 
 1. Instalar e iniciar Docker Desktop.
 2. Revisar el archivo local `.env` — está ignorado por Git.
@@ -84,3 +88,7 @@ El resultado de la revisión OWASP y sus límites están en
 
 La publicación simplificada en una VM de Oracle administrada con Coolify está en
 [`deploy/coolify/README.md`](deploy/coolify/README.md).
+
+La demostración temporal con frontend en Vercel y API, identidad y PostgreSQL en
+Render está documentada en
+[`deploy/render-vercel/README.md`](deploy/render-vercel/README.md).

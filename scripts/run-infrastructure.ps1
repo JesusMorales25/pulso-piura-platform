@@ -14,9 +14,10 @@ if ($LASTEXITCODE -ne 0) {
 if (-not (Test-Path ".env")) {
     throw "Falta .env. Copia .env.example y configura las credenciales locales."
 }
+. "$PSScriptRoot\import-local-env.ps1"
 
 Write-Host "Iniciando PostgreSQL y Keycloak..."
-docker compose up -d --wait postgres keycloak
+docker compose up -d --wait --remove-orphans postgres keycloak
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Ultimos eventos de Keycloak:"
     docker compose logs keycloak --tail 160
@@ -24,10 +25,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Preparando usuario local de Keycloak..."
-docker compose --profile bootstrap run --rm keycloak-bootstrap
-if ($LASTEXITCODE -ne 0) {
+try {
+    & "$PSScriptRoot\bootstrap-keycloak-local.ps1"
+} catch {
     docker compose logs keycloak --tail 160
-    throw "Keycloak inicio, pero no se pudo preparar el usuario local."
+    throw "Keycloak inicio, pero no se pudo preparar el usuario local. $($_.Exception.Message)"
 }
 
 docker compose ps

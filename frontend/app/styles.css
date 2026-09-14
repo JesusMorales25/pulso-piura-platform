@@ -234,6 +234,11 @@ button:disabled {
   justify-content: center;
   padding: 0;
 }
+
+.authLoading {
+  opacity: 0.45;
+  pointer-events: none;
+}
 .linkButton {
   text-decoration: none;
 }

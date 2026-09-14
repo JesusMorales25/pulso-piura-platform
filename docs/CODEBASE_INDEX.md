@@ -3,9 +3,9 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Generado: 2026-09-13 05:54:33 UTC
-- Huella del inventario: 14d54e6ec8ff0a07
-- Archivos indexados: 459
+- Generado: 2026-09-14 04:49:42 UTC
+- Huella del inventario: 94472f7f1d89a951
+- Archivos indexados: 477
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso

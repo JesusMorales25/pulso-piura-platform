@@ -19,6 +19,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${OIDC_ISSUER_URI:http://localhost:8180/realms/pulso-piura}
+          jwk-set-uri: ${OIDC_JWK_SET_URI:http://localhost:8180/realms/pulso-piura/protocol/openid-connect/certs}
           audiences: ${OIDC_AUDIENCE:pulso-api}
 app:
   web:
@@ -38,6 +39,7 @@ management:
       probes:
         enabled: true
 server:
+  port: ${PORT:8080}
   error:
     include-message: never
     include-stacktrace: never

@@ -1,0 +1,136 @@
+services:
+  - type: web
+    name: pulso-piura-identity-jesusmorales25
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./infra/keycloak/Dockerfile.render
+    dockerContext: ./infra/keycloak
+    healthCheckPath: /realms/pulso-piura
+    maxShutdownDelaySeconds: 30
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - infra/keycloak/**
+        - render.yaml
+    envVars:
+      - key: RENDER_DATABASE_URL
+        fromDatabase:
+          name: pulso-piura-demo-db
+          property: connectionString
+      - key: KC_DB
+        value: postgres
+      - key: KC_DB_USERNAME
+        fromDatabase:
+          name: pulso-piura-demo-db
+          property: user
+      - key: KC_DB_PASSWORD
+        fromDatabase:
+          name: pulso-piura-demo-db
+          property: password
+      - key: KC_BOOTSTRAP_ADMIN_USERNAME
+        value: kc_bootstrap_admin
+      - key: KC_BOOTSTRAP_ADMIN_PASSWORD
+        generateValue: true
+      - key: KC_HOSTNAME
+        value: https://pulso-piura-identity-jesusmorales25.onrender.com
+      - key: KC_HTTP_ENABLED
+        value: "true"
+      - key: KC_PROXY_HEADERS
+        value: xforwarded
+      - key: KC_HOSTNAME_BACKCHANNEL_DYNAMIC
+        value: "true"
+      - key: KC_HEALTH_ENABLED
+        value: "true"
+      - key: KC_CACHE
+        value: local
+      - key: KC_DB_POOL_INITIAL_SIZE
+        value: "1"
+      - key: KC_DB_POOL_MIN_SIZE
+        value: "1"
+      - key: KC_DB_POOL_MAX_SIZE
+        value: "5"
+      - key: JAVA_OPTS_KC_HEAP
+        value: -XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=40 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20
+      - key: KEYCLOAK_PUBLIC_URL
+        value: https://pulso-piura-identity-jesusmorales25.onrender.com
+      - key: FRONTEND_PUBLIC_URL
+        sync: false
+      - key: PASSWORD_REGISTRATION_ENABLED
+        value: "false"
+      - key: LOCAL_REQUIRE_EMAIL_VERIFICATION
+        value: "true"
+      - key: LOCAL_DEMO_USERS_ENABLED
+        value: "false"
+      - key: RESET_BOOTSTRAP_USER_PASSWORDS
+        value: "false"
+      - key: DEMO_PLATFORM_ADMIN_EMAIL
+        sync: false
+      - key: TEST_USER_PASSWORD
+        sync: false
+      - key: GOOGLE_LOGIN_ENABLED
+        value: "true"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+  - type: web
+    name: pulso-piura-api-jesusmorales25
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    maxShutdownDelaySeconds: 30
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - backend/**
+        - render.yaml
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: RENDER_DATABASE_URL
+        fromDatabase:
+          name: pulso-piura-demo-db
+          property: connectionString
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: pulso-piura-demo-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: pulso-piura-demo-db
+          property: password
+      - key: OIDC_ISSUER_URI
+        value: https://pulso-piura-identity-jesusmorales25.onrender.com/realms/pulso-piura
+      - key: OIDC_JWK_SET_URI
+        value: https://pulso-piura-identity-jesusmorales25.onrender.com/realms/pulso-piura/protocol/openid-connect/certs
+      - key: OIDC_AUDIENCE
+        value: pulso-api
+      - key: WEB_ALLOWED_ORIGIN
+        sync: false
+      - key: RESERVATION_HOLD_DURATION
+        value: PT5M
+      - key: RESERVATION_MAX_ACTIVE_TEMPORARY_PER_CUSTOMER
+        value: "3"
+      - key: PAYMENTS_MODE
+        value: simulation
+      - key: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+        value: "5"
+      - key: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+        value: "1"
+      - key: JAVA_INITIAL_RAM_PERCENTAGE
+        value: "15"
+      - key: JAVA_MAX_RAM_PERCENTAGE
+        value: "65"
+
+databases:
+  - name: pulso-piura-demo-db
+    plan: free
+    region: virginia
+    databaseName: pulso_piura
+    user: pulso_piura
+    ipAllowList: []

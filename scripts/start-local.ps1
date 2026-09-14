@@ -24,13 +24,18 @@ function Assert-PortAvailable {
 # Maven y Next.js necesitan las mismas variables que Docker Compose.
 . "$PSScriptRoot\import-local-env.ps1"
 
-docker compose up -d --wait postgres keycloak
+docker compose up -d --wait --remove-orphans postgres keycloak
 if ($LASTEXITCODE -ne 0) {
     docker compose logs keycloak --tail 160
     throw "No se pudieron iniciar PostgreSQL y Keycloak. Revisa el log anterior."
 }
-docker compose --profile bootstrap run --rm keycloak-bootstrap
-if ($LASTEXITCODE -ne 0) { throw "No se pudo preparar el usuario local de Keycloak." }
+
+try {
+    & "$PSScriptRoot\bootstrap-keycloak-local.ps1"
+} catch {
+    docker compose logs keycloak --tail 160
+    throw "No se pudo preparar el usuario local de Keycloak mediante la API administrativa. $($_.Exception.Message)"
+}
 
 Assert-PortAvailable -Port 8080 -Service "El backend"
 Assert-PortAvailable -Port 3000 -Service "El frontend"

@@ -1,3 +1,5 @@
+# Entorno local exclusivamente. Produccion usa deploy/coolify/compose.coolify.yaml
+# o deploy/oracle/compose.production.yaml con variables independientes.
 services:
   postgres:
     image: postgres:17-alpine
@@ -21,45 +23,18 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_PROXY_HEADERS: xforwarded
     ports:
       - "127.0.0.1:8180:8080"
     volumes:
       - pulso_keycloak:/opt/keycloak/data
       - ./infra/keycloak/realm-pulso-piura.json:/opt/keycloak/data/import/realm.json:ro
+      - ./infra/keycloak/themes:/opt/keycloak/themes:ro
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
       interval: 5s
       timeout: 3s
       retries: 20
-
-  keycloak-bootstrap:
-    image: quay.io/keycloak/keycloak:26.7.3
-    profiles: ["bootstrap"]
-    depends_on:
-      keycloak:
-        condition: service_healthy
-    environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      TEST_USER_EMAIL: ${TEST_USER_EMAIL}
-      TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
-      DEMO_OWNER_EMAIL: ${DEMO_OWNER_EMAIL:-propietario.local@pulsopiura.test}
-      DEMO_ORGANIZER_EMAIL: ${DEMO_ORGANIZER_EMAIL:-organizador.local@pulsopiura.test}
-      DEMO_ADMIN_EMAIL: ${DEMO_ADMIN_EMAIL:-admin.organizacion.local@pulsopiura.test}
-      DEMO_OPERATOR_EMAIL: ${DEMO_OPERATOR_EMAIL:-operador.local@pulsopiura.test}
-      DEMO_PLATFORM_ADMIN_EMAIL: ${DEMO_PLATFORM_ADMIN_EMAIL:-admin.plataforma.local@pulsopiura.test}
-      LOCAL_REQUIRE_EMAIL_VERIFICATION: ${LOCAL_REQUIRE_EMAIL_VERIFICATION:-false}
-      LOCAL_DEMO_USERS_ENABLED: ${LOCAL_DEMO_USERS_ENABLED:-false}
-      GOOGLE_LOGIN_ENABLED: ${GOOGLE_LOGIN_ENABLED:-false}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8180}
-      FRONTEND_PUBLIC_URL: ${FRONTEND_PUBLIC_URL:-http://localhost:3000}
-      PASSWORD_REGISTRATION_ENABLED: ${PASSWORD_REGISTRATION_ENABLED:-true}
-      RESET_BOOTSTRAP_USER_PASSWORDS: "true"
-    volumes:
-      - ./infra/keycloak/bootstrap.sh:/opt/keycloak/bootstrap/bootstrap.sh:ro
-    entrypoint: ["/bin/bash", "/opt/keycloak/bootstrap/bootstrap.sh"]
 
 volumes:
   pulso_postgres:

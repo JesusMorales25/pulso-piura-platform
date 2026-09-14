@@ -6,11 +6,38 @@ KEYCLOAK_INTERNAL_URL=${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
 FRONTEND_PUBLIC_URL=${FRONTEND_PUBLIC_URL:-http://localhost:3000}
 FRONTEND_PUBLIC_URL=${FRONTEND_PUBLIC_URL%/}
 
-"$KCADM" config credentials \
-  --server "$KEYCLOAK_INTERNAL_URL" \
-  --realm master \
-  --user "$KEYCLOAK_ADMIN" \
-  --password "$KEYCLOAK_ADMIN_PASSWORD"
+authenticate_admin() {
+  local attempt=1
+  local max_attempts=20
+  local login_output
+
+  while [ "$attempt" -le "$max_attempts" ]; do
+    if login_output=$("$KCADM" config credentials \
+      --server "$KEYCLOAK_INTERNAL_URL" \
+      --realm master \
+      --client admin-cli \
+      --user "$KEYCLOAK_ADMIN" \
+      --password "$KEYCLOAK_ADMIN_PASSWORD" 2>&1); then
+      printf '%s\n' "$login_output"
+      return 0
+    fi
+
+    if [ "$attempt" -eq "$max_attempts" ]; then
+      printf '%s\n' "$login_output" >&2
+      echo "Keycloak no aceptó la sesión administrativa después de $max_attempts intentos." >&2
+      echo "Revisa que el servicio esté listo y que KEYCLOAK_ADMIN_PASSWORD corresponda al volumen actual." >&2
+      return 1
+    fi
+
+    echo "Keycloak todavía no acepta sesiones administrativas; reintentando ($attempt/$max_attempts)..." >&2
+    attempt=$((attempt + 1))
+    sleep 3
+  done
+}
+
+# El puerto HTTP se abre antes de que el endpoint OIDC esté listo. El contenedor
+# puede figurar saludable durante ese intervalo y kcadm recibe una respuesta no JSON.
+authenticate_admin
 
 # Los access tokens siguen siendo breves; la aplicación los renueva mientras
 # la pestaña permanezca activa. La sesión expira tras 8 h inactiva o 24 h como máximo.
@@ -19,7 +46,11 @@ FRONTEND_PUBLIC_URL=${FRONTEND_PUBLIC_URL%/}
   -s ssoSessionIdleTimeout=28800 \
   -s ssoSessionMaxLifespan=86400 \
   -s clientSessionIdleTimeout=28800 \
-  -s clientSessionMaxLifespan=86400 >/dev/null
+  -s clientSessionMaxLifespan=86400 \
+  -s loginTheme=pulso-piura \
+  -s internationalizationEnabled=true \
+  -s 'supportedLocales=["es"]' \
+  -s defaultLocale=es >/dev/null
 
 if [ "${LOCAL_REQUIRE_EMAIL_VERIFICATION:-false}" = "true" ]; then
   "$KCADM" update realms/pulso-piura \

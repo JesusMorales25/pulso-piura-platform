@@ -1,0 +1,8 @@
+{
+  "remote.portsAttributes": {
+    "9000": {
+      "label": "Pulso Piura completo",
+      "onAutoForward": "notify"
+    }
+  }
+}

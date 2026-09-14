@@ -3,12 +3,13 @@
 ## Keycloak
 
 1. Copiar `.env.example` a `.env` y establecer contraseñas locales.
-2. Ejecutar `powershell -ExecutionPolicy Bypass -File scripts/start-local.ps1`. El bootstrap configura el realm y conserva únicamente la cuenta definida por `DEMO_PLATFORM_ADMIN_EMAIL` como administrador global.
+2. Ejecutar `powershell -ExecutionPolicy Bypass -File scripts/start-local.ps1`. El bootstrap local usa la API administrativa de Keycloak desde PowerShell, configura el realm y garantiza que la cuenta definida por `DEMO_PLATFORM_ADMIN_EMAIL` tenga el rol de administrador global. El despliegue Linux mantiene su bootstrap independiente dentro de Docker.
 3. El realm `pulso-piura` se importa con cliente público `pulso-web`, PKCE S256, redirect URI exacta y audiencia `pulso-api`.
-4. `LOCAL_REQUIRE_EMAIL_VERIFICATION=false` permite probar el registro local sin SMTP. El bootstrap desactiva `verifyEmail` y repara cuentas locales detenidas en `VERIFY_EMAIL`.
-5. `LOCAL_DEMO_USERS_ENABLED=false` evita recrear las cuentas locales de jugador, organizador y organización al reiniciar. `scripts/seed-demo-data.ps1` las habilita temporalmente cuando se solicita reconstruir los datos de demostración.
-6. Producción debe usar `LOCAL_REQUIRE_EMAIL_VERIFICATION=true` y una configuración SMTP válida antes de aceptar registros.
-7. Tras el primer acceso, una cuenta con onboarding pendiente se dirige a `/perfil`; al completar el perfil conserva los recorridos normales.
+4. El formulario de acceso usa el tema `pulso-piura`, montado desde `infra/keycloak/themes`, con interfaz responsive en español y los mismos tokens visuales de la aplicación.
+5. `LOCAL_REQUIRE_EMAIL_VERIFICATION=false` permite probar el registro local sin SMTP. El bootstrap desactiva `verifyEmail` y repara cuentas locales detenidas en `VERIFY_EMAIL`.
+6. `LOCAL_DEMO_USERS_ENABLED=false` evita recrear las cuentas locales de jugador, organizador y organización al reiniciar. `scripts/seed-demo-data.ps1` las habilita temporalmente cuando se solicita reconstruir los datos de demostración.
+7. Producción debe usar `LOCAL_REQUIRE_EMAIL_VERIFICATION=true` y una configuración SMTP válida antes de aceptar registros.
+8. Tras el primer acceso, una cuenta con onboarding pendiente se dirige a `/perfil`; al completar el perfil conserva los recorridos normales.
 
 ## Google
 

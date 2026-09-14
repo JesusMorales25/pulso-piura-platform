@@ -2,6 +2,10 @@
   "realm": "pulso-piura",
   "enabled": true,
   "displayName": "Pulso Piura",
+  "loginTheme": "pulso-piura",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["es"],
+  "defaultLocale": "es",
   "registrationAllowed": true,
   "loginWithEmailAllowed": true,
   "duplicateEmailsAllowed": false,
@@ -36,12 +40,8 @@
       "publicClient": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
-      "redirectUris": [
-        "http://localhost:3000/auth/callback"
-      ],
-      "webOrigins": [
-        "http://localhost:3000"
-      ],
+      "redirectUris": ["http://localhost:3000/auth/callback"],
+      "webOrigins": ["http://localhost:3000"],
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "http://localhost:3000/*"
@@ -67,12 +67,7 @@
       "bearerOnly": true
     }
   ],
-  "defaultDefaultClientScopes": [
-    "profile",
-    "email",
-    "roles",
-    "web-origins"
-  ],
+  "defaultDefaultClientScopes": ["profile", "email", "roles", "web-origins"],
   "bruteForceProtected": true,
   "permanentLockout": false,
   "failureFactor": 5,
@@ -83,9 +78,7 @@
   "minimumQuickLoginWaitSeconds": 60,
   "eventsEnabled": true,
   "eventsExpiration": 604800,
-  "eventsListeners": [
-    "jboss-logging"
-  ],
+  "eventsListeners": ["jboss-logging"],
   "enabledEventTypes": [
     "LOGIN",
     "LOGIN_ERROR",

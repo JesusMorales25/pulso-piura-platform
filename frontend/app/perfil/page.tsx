@@ -57,7 +57,6 @@ export default function ProfilePage() {
     login,
     logout,
     isPlatformAdmin,
-    googleLoginEnabled,
     setProfileAvatarUrl,
   } = useAuth();
   const [me, setMe] = useState<Me | null>(null);
@@ -164,23 +163,12 @@ export default function ProfilePage() {
         <h1>Ingresa para crear tu perfil</h1>
         <p>Usamos Keycloak para proteger tu identidad.</p>
         <div className="authActions">
-          {googleLoginEnabled && (
-            <button
-              className="primary borderless"
-              onClick={() => void login(true)}
-              type="button"
-            >
-              Continuar con Google
-            </button>
-          )}
           <button
-            className={googleLoginEnabled ? "secondary" : "primary borderless"}
-            onClick={() => void login(false)}
+            className="primary borderless"
+            onClick={() => void login(false, "/perfil")}
             type="button"
           >
-            {googleLoginEnabled
-              ? "Ingresar con otra opción"
-              : "Iniciar sesión o registrarme"}
+            Ingresar a Pulso Piura
           </button>
         </div>
       </main>
@@ -188,10 +176,27 @@ export default function ProfilePage() {
   return (
     <main className="section">
       <div className="profileHead">
-        <div className="profileAvatar" style={(me?.avatarUrl || profile?.avatarUrl) ? { backgroundImage: `url(${me?.avatarUrl || profile?.avatarUrl})` } : undefined} aria-label="Foto de perfil">{!(me?.avatarUrl || profile?.avatarUrl) && (profile?.preferredDisplayName || me?.displayName || "J").slice(0,1).toUpperCase()}</div>
+        <div
+          className="profileAvatar"
+          style={
+            me?.avatarUrl || profile?.avatarUrl
+              ? {
+                  backgroundImage: `url(${me?.avatarUrl || profile?.avatarUrl})`,
+                }
+              : undefined
+          }
+          aria-label="Foto de perfil"
+        >
+          {!(me?.avatarUrl || profile?.avatarUrl) &&
+            (profile?.preferredDisplayName || me?.displayName || "J")
+              .slice(0, 1)
+              .toUpperCase()}
+        </div>
         <div>
           <p className="eyebrow">TU PERFIL DEPORTIVO</p>
-          <h1>{profile?.preferredDisplayName || me?.displayName || "Jugador"}</h1>
+          <h1>
+            {profile?.preferredDisplayName || me?.displayName || "Jugador"}
+          </h1>
           <p>{me?.email}</p>
         </div>
         <button className="secondary" onClick={logout}>
@@ -202,7 +207,15 @@ export default function ProfilePage() {
         <form className="profileForm" noValidate onSubmit={save}>
           <label>
             Nombre visible
-            <input name="displayName" defaultValue={profile.preferredDisplayName || me?.displayName || ""} maxLength={120} autoComplete="name" required />
+            <input
+              name="displayName"
+              defaultValue={
+                profile.preferredDisplayName || me?.displayName || ""
+              }
+              maxLength={120}
+              autoComplete="name"
+              required
+            />
           </label>
           <label>
             Distrito
@@ -238,7 +251,11 @@ export default function ProfilePage() {
               Acepto los términos y la política de privacidad vigentes.
             </label>
           )}
-          <button className="primary borderless" disabled={saving} type="submit">
+          <button
+            className="primary borderless"
+            disabled={saving}
+            type="submit"
+          >
             {saving ? "Guardando…" : "Guardar perfil"}
           </button>
         </form>

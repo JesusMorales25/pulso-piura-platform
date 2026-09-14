@@ -1,24 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UserCircle } from "@phosphor-icons/react";
 import { useAuth } from "./AuthProvider";
 
 export function AuthButton() {
-  const router = useRouter();
-  const { user, loading, avatarUrl } = useAuth();
+  const { user, loading, login, avatarUrl } = useAuth();
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
 
-  if (loading) return null;
+  if (loading) {
+    return <span aria-hidden="true" className="login iconLogin authLoading" />;
+  }
 
   if (!user) {
     return (
       <button
         aria-label="Iniciar sesión"
         className="login iconLogin"
-        onClick={() => router.push("/perfil")}
+        onClick={() => void login(false)}
         type="button"
       >
         <UserCircle aria-hidden="true" size={22} weight="bold" />
