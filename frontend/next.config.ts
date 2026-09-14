@@ -31,7 +31,7 @@ const contentSecurityPolicy = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  output: "standalone",
+  ...(process.env.VERCEL ? {} : { output: "standalone" as const }),
   async headers() {
     return [
       {
