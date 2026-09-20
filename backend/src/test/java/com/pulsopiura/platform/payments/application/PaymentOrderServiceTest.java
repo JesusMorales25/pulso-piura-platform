@@ -36,7 +36,9 @@ class PaymentOrderServiceTest {
                 0,
                 0,
                 null,
-                null);
+                null,
+                null,
+                false);
     }
 
     private void enable(String status, long total) {

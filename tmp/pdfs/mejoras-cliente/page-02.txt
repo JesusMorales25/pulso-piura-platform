@@ -1,0 +1,18 @@
+• Identidad visual con paleta nocturna deportiva (base azul profunda #031421,
+acentos cian #10c6d2 y lima neón c8f238).
+• Funcionalidades avanzadas ya previstas en arquitectura: validación por pase QR,
+lista de espera, control de pagos y «El Tercer Tiempo» para aliados locales.
+Sin embargo, para pasar de un MVP funcional a una plataforma de alta retención diaria,
+existen oportunidades críticas de mejora en ergonomía móvil, empatía con la cultura
+pichanguera local, flujos de pago y reducción de incertidumbre.
+2. Investigador UX: Contexto Real del Pichanguero Piurano
+Para que una plataforma triunfe en Piura no basta con replicar modelos de reserva
+genéricos europeos o estadounidenses; debe resolver la realidad sociocultural y climática
+del norte peruano:
+Hallazgos de Campo y Comportamiento del Usuario
+1. El factor climático (Calor extremo y horarios pico):
+En Piura, la actividad deportiva diurna en canchas abiertas es mínima debido a
+temperaturas que superan los 32 °C–35 °C. El 80% de la demanda se concentra
+entre las 6:30 p.m. y las 11:30 p.m. Los usuarios priorizan atributos como
+iluminación LED potente,techado/malla rachel,ventilaciónycanchas con grass
+sintético que no acumule calor.

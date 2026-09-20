@@ -16,7 +16,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html data-scroll-behavior="smooth" lang="es">
-      <body>
+      <body suppressHydrationWarning>
         <AuthProvider>
           <header className="topbar">
             <Link className="brand" href="/">

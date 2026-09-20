@@ -9,24 +9,32 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CapabilityRequestService {
     private final CapabilityRequestRepository requests;
+    private final UserRepository users;
     private final AuditEventRepository auditEvents;
     private final Clock clock;
 
     @Autowired
     public CapabilityRequestService(
-            CapabilityRequestRepository requests, AuditEventRepository auditEvents) {
-        this(requests, auditEvents, Clock.systemUTC());
+            CapabilityRequestRepository requests,
+            UserRepository users,
+            AuditEventRepository auditEvents) {
+        this(requests, users, auditEvents, Clock.systemUTC());
     }
 
     CapabilityRequestService(
-            CapabilityRequestRepository requests, AuditEventRepository auditEvents, Clock clock) {
+            CapabilityRequestRepository requests,
+            UserRepository users,
+            AuditEventRepository auditEvents,
+            Clock clock) {
         this.requests = requests;
+        this.users = users;
         this.auditEvents = auditEvents;
         this.clock = clock;
     }
@@ -51,7 +59,12 @@ public class CapabilityRequestService {
     }
 
     @Transactional
-    public CapabilityRequestView request(UUID userId, CapabilityType capability, String reason) {
+    public CapabilityRequestView request(
+            UUID userId, CapabilityType capability, String reason, boolean emailVerified) {
+        if (capability == CapabilityType.MATCH_ORGANIZER) {
+            return activateMatchOrganizer(userId, emailVerified);
+        }
+
         var cleanReason = cleanReason(reason);
         if (requests.findByUserIdAndCapabilityAndStatus(userId, capability, "PENDING")
                 .isPresent()) {
@@ -65,6 +78,44 @@ public class CapabilityRequestService {
         } catch (DataIntegrityViolationException duplicate) {
             throw new IllegalStateException("Ya existe una solicitud pendiente para este perfil");
         }
+    }
+
+    private CapabilityRequestView activateMatchOrganizer(UUID userId, boolean emailVerified) {
+        if (!emailVerified) {
+            throw new AccessDeniedException(
+                    "Verifica tu correo antes de activar la organización de pichangas");
+        }
+        users.findForUpdateById(userId)
+                .orElseThrow(() -> new java.util.NoSuchElementException("Usuario no encontrado"));
+        if (requests.existsByUserIdAndCapabilityAndStatus(
+                userId, CapabilityType.MATCH_ORGANIZER, "REVOKED")) {
+            throw new AccessDeniedException(
+                    "La capacidad de organizar pichangas fue revocada. Contacta al soporte");
+        }
+
+        var approved =
+                requests.findByUserIdAndCapabilityAndStatus(
+                        userId, CapabilityType.MATCH_ORGANIZER, "APPROVED");
+        if (approved.isPresent()) return view(approved.get());
+
+        var now = clock.instant();
+        var request =
+                requests.findByUserIdAndCapabilityAndStatus(
+                                userId, CapabilityType.MATCH_ORGANIZER, "PENDING")
+                        .orElseGet(
+                                () ->
+                                        requests.saveAndFlush(
+                                                CapabilityRequestEntity.pending(
+                                                        userId,
+                                                        CapabilityType.MATCH_ORGANIZER,
+                                                        "Activación solicitada por el jugador",
+                                                        now)));
+        request.review("APPROVED", userId, "Correo verificado; activación automática", now);
+        var saved = requests.saveAndFlush(request);
+        auditEvents.save(
+                AuditEventEntity.capabilityRequestAction(
+                        userId, "MATCH_ORGANIZER_SELF_ACTIVATED", saved.id()));
+        return view(saved);
     }
 
     @Transactional

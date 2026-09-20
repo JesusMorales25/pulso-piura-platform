@@ -4,40 +4,59 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CalendarDots,
-  GearSix,
-  House,
-  PlusCircle,
+  Compass,
+  ForkKnife,
+  Plus,
+  UserCircle,
 } from "@phosphor-icons/react";
-import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 
 export function AppNavigation() {
   const pathname = usePathname();
-  const { capabilities } = useUserCapabilities();
-  const contextualItems = capabilities.canManagePlatform
-    ? [{ href: "/plataforma", label: "Plataforma", Icon: GearSix }]
-    : [
-        ...(capabilities.canOperateOrganizations
-          ? [{ href: "/organizaciones", label: "Gestión", Icon: GearSix }]
-          : []),
-        ...(capabilities.canCreateMatches
-          ? [{ href: "/organizador", label: "Organizar", Icon: PlusCircle }]
-          : []),
-      ];
   const items = [
-    { href: "/", label: "Inicio", Icon: House },
-    ...contextualItems,
-    { href: "/actividad", label: "Actividad", Icon: CalendarDots },
+    {
+      href: "/",
+      label: "Explorar",
+      Icon: Compass,
+      active: pathname === "/" || pathname.startsWith("/partidos") || pathname === "/canchas",
+    },
+    {
+      href: "/actividad",
+      label: "Actividad",
+      Icon: CalendarDots,
+      active: pathname.startsWith("/actividad"),
+    },
+    {
+      href: "/crear",
+      label: "Crear",
+      Icon: Plus,
+      active: pathname.startsWith("/crear") || pathname.startsWith("/organizador"),
+      featured: true,
+    },
+    {
+      href: "/tercer-tiempo",
+      label: "Tercer tiempo",
+      Icon: ForkKnife,
+      active: pathname.startsWith("/tercer-tiempo"),
+    },
+    {
+      href: "/perfil",
+      label: "Perfil",
+      Icon: UserCircle,
+      active:
+        pathname.startsWith("/perfil") ||
+        pathname.startsWith("/plataforma") ||
+        pathname.startsWith("/organizaciones") ||
+        pathname.startsWith("/admin/"),
+    },
   ];
 
   return (
     <nav className="appNavigation" aria-label="Navegación principal">
-      {items.map(({ href, label, Icon }) => {
-        const active =
-          href === "/" ? pathname === href : pathname.startsWith(href);
+      {items.map(({ href, label, Icon, active, featured }) => {
         return (
           <Link
             aria-current={active ? "page" : undefined}
-            className={active ? "active" : undefined}
+            className={`${active ? "active" : ""} ${featured ? "featured" : ""}`.trim()}
             href={href}
             key={href}
           >

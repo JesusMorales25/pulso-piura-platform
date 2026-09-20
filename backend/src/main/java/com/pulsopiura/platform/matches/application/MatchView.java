@@ -20,6 +20,7 @@ public record MatchView(
         int maxPlayers,
         int occupiedPlayers,
         int availablePlayers,
+        boolean organizerCounts,
         long priceMinor,
         String currency,
         String visibility,
@@ -28,6 +29,10 @@ public record MatchView(
         Instant endsAt,
         String status,
         List<MatchParticipantPreviewService.ParticipantPreview> participantPreview,
+        String organizerDisplayName,
+        String organizerAvatarUrl,
+        String surfaceName,
+        List<String> amenityNames,
         long version) {
     static MatchView from(
             SportsMatch match,
@@ -35,7 +40,8 @@ public record MatchView(
             String spaceName,
             String venueName,
             String venueAddress,
-            List<MatchParticipantPreviewService.ParticipantPreview> participantPreview) {
+            List<MatchParticipantPreviewService.ParticipantPreview> participantPreview,
+            MatchDetailMetadataService.Metadata metadata) {
         return new MatchView(
                 match.id(),
                 match.publicSlug(),
@@ -51,6 +57,7 @@ public record MatchView(
                 match.maxPlayers(),
                 occupied,
                 Math.max(0, match.maxPlayers() - occupied),
+                match.organizerCounts(),
                 match.priceMinor(),
                 "PEN",
                 match.visibility().name(),
@@ -59,6 +66,10 @@ public record MatchView(
                 match.endsAt(),
                 match.status().name(),
                 participantPreview,
+                metadata == null ? null : metadata.organizerDisplayName(),
+                metadata == null ? null : metadata.organizerAvatarUrl(),
+                metadata == null ? null : metadata.surfaceName(),
+                metadata == null ? List.of() : metadata.amenityNames(),
                 match.version());
     }
 }

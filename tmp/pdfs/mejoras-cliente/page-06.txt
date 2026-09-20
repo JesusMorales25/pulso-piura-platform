@@ -1,0 +1,19 @@
+3. Auditor de UX/UI: Evaluación Heurística (Nielsen Norman)
+La evaluación heurística es un método de inspección de usabilidad en el que expertos
+analizan una interfaz digital comparándola con principios de diseño establecidos
+Heurística Diagnóstico en Severidad Recomendación
+Pulso Piura
+En vistas como
+/canchas hay
+redirecciones
+automáticas a Implementar Cargadoras de
+query params esqueletos con la silueta
+1. Visibilidad del Medios de
+(?modo=lugares) exacta de las canchas en
+estado del comunicación
+y pantallas con lugar de textos planos de
+sistema
+estados de carga carga para evitar sensación
+pasivos de latencia.
+(«Buscando
+complejos…»).

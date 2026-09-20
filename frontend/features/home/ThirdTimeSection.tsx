@@ -10,6 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import { apiRequest } from "@/lib/api";
 import { googleMapsUrl, whatsappUrl } from "@/lib/public-links";
+import { CardSkeletons } from "@/features/feedback/CardSkeletons";
 
 type Business = {
   id: string;
@@ -67,7 +68,13 @@ export function ThirdTimeSection() {
         )}
       </div>
 
-      {loading && <p className="thirdTimeNotice">Buscando lugares para ti…</p>}
+      {loading && (
+        <CardSkeletons
+          count={3}
+          label="Buscando lugares para ti"
+          variant="place"
+        />
+      )}
       {error && (
         <p className="notice error" role="alert">
           {error}

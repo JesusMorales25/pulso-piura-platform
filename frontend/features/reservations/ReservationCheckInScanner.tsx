@@ -169,7 +169,7 @@ export function ReservationCheckInScanner({
               <button className="secondary" type="button" disabled={busy || scanning} onClick={() => void startCamera()}>
                 <Camera size={20} /> {scanning ? "Buscando QR…" : "Activar cámara"}
               </button>
-              <form className="manualQr" onSubmit={submitManual}>
+              <form className="manualQr" noValidate onSubmit={submitManual}>
                 <label htmlFor="manual-qr">Código manual</label>
                 <div>
                   <input id="manual-qr" value={manual} onChange={(event) => setManual(event.target.value)} placeholder="PULSO-CHECKIN:…" autoComplete="off" />

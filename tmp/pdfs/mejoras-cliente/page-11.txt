@@ -1,0 +1,24 @@
+o El organizador no tiene que anotar en libretas ni revisar 12 capturas de
+WhatsApp.
+2. Bot de WhatsApp / Compartir Jugada Inteligente
+• En Perú, WhatsApp es el canal donde se vive el partido.
+• Debe haber un botón: «Invitar a mi grupo de WhatsApp» que genere un texto
+preformateado y atractivo con emojis:
+codeTexto
+¡Pichanga confirmada en Los Ejidos!
+🗓 Sábado 19 - 8:00 p. m. | Fútbol 7 Mixto
+Cuota: S/ 15 (incluye cancha, luz y balón)
+Confirma tu cupo aquí (quedan 3): https://pulso-piura-
+platform.vercel.app/partidos/demo-futbol-7
+4. Modo «Dueño de Complejo» (Panel Express en Móvil)
+• Los administradores de canchas en Piura suelen gestionar reservas mediante
+cuadernos o chats de WhatsApp.
+• Necesitan una vista rápida optimizada para móvil:
+o Vista diaria de horarios tipo rejilla (8:00 p. m. ocupado, 9:00 p. m. libre).
+o Escáner de cámara integrado para leer el QR del usuario al ingresar a la
+puerta.
+o Botón de bloqueo manual rápido (ej. «Cancha reservada por teléfono»).
+7. Fidelización en «El Tercer Tiempo»
+• Monetización y retención: al terminar el partido, el pase QR desbloquea
+promociones con aliados locales (ej. ..% de descuento en cevicherías,
+hamburgueserías o locales de cerveza artesanal cercanos en Piura/Castilla).

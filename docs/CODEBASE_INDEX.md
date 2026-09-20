@@ -3,9 +3,9 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Generado: 2026-09-14 04:49:42 UTC
-- Huella del inventario: 94472f7f1d89a951
-- Archivos indexados: 477
+- Generado: 2026-09-18 05:32:34 UTC
+- Huella del inventario: 3981e9b64a3db069
+- Archivos indexados: 494
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -56,19 +56,22 @@
 - /partidos/[publicSlug] -> frontend/app/partidos/[publicSlug]/page.tsx
 - /partidos/demo-futbol-7 -> frontend/app/partidos/demo-futbol-7/page.tsx
 - /partidos/demo-voley -> frontend/app/partidos/demo-voley/page.tsx
+- /partidos/invitaciones/[invitationId] -> frontend/app/partidos/invitaciones/[invitationId]/page.tsx
 - /partidos -> frontend/app/partidos/page.tsx
 - /perfil -> frontend/app/perfil/page.tsx
 - /plataforma/negocios -> frontend/app/plataforma/negocios/page.tsx
 - /plataforma/organizaciones -> frontend/app/plataforma/organizaciones/page.tsx
 - /plataforma -> frontend/app/plataforma/page.tsx
 - /plataforma/solicitudes -> frontend/app/plataforma/solicitudes/page.tsx
+- /tercer-tiempo -> frontend/app/tercer-tiempo/page.tsx
 
 ### Features y archivos
 
 - access (2): capabilities.ts, useUserCapabilities.ts
 - auth (2): AuthButton.tsx, AuthProvider.tsx
+- feedback (1): CardSkeletons.tsx
 - home (12): FeaturedMatchCard.module.css, FeaturedMatchCard.tsx, FeaturedMatchCardV2.module.css, FeaturedMatchCardV2.tsx, HomeDashboard.tsx, HomeModeSwitch.tsx, HomeVenuePreview.tsx, MatchDiscoveryPanel.tsx, NextMatchCard.module.css, NextMatchCard.tsx, ThirdTimeSection.tsx, VenueAgendaPanel.tsx
-- matches (8): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, MatchBuilder.tsx, MatchCatalog.tsx, MatchDetail.tsx, MatchOrganizerDashboard.tsx, MyMatchParticipations.tsx, types.ts
+- matches (9): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, MatchBuilder.tsx, MatchCatalog.tsx, MatchDetail.tsx, MatchInvitationAcceptance.tsx, MatchOrganizerDashboard.tsx, MyMatchParticipations.tsx, types.ts
 - navigation (1): AppNavigation.tsx
 - organizations (3): InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx
 - reservations (7): MyReservations.tsx, OrganizationReservations.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationQrPass.tsx, types.ts
@@ -88,8 +91,8 @@
 
 - audit: 6 clases, 0 pruebas.
 - foundation: 3 clases, 0 pruebas.
-- identity: 13 clases, 1 pruebas.
-- matches: 30 clases, 5 pruebas.
+- identity: 13 clases, 2 pruebas.
+- matches: 34 clases, 7 pruebas.
 - organizations: 20 clases, 5 pruebas.
 - partners: 2 clases, 2 pruebas.
 - payments: 11 clases, 1 pruebas.
@@ -103,7 +106,7 @@
 - /api/v1 | backend/src/main/java/com/pulsopiura/platform/foundation/web/HealthController.java | GET /health
 - /api/v1/me | backend/src/main/java/com/pulsopiura/platform/identity/api/MeController.java | GET; GET /profile; PATCH /profile; GET /capability-requests; POST /capability-requests
 - /api/v1/platform | backend/src/main/java/com/pulsopiura/platform/identity/api/PlatformAdminController.java | GET /summary; GET /users; GET /capability-requests; POST /capability-requests/{requestId}/review; POST /capability-requests/{requestId}/revoke
-- /api/v1/matches | backend/src/main/java/com/pulsopiura/platform/matches/api/MatchController.java | GET; GET /{publicSlug:[a-z0-9-]+}; GET /mine; GET /{matchId:[0-9a-fA-F-]{36}}/participants; DELETE /{matchId:[0-9a-fA-F-]{36}}/participants/{userId:[0-9a-fA-F-]{36}}; GET /participations/me; GET /{publicSlug:[a-z0-9-]+}/participants/me; GET /join-orders/capabilities; GET /{publicSlug:[a-z0-9-]+}/join-orders/me; POST /{publicSlug:[a-z0-9-]+}/join-orders; POST /join-orders/{orderId:[0-9a-fA-F-]{36}}/simulate; POST; POST /{matchId:[0-9a-fA-F-]{36}}/publish; POST /{publicSlug:[a-z0-9-]+}/participants/me; DELETE /{publicSlug:[a-z0-9-]+}/participants/me
+- /api/v1/matches | backend/src/main/java/com/pulsopiura/platform/matches/api/MatchController.java | GET; GET /{publicSlug:[a-z0-9-]+}; GET /mine; GET /{matchId:[0-9a-fA-F-]{36}}/participants; DELETE /{matchId:[0-9a-fA-F-]{36}}/participants/{userId:[0-9a-fA-F-]{36}}; GET /participations/me; GET /{publicSlug:[a-z0-9-]+}/participants/me; GET /join-orders/capabilities; GET /{publicSlug:[a-z0-9-]+}/join-orders/me; POST /{publicSlug:[a-z0-9-]+}/join-orders; POST /join-orders/{orderId:[0-9a-fA-F-]{36}}/simulate; POST; POST /{matchId:[0-9a-fA-F-]{36}}/publish; GET /{matchId:[0-9a-fA-F-]{36}}/invitations; POST /{matchId:[0-9a-fA-F-]{36}}/invitations; DELETE /{matchId:[0-9a-fA-F-]{36}}/invitations/{invitationId:[0-9a-fA-F-]{36}}; POST /invitations/{invitationId:[0-9a-fA-F-]{36}}/accept; POST /{publicSlug:[a-z0-9-]+}/participants/me; DELETE /{publicSlug:[a-z0-9-]+}/participants/me
 - /api/v1/organizations | backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java | POST; GET; GET /{organizationId}; POST /{organizationId}/invitations; POST /invitations/{invitationId}/accept; GET /{organizationId}/members; DELETE /{organizationId}/members/{userId}
 - /api/v1/platform/organizations | backend/src/main/java/com/pulsopiura/platform/organizations/api/PlatformOrganizationAdminController.java | GET; POST /{organizationId}/owners; DELETE /{organizationId}/owners/{userId}
 - sin prefijo | backend/src/main/java/com/pulsopiura/platform/partners/api/PartnerBusinessController.java | GET /api/v1/businesses; GET /api/v1/platform/businesses; POST /api/v1/platform/businesses; PUT /api/v1/platform/businesses/{businessId}
@@ -148,6 +151,7 @@
 - backend/src/main/resources/db/migration/V25__add_partner_business_contact_and_location.sql
 - backend/src/main/resources/db/migration/V26__allow_address_based_partner_locations.sql
 - backend/src/main/resources/db/migration/V27__add_partner_business_maps_url.sql
+- backend/src/main/resources/db/migration/V28__create_match_invitations.sql
 
 ## Operacion y validacion
 

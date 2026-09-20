@@ -17,6 +17,7 @@ import {
   WhatsappLogo,
   X,
 } from "@phosphor-icons/react";
+import { CardSkeletons } from "@/features/feedback/CardSkeletons";
 import { apiRequest } from "@/lib/api";
 import { googleMapsUrl, whatsappUrl } from "@/lib/public-links";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -884,6 +885,29 @@ export function PublicVenueCatalog({
                       <MapPin aria-hidden="true" size={14} weight="fill" />
                       {venue.address}
                     </p>
+                    {offer && (
+                      <div
+                        aria-label={`Características de ${offer.space.name}`}
+                        className="venueAttributeChips"
+                      >
+                        <span>
+                          {names.get(offer.space.sportCode) ??
+                            offer.space.sportCode}
+                        </span>
+                        <span>{offer.space.formatCode.replaceAll("_", " ")}</span>
+                        {offer.space.indoor && <span>Techada</span>}
+                        {Array.from(
+                          new Set([
+                            ...venue.amenityCodes,
+                            ...offer.space.amenityCodes,
+                          ]),
+                        )
+                          .slice(0, 4)
+                          .map((code) => (
+                            <span key={code}>{names.get(code) ?? code}</span>
+                          ))}
+                      </div>
+                    )}
                     <div className="exploreVenueContactActions">
                       {whatsappUrl(venue.publicPhone) && (
                         <a
@@ -1020,7 +1044,11 @@ export function PublicVenueCatalog({
 
         {discoveryMode !== "matches" &&
           (loading ? (
-            <p className="notice">Buscando complejos…</p>
+            <CardSkeletons
+              count={2}
+              label="Buscando complejos disponibles"
+              variant="venue"
+            />
           ) : venues.length === 0 ? (
             <div className="empty">
               <h3>Aún no hay opciones para esta búsqueda</h3>
@@ -1102,6 +1130,14 @@ export function PublicVenueCatalog({
                             {names.get(space.sportCode) ?? space.sportCode} ·{" "}
                             {space.formatCode}
                           </span>
+                          {space.amenityCodes.length > 0 && (
+                            <small>
+                              {space.amenityCodes
+                                .slice(0, 3)
+                                .map((code) => names.get(code) ?? code)
+                                .join(" · ")}
+                            </small>
+                          )}
                         </button>
                       ))}
                     </div>

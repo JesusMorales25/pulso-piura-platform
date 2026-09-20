@@ -21,6 +21,7 @@ class MatchJoinPaymentServiceTest {
     @Mock MatchJoinOrderRepository orders;
     @Mock MatchParticipationService participation;
     @Mock MatchPaymentProvider provider;
+    @Mock MatchAccessPolicy accessPolicy;
     final Instant now = Instant.parse("2026-09-08T20:00:00Z");
     final UUID actor = UUID.randomUUID();
     SportsMatch match;
@@ -60,6 +61,7 @@ class MatchJoinPaymentServiceTest {
                         orders,
                         participation,
                         provider,
+                        accessPolicy,
                         Clock.fixed(now, ZoneOffset.UTC));
         lenient().when(provider.simulationEnabled()).thenReturn(true);
         lenient()

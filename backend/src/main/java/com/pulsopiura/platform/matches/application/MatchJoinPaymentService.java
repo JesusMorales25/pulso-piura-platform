@@ -17,6 +17,7 @@ public class MatchJoinPaymentService {
     private final MatchJoinOrderRepository orders;
     private final MatchParticipationService participation;
     private final MatchPaymentProvider provider;
+    private final MatchAccessPolicy accessPolicy;
     private final Clock clock;
 
     @Autowired
@@ -25,8 +26,16 @@ public class MatchJoinPaymentService {
             MatchParticipantStore participants,
             MatchJoinOrderRepository orders,
             MatchParticipationService participation,
-            MatchPaymentProvider provider) {
-        this(matches, participants, orders, participation, provider, Clock.systemUTC());
+            MatchPaymentProvider provider,
+            MatchAccessPolicy accessPolicy) {
+        this(
+                matches,
+                participants,
+                orders,
+                participation,
+                provider,
+                accessPolicy,
+                Clock.systemUTC());
     }
 
     MatchJoinPaymentService(
@@ -35,12 +44,14 @@ public class MatchJoinPaymentService {
             MatchJoinOrderRepository orders,
             MatchParticipationService participation,
             MatchPaymentProvider provider,
+            MatchAccessPolicy accessPolicy,
             Clock clock) {
         this.matches = matches;
         this.participants = participants;
         this.orders = orders;
         this.participation = participation;
         this.provider = provider;
+        this.accessPolicy = accessPolicy;
         this.clock = clock;
     }
 
@@ -56,7 +67,7 @@ public class MatchJoinPaymentService {
         var key = requireKey(rawKey);
         var replay = orders.findByPayerUserIdAndIdempotencyKey(actor, key);
         if (replay.isPresent()) return view(replay.get());
-        var match = requirePublishedForUpdate(publicSlug);
+        var match = requirePublishedForUpdate(publicSlug, actor);
         var now = clock.instant();
         requireCanBuy(match, actor, now);
         var existingPaid =
@@ -139,6 +150,7 @@ public class MatchJoinPaymentService {
         var match =
                 matches.findPublishedBySlug(publicSlug)
                         .orElseThrow(() -> new NoSuchElementException("Partido no encontrado"));
+        accessPolicy.requireCanAccess(match, actor);
         var paid =
                 orders.findFirstByMatchIdAndPayerUserIdAndStatusOrderByCreatedAtDesc(
                         match.id(), actor, "PAID");
@@ -149,10 +161,12 @@ public class MatchJoinPaymentService {
                 .map(this::view);
     }
 
-    private SportsMatch requirePublishedForUpdate(String slug) {
-        return matches.findPublishedBySlugForUpdate(slug)
-                .filter(match -> match.visibility() != MatchVisibility.PRIVATE)
-                .orElseThrow(() -> new NoSuchElementException("Partido no encontrado"));
+    private SportsMatch requirePublishedForUpdate(String slug, UUID actor) {
+        var match =
+                matches.findPublishedBySlugForUpdate(slug)
+                        .orElseThrow(() -> new NoSuchElementException("Partido no encontrado"));
+        accessPolicy.requireCanAccess(match, actor);
+        return match;
     }
 
     private void requireCanBuy(SportsMatch match, UUID actor, Instant now) {

@@ -15,30 +15,34 @@ public class MatchParticipationService {
     private final MatchStore matches;
     private final MatchParticipantStore participants;
     private final ApplicationEventPublisher events;
+    private final MatchAccessPolicy accessPolicy;
     private final Clock clock;
 
     @Autowired
     public MatchParticipationService(
             MatchStore matches,
             MatchParticipantStore participants,
+            MatchAccessPolicy accessPolicy,
             ApplicationEventPublisher events) {
-        this(matches, participants, events, Clock.systemUTC());
+        this(matches, participants, accessPolicy, events, Clock.systemUTC());
     }
 
     MatchParticipationService(
             MatchStore matches,
             MatchParticipantStore participants,
+            MatchAccessPolicy accessPolicy,
             ApplicationEventPublisher events,
             Clock clock) {
         this.matches = matches;
         this.participants = participants;
+        this.accessPolicy = accessPolicy;
         this.events = events;
         this.clock = clock;
     }
 
     @Transactional
     public MatchParticipationView join(UUID actorId, String publicSlug) {
-        var match = requireJoinableMatch(publicSlug);
+        var match = requireJoinableMatch(publicSlug, actorId);
         var now = clock.instant();
         if (!now.isBefore(match.startsAt())) {
             throw new IllegalStateException("El partido ya inició");
@@ -98,7 +102,7 @@ public class MatchParticipationService {
 
     @Transactional
     public MatchParticipationView withdraw(UUID actorId, String publicSlug) {
-        var match = requireJoinableMatch(publicSlug);
+        var match = requireJoinableMatch(publicSlug, actorId);
         var participant = participants.findByMatchAndUser(match.id(), actorId);
         if (participant.isEmpty()
                 || participant.get().status() == MatchParticipantStatus.WITHDRAWN) {
@@ -119,19 +123,19 @@ public class MatchParticipationService {
     public java.util.Optional<MatchParticipationView> current(UUID actorId, String publicSlug) {
         var match =
                 matches.findPublishedBySlug(publicSlug)
-                        .filter(item -> item.visibility() != MatchVisibility.PRIVATE)
                         .orElseThrow(() -> new NoSuchElementException("Partido no encontrado"));
+        accessPolicy.requireCanAccess(match, actorId);
         return participants
                 .findByMatchAndUser(match.id(), actorId)
                 .filter(item -> item.status() != MatchParticipantStatus.WITHDRAWN)
                 .map(item -> view(match, item.status(), actorId));
     }
 
-    private SportsMatch requireJoinableMatch(String publicSlug) {
+    private SportsMatch requireJoinableMatch(String publicSlug, UUID actorId) {
         var match =
                 matches.findPublishedBySlugForUpdate(publicSlug)
-                        .filter(item -> item.visibility() != MatchVisibility.PRIVATE)
                         .orElseThrow(() -> new NoSuchElementException("Partido no encontrado"));
+        accessPolicy.requireCanAccess(match, actorId);
         return match;
     }
 

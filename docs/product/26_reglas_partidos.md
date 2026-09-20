@@ -19,6 +19,20 @@ PUBLISHED/MINIMUM_REACHED/CONFIRMED → RESCHEDULED
 | MAT-005 | Debe indicar ubicación confirmada o estado “por confirmar” |
 | MAT-006 | Política de cancelación visible antes de unirse |
 | MAT-007 | Visibilidad: público, enlace o privado |
+| MAT-008 | Jugador activo con correo verificado y `MATCH_ORGANIZER` autoactivado |
+
+## Visibilidad e invitaciones
+
+- `PUBLIC`: se indexa en Buscar partido y cualquier jugador elegible puede solicitar un cupo;
+- `LINK`: no se indexa; tener el enlace permite descubrirlo, pero no se considera un secreto fuerte;
+- `PRIVATE`: solo organizador e invitados vigentes pueden consultar sus datos o solicitar un cupo;
+- una invitación tiene destinatario, estado, creador, fecha de creación y vencimiento;
+- la aceptación exige sesión con correo verificado igual al correo invitado;
+- el organizador puede revocar una invitación no consumida;
+- una invitación aceptada habilita consulta, inscripción y pago, pero no administración;
+- aceptar una invitación no omite disponibilidad, pago, estado ni reglas de participación;
+- compartir un enlace nunca concede permisos de administración;
+- el organizador solo administra los partidos que creó.
 
 ## Cupos
 
@@ -108,4 +122,3 @@ Asistencia reciente: alta/media/baja, con muestra mínima
 - privado: acceso por invitación/autorización;
 - ubicación exacta puede mostrarse solo a confirmados cuando la seguridad lo justifique;
 - lista de participantes respeta configuración y minimización.
-

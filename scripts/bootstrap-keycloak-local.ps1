@@ -78,7 +78,7 @@ function Invoke-KeycloakAdmin {
         ErrorAction = "Stop"
     }
     if ($null -ne $Body) {
-        $request.ContentType = "application/json"
+        $request.ContentType = "application/json; charset=utf-8"
         $jsonBody = ConvertTo-Json -InputObject $Body -Depth 40 -Compress
         if ($BodyAsArray) {
             # Windows PowerShell 5.1 aplana los arreglos de un solo elemento
@@ -86,7 +86,11 @@ function Invoke-KeycloakAdmin {
             # también al asignar un único rol.
             $jsonBody = "[$jsonBody]"
         }
-        $request.Body = $jsonBody
+        # Windows PowerShell 5.1 puede codificar un string HTTP con la página
+        # de códigos del sistema aunque el contenido sea JSON. Eso rompe el
+        # payload cuando un usuario federado contiene tildes u otros caracteres
+        # Unicode. Enviar bytes UTF-8 evita que Keycloak reciba JSON inválido.
+        $request.Body = [System.Text.Encoding]::UTF8.GetBytes($jsonBody)
     }
 
     try {
@@ -149,9 +153,13 @@ function Update-RealmConfiguration {
     if (-not $verifyEmail) {
         $users = @(Invoke-KeycloakAdmin -Method GET -Path "/admin/realms/$realmName/users?first=0&max=500")
         foreach ($user in $users) {
-            Set-JsonProperty $user "emailVerified" $true
-            Set-JsonProperty $user "requiredActions" @()
-            Invoke-KeycloakAdmin -Method PUT -Path "/admin/realms/$realmName/users/$($user.id)" -Body $user | Out-Null
+            # Keycloak acepta actualizaciones parciales. No se reenvía la
+            # representación completa porque puede incluir atributos federados,
+            # credenciales y campos de solo lectura que este paso no modifica.
+            Invoke-KeycloakAdmin -Method PUT -Path "/admin/realms/$realmName/users/$($user.id)" -Body @{
+                emailVerified  = $true
+                requiredActions = @()
+            } | Out-Null
         }
     }
 }

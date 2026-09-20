@@ -76,7 +76,9 @@ public class MeController {
                     case "VENUE_OWNER" -> CapabilityType.VENUE_OWNER;
                     default -> throw new IllegalArgumentException("Perfil no disponible");
                 };
-        return capabilityRequests.request(users.provision(jwt).id(), capability, request.reason());
+        var user = users.provision(jwt);
+        return capabilityRequests.request(
+                user.id(), capability, request.reason(), user.emailVerified());
     }
 
     record MeResponse(

@@ -24,6 +24,31 @@ function Assert-PortAvailable {
 # Maven y Next.js necesitan las mismas variables que Docker Compose.
 . "$PSScriptRoot\import-local-env.ps1"
 
+# El backend se compila para Java 21. En Windows es frecuente conservar un
+# JAVA_HOME antiguo aunque `java.exe` ya resuelva al JDK correcto desde PATH;
+# Maven prioriza JAVA_HOME y luego falla con UnsupportedClassVersionError.
+$javaCommand = Get-Command "java.exe" -ErrorAction Stop
+$javaVersionStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+$javaVersionStartInfo.FileName = $javaCommand.Source
+$javaVersionStartInfo.Arguments = "-version"
+$javaVersionStartInfo.UseShellExecute = $false
+$javaVersionStartInfo.CreateNoWindow = $true
+$javaVersionStartInfo.RedirectStandardOutput = $true
+$javaVersionStartInfo.RedirectStandardError = $true
+$javaVersionProcess = [System.Diagnostics.Process]::Start($javaVersionStartInfo)
+$javaVersionOutput = $javaVersionProcess.StandardOutput.ReadToEnd() + $javaVersionProcess.StandardError.ReadToEnd()
+$javaVersionProcess.WaitForExit()
+if ($javaVersionProcess.ExitCode -ne 0) {
+    throw "No se pudo consultar la versión de Java en $($javaCommand.Source)."
+}
+if ($javaVersionOutput -notmatch 'version "21(?:\.|\")') {
+    throw "El backend requiere Java 21, pero java.exe reporta otra versión. Instala JDK 21 y asegúrate de que su carpeta bin esté primero en PATH."
+}
+$javaBin = Split-Path -Parent $javaCommand.Source
+$env:JAVA_HOME = Split-Path -Parent $javaBin
+$env:Path = "$javaBin;$env:Path"
+Write-Host "Java local preparado: $env:JAVA_HOME"
+
 docker compose up -d --wait --remove-orphans postgres keycloak
 if ($LASTEXITCODE -ne 0) {
     docker compose logs keycloak --tail 160

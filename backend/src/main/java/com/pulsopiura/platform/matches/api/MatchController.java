@@ -22,6 +22,7 @@ public class MatchController {
     private final MatchOrganizerManagementService organizerManagement;
     private final MatchActivityQueryService activityQueries;
     private final MatchOrganizerAuthorization organizerAuthorization;
+    private final MatchInvitationService invitations;
 
     public MatchController(
             CurrentUserService users,
@@ -31,7 +32,8 @@ public class MatchController {
             MatchOrganizerQueryService organizerQueries,
             MatchOrganizerManagementService organizerManagement,
             MatchActivityQueryService activityQueries,
-            MatchOrganizerAuthorization organizerAuthorization) {
+            MatchOrganizerAuthorization organizerAuthorization,
+            MatchInvitationService invitations) {
         this.users = users;
         this.matches = matches;
         this.participation = participation;
@@ -40,6 +42,7 @@ public class MatchController {
         this.organizerManagement = organizerManagement;
         this.activityQueries = activityQueries;
         this.organizerAuthorization = organizerAuthorization;
+        this.invitations = invitations;
     }
 
     @GetMapping
@@ -48,8 +51,9 @@ public class MatchController {
     }
 
     @GetMapping("/{publicSlug:[a-z0-9-]+}")
-    MatchView detail(@PathVariable String publicSlug) {
-        return matches.publicDetail(publicSlug);
+    MatchView detail(@AuthenticationPrincipal Jwt jwt, @PathVariable String publicSlug) {
+        var actor = jwt == null ? null : users.provision(jwt).id();
+        return matches.detail(publicSlug, actor);
     }
 
     @GetMapping("/mine")
@@ -163,6 +167,43 @@ public class MatchController {
         return matches.publish(actor, matchId);
     }
 
+    @GetMapping("/{matchId:[0-9a-fA-F-]{36}}/invitations")
+    List<MatchInvitationService.InvitationView> invitations(
+            @AuthenticationPrincipal Jwt jwt, @PathVariable UUID matchId) {
+        var actor = users.provision(jwt).id();
+        requireOrganizer(jwt, actor);
+        return invitations.list(actor, matchId);
+    }
+
+    @PostMapping("/{matchId:[0-9a-fA-F-]{36}}/invitations")
+    ResponseEntity<MatchInvitationService.InvitationView> invite(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID matchId,
+            @Valid @RequestBody InviteToMatchRequest request) {
+        var actor = users.provision(jwt).id();
+        requireOrganizer(jwt, actor);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(invitations.invite(actor, matchId, request.email()));
+    }
+
+    @DeleteMapping("/{matchId:[0-9a-fA-F-]{36}}/invitations/{invitationId:[0-9a-fA-F-]{36}}")
+    ResponseEntity<Void> revokeInvitation(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID matchId,
+            @PathVariable UUID invitationId) {
+        var actor = users.provision(jwt).id();
+        requireOrganizer(jwt, actor);
+        invitations.revoke(actor, matchId, invitationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/invitations/{invitationId:[0-9a-fA-F-]{36}}/accept")
+    MatchInvitationService.AcceptanceView acceptInvitation(
+            @AuthenticationPrincipal Jwt jwt, @PathVariable UUID invitationId) {
+        var user = users.provision(jwt);
+        return invitations.accept(user.id(), user.email(), user.emailVerified(), invitationId);
+    }
+
     @PostMapping("/{publicSlug:[a-z0-9-]+}/participants/me")
     MatchParticipationView join(@AuthenticationPrincipal Jwt jwt, @PathVariable String publicSlug) {
         return participation.join(users.provision(jwt).id(), publicSlug);
@@ -200,4 +241,6 @@ public class MatchController {
 
     public record CreateJoinOrderRequest(
             @NotNull com.pulsopiura.platform.matches.domain.MatchPaymentMethod method) {}
+
+    public record InviteToMatchRequest(@NotBlank @Email String email) {}
 }

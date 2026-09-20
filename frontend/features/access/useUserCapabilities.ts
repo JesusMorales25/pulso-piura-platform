@@ -29,41 +29,65 @@ export function useUserCapabilities() {
     if (!accessToken) return;
 
     let active = true;
-    void Promise.all([
-      apiRequest<OrganizationMembership[]>("/organizations", accessToken).catch(() => []),
-      apiRequest<Array<{ capability: string; status: string }>>("/me/capability-requests", accessToken).catch(() => []),
-    ]).then(([organizations, requests]) => {
-      if (!active) return;
-      setMembershipState({ token: accessToken, items: organizations });
-      setRequestState({
-        token: accessToken,
-        organizerApproved: requests.some(
-          (request) => request.capability === "MATCH_ORGANIZER" && request.status === "APPROVED",
-        ),
-        venueOwnerApproved: requests.some(
-          (request) => request.capability === "VENUE_OWNER" && request.status === "APPROVED",
-        ),
+    const loadCapabilities = () => {
+      void Promise.all([
+        apiRequest<OrganizationMembership[]>(
+          "/organizations",
+          accessToken,
+        ).catch(() => []),
+        apiRequest<Array<{ capability: string; status: string }>>(
+          "/me/capability-requests",
+          accessToken,
+        ).catch(() => []),
+      ]).then(([organizations, requests]) => {
+        if (!active) return;
+        setMembershipState({ token: accessToken, items: organizations });
+        setRequestState({
+          token: accessToken,
+          organizerApproved: requests.some(
+            (request) =>
+              request.capability === "MATCH_ORGANIZER" &&
+              request.status === "APPROVED",
+          ),
+          venueOwnerApproved: requests.some(
+            (request) =>
+              request.capability === "VENUE_OWNER" &&
+              request.status === "APPROVED",
+          ),
+        });
       });
-    });
+    };
+
+    loadCapabilities();
+    window.addEventListener("pulso:capabilities-changed", loadCapabilities);
 
     return () => {
       active = false;
+      window.removeEventListener(
+        "pulso:capabilities-changed",
+        loadCapabilities,
+      );
     };
   }, [accessToken, authLoading]);
 
   return {
     capabilities: useMemo(
-      () => resolveCapabilities(
-        user,
-        memberships,
-        requestState.token === accessToken && requestState.organizerApproved,
-        requestState.token === accessToken && requestState.venueOwnerApproved,
-      ),
+      () =>
+        resolveCapabilities(
+          user,
+          memberships,
+          requestState.token === accessToken && requestState.organizerApproved,
+          requestState.token === accessToken && requestState.venueOwnerApproved,
+        ),
       [accessToken, memberships, requestState, user],
     ),
     memberships,
     loading:
       authLoading ||
-      Boolean(accessToken && (membershipState.token !== accessToken || requestState.token !== accessToken)),
+      Boolean(
+        accessToken &&
+        (membershipState.token !== accessToken ||
+          requestState.token !== accessToken),
+      ),
   };
 }

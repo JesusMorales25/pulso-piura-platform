@@ -1,7 +1,8 @@
 "use client";
 
-import { CheckCircle, QrCode } from "@phosphor-icons/react";
+import { CheckCircle, CopySimple, QrCode, ShieldCheck } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
+import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { apiRequest } from "@/lib/api";
 import { createQrMatrix } from "@/lib/qr-code";
 
@@ -24,6 +25,7 @@ export function ReservationQrPass({
   const [pass, setPass] = useState<Pass | null>(null);
   const [busy, setBusy] = useState(!completed);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const inFlight = useRef(false);
 
   async function showPass() {
@@ -95,8 +97,7 @@ export function ReservationQrPass({
         <p className="eyebrow">PASE DE LLEGADA</p>
         <h4 id={`pass-${reservationId}`}>Tu QR de reserva</h4>
         <p className="muted">
-          Muéstralo al dueño cuando llegues. Al regenerarlo, el anterior deja de
-          funcionar.
+          Muéstralo en portería para validar tu llegada y cerrar el servicio.
         </p>
       </div>
       {matrix && pass ? (
@@ -116,14 +117,19 @@ export function ReservationQrPass({
             )}
           </svg>
           <div>
+            <span className="qrVerifiedLabel"><ShieldCheck weight="fill" /> Pase único y verificado</span>
             <strong>Reserva #{reservationId.slice(0, 8).toUpperCase()}</strong>
             <small>Válido hasta {new Date(pass.validUntil).toLocaleString("es-PE")}</small>
             <button
               className="secondary"
               type="button"
-              onClick={() => void navigator.clipboard.writeText(pass.payload)}
+              onClick={() => {
+                void navigator.clipboard.writeText(pass.payload)
+                  .then(() => setNotice("Código manual copiado."))
+                  .catch(() => setError("No se pudo copiar el código. Inténtalo nuevamente."));
+              }}
             >
-              Copiar código manual
+              <CopySimple aria-hidden="true" size={18} /> Copiar código manual
             </button>
             <button className="secondary" type="button" disabled={busy} onClick={() => void showPass()}>
               {busy ? "Generando…" : "Regenerar QR"}
@@ -136,7 +142,14 @@ export function ReservationQrPass({
           {busy ? "Generando QR…" : "Mostrar mi QR"}
         </button>
       )}
-      {error && <p className="inlineAlert errorNotice" role="alert">{error}</p>}
+      <FloatingNotice
+        message={error || notice}
+        onDismiss={() => {
+          setError("");
+          setNotice("");
+        }}
+        tone={error ? "error" : "success"}
+      />
     </section>
   );
 }

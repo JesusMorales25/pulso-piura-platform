@@ -132,6 +132,10 @@ export function ReservationCheckout({
   const selectedMethod = pending?.method ?? paymentMethod;
   const selectedPlan = pending?.plan ?? plan;
   const checkoutReady = simulation === true && ordersLoaded;
+  const checkInPassAvailable =
+    reservation.status === "COMPLETED" ||
+    (reservation.status === "CONFIRMED" &&
+      now < new Date(reservation.endsAt).getTime() + 12 * 60 * 60 * 1000);
   async function pay() {
     if (
       inFlight.current ||
@@ -397,6 +401,26 @@ export function ReservationCheckout({
           )}
         </div>
       )}
+      {((temporary && !expired) || balancePayment) && (
+        <div className="mobileReservationAction">
+          <span>
+            <small>{balancePayment ? "Saldo pendiente" : "Paga ahora"}</small>
+            <strong>{money(amount)}</strong>
+          </span>
+          <button
+            aria-busy={busy}
+            disabled={busy || !accepted || !checkoutReady}
+            onClick={() => void pay()}
+            type="button"
+          >
+            {busy
+              ? "Verificando…"
+              : !checkoutReady
+                ? "Preparando…"
+                : `${pending ? "Retomar" : "Simular"} pago`}
+          </button>
+        </div>
+      )}
       {reservation.status === "CONFIRMED" && paid > 0 && (
         <p className="successNotice" role="status">
           <CheckCircle aria-hidden="true" size={18} />
@@ -406,8 +430,7 @@ export function ReservationCheckout({
             : "Pago completo registrado."}
         </p>
       )}
-      {(reservation.status === "CONFIRMED" ||
-        reservation.status === "COMPLETED") && (
+      {checkInPassAvailable && (
         <ReservationQrPass
           accessToken={accessToken}
           reservationId={reservation.id}

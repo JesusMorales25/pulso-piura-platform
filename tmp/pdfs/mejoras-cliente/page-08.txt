@@ -1,0 +1,18 @@
+4. Diseñador UX: Optimización de Arquitectura y Flujos
+5. Diseñador UI: Sistema Visual y Ergonomía Móvil
+1. Paleta de Color y Contraste (WCAG AA)
+• Fondo: El #031421 (Navy medianoche) es excelente para pantallas OLED y
+estética deportiva nocturna.
+• Jerarquía de Acentos:
+o #c8f238 (Lima Neón): Reservarlo única y exclusivamente para botones de
+conversión primaria («Unirme al partido»,«Pagar con Yape»,«Reservar
+cancha») y badges de estado crítico («Último cupo»).
+o #10c6d2 (Cian Pulso): Utilizarlo para enlaces secundarios, tags de
+deportes, íconos y líneas de pulso/marca.
+o #9eb2bd/#f6fbfd: Textos de cuerpo y títulos con relación de contraste
+mínima de 5:1.
+2. Ergonomía Móvil («Thumb Zone»)
+El 90% de los usuarios usará Pulso Piura desde el móvil con una sola mano:
+• Bottom Navigation rediseñada (5 pestañas fijas):
+1. Explorar (Home / Partidos y Canchas)
+2. Mis Partidos (Actividad y Pases QR vigentes)

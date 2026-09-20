@@ -24,17 +24,18 @@ compartido debe actualizar primero la fuente canónica correspondiente.
 - La fotografía crea energía; el gradiente conserva legibilidad. Los banners automáticos no
   muestran controles cuando son puramente ambientales y respetan movimiento reducido.
 - Inicio separa las tareas: Encontrar partido presenta partidos y Reservar cancha concentra el
-  catálogo, filtros, disponibilidad y checkout de complejos. No existe una navegación separada
-  para Explorar.
+  catálogo, filtros, disponibilidad y checkout de complejos. `Explorar` lleva a ese inicio y no
+  duplica el catálogo en una ruta distinta.
 
 ## Contrato responsive
 
 - Viewport principal: 393 × 852 CSS px; soporte compacto desde 320 px sin texto truncado ni CTA
   fuera de pantalla.
-- Cabecera simétrica: marca, ubicación centrada y acceso de sesión. Perfil vive únicamente en la
-  cabecera cuando existe una sesión.
-- Navegación y opciones se derivan de capacidades; la interfaz nunca sustituye la autorización del
-  backend.
+- Cabecera simétrica: marca, ubicación centrada y acceso de sesión.
+- La navegación inferior móvil mantiene cinco destinos estables: Explorar, Actividad, Crear,
+  Tercer tiempo y Perfil. Las consolas de plataforma y complejos se ofrecen dentro del contexto de
+  la cuenta y siguen dependiendo de capacidades.
+- La interfaz nunca sustituye la autorización del backend.
 
 ## Contenido y estados
 

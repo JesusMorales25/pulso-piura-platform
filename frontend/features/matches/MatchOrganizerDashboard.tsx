@@ -1,30 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   CalendarDots,
   CurrencyCircleDollar,
   CheckCircle,
   Clock,
+  CopySimple,
   PlusCircle,
+  PaperPlaneTilt,
   ShieldCheck,
   UserMinus,
   UsersThree,
+  WhatsappLogo,
 } from "@phosphor-icons/react";
+import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
-import type { MatchParticipantAdmin, MatchSummary } from "./types";
+import type {
+  MatchInvitation,
+  MatchParticipantAdmin,
+  MatchSummary,
+} from "./types";
 
 export function MatchOrganizerDashboard() {
   const { accessToken, login } = useAuth();
   const { capabilities, loading: capabilitiesLoading } = useUserCapabilities();
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [people, setPeople] = useState<Record<string, MatchParticipantAdmin[]>>({});
+  const [invitations, setInvitations] = useState<Record<string, MatchInvitation[]>>({});
+  const [inviteEmails, setInviteEmails] = useState<Record<string, string>>({});
+  const [inviting, setInviting] = useState("");
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     if (capabilitiesLoading) return;
@@ -42,12 +54,21 @@ export function MatchOrganizerDashboard() {
                   `/matches/${match.id}/participants`,
                   accessToken,
                 ),
+                await apiRequest<MatchInvitation[]>(
+                  `/matches/${match.id}/invitations`,
+                  accessToken,
+                ),
               ] as const,
           ),
         );
         if (!active) return;
         setMatches(result);
-        setPeople(Object.fromEntries(entries));
+        setPeople(
+          Object.fromEntries(entries.map(([matchId, roster]) => [matchId, roster])),
+        );
+        setInvitations(
+          Object.fromEntries(entries.map(([matchId, , invites]) => [matchId, invites])),
+        );
       })
       .catch((reason) => {
         if (active) {
@@ -106,6 +127,153 @@ export function MatchOrganizerDashboard() {
     }
   }
 
+  async function invite(event: FormEvent<HTMLFormElement>, matchId: string) {
+    event.preventDefault();
+    if (!accessToken) return;
+    const email = inviteEmails[matchId]?.trim();
+    if (!email) return;
+    setInviting(matchId);
+    setError("");
+    try {
+      const created = await apiRequest<MatchInvitation>(
+        `/matches/${matchId}/invitations`,
+        accessToken,
+        { method: "POST", body: JSON.stringify({ email }) },
+      );
+      setInvitations((current) => ({
+        ...current,
+        [matchId]: [
+          created,
+          ...(current[matchId] ?? []).filter((item) => item.id !== created.id),
+        ],
+      }));
+      setInviteEmails((current) => ({ ...current, [matchId]: "" }));
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : "No pudimos crear la invitación.",
+      );
+    } finally {
+      setInviting("");
+    }
+  }
+
+  async function revokeInvitation(matchId: string, invitationId: string) {
+    if (!accessToken) return;
+    setInviting(`${matchId}:${invitationId}`);
+    setError("");
+    try {
+      await apiRequest<void>(
+        `/matches/${matchId}/invitations/${invitationId}`,
+        accessToken,
+        { method: "DELETE" },
+      );
+      setInvitations((current) => ({
+        ...current,
+        [matchId]: (current[matchId] ?? []).map((item) =>
+          item.id === invitationId ? { ...item, status: "REVOKED" } : item,
+        ),
+      }));
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : "No pudimos revocar la invitación.",
+      );
+    } finally {
+      setInviting("");
+    }
+  }
+
+  async function copyInvitation(invitationId: string) {
+    const url = `${window.location.origin}/partidos/invitaciones/${invitationId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const field = document.createElement("textarea");
+      field.value = url;
+      field.style.position = "fixed";
+      field.style.opacity = "0";
+      document.body.appendChild(field);
+      field.select();
+      document.execCommand("copy");
+      field.remove();
+    }
+    setNotice("Enlace de invitación copiado.");
+  }
+
+  function shareInvitation(match: MatchSummary, invitationId: string) {
+    const url = `${window.location.origin}/partidos/invitaciones/${invitationId}`;
+    const startsAt = new Date(match.startsAt).toLocaleString("es-PE", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+    const price = new Intl.NumberFormat("es-PE", {
+      style: "currency",
+      currency: match.currency,
+    }).format(match.priceMinor / 100);
+    const message = [
+      `¡Te invito a ${match.title}!`,
+      `🗓 ${startsAt}`,
+      `📍 ${match.venueName} · ${match.spaceName}`,
+      `💰 Cuota: ${price}`,
+      `⚽ Quedan ${match.availablePlayers} cupos`,
+      `Confirma tu invitación aquí: ${url}`,
+    ].join("\n");
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  }
+
+  async function copyRoster(match: MatchSummary, roster: MatchParticipantAdmin[]) {
+    const price = new Intl.NumberFormat("es-PE", {
+      style: "currency",
+      currency: match.currency,
+    }).format(match.priceMinor / 100);
+    const joined = roster.filter((participant) => participant.status === "JOINED");
+    const paid = joined.filter((participant) => participant.paymentStatus === "PAID");
+    const pending = joined.filter((participant) => participant.paymentStatus !== "PAID");
+    const lines = [
+      `⚽ LA CHANCHA PICHANGUERA · PULSO PIURA`,
+      `${match.title}`,
+      `📍 ${match.venueName} · ${match.spaceName}`,
+      `🗓 ${new Date(match.startsAt).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" })}`,
+      `💰 Cuota por persona: ${price}`,
+      "",
+      `✅ PAGARON (${paid.length})`,
+      ...(paid.length ? paid.map((person) => `• ${person.displayName}`) : ["• Ningún pago registrado"]),
+      "",
+      `⏳ PENDIENTES (${pending.length})`,
+      ...(pending.length ? pending.map((person) => `• ${person.displayName}`) : ["• Sin pendientes"]),
+    ];
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setNotice("Lista de jugadores y pagos copiada.");
+    } catch {
+      setError("No se pudo copiar la lista. Inténtalo nuevamente.");
+    }
+  }
+
+  function sharePublicMatch(match: MatchSummary) {
+    const url = `${window.location.origin}/partidos/${match.publicSlug}`;
+    const price = new Intl.NumberFormat("es-PE", {
+      style: "currency",
+      currency: match.currency,
+    }).format(match.priceMinor / 100);
+    const message = [
+      `⚽ ¡Pichanga abierta en ${match.venueName}!`,
+      `🗓 ${new Date(match.startsAt).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" })}`,
+      `🏟 ${match.spaceName}`,
+      `💰 Cuota: ${price}`,
+      `👥 Quedan ${match.availablePlayers} cupos`,
+      `Confirma tu cupo aquí: ${url}`,
+    ].join("\n");
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  }
+
   if (!accessToken) {
     return (
       <main className="section accessDeniedPage">
@@ -130,14 +298,14 @@ export function MatchOrganizerDashboard() {
     return (
       <main className="section accessDeniedPage">
         <ShieldCheck aria-hidden="true" size={44} weight="duotone" />
-        <p className="eyebrow">SOLICITUD DE ORGANIZADOR</p>
-        <h1>Tu acceso todavía no está aprobado</h1>
+        <p className="eyebrow">MODO ORGANIZADOR</p>
+        <h1>Activa las herramientas para organizar</h1>
         <p className="pageLead">
-          Puedes reservar canchas y unirte a partidos. Envía o revisa tu solicitud
-          desde el perfil para habilitar la creación y gestión de eventos.
+          Con tu correo verificado puedes activar esta función desde el perfil.
+          No necesitas esperar aprobación de la plataforma.
         </p>
-        <Link className="primary" href="/perfil">
-          Ver mi solicitud
+        <Link className="primary" href="/perfil#capacidades">
+          Activar modo organizador
         </Link>
       </main>
     );
@@ -205,6 +373,7 @@ export function MatchOrganizerDashboard() {
           <section className="organizerMatchList">
             {matches.map((match) => {
               const roster = people[match.id] ?? [];
+              const matchInvitations = invitations[match.id] ?? [];
               const joined = roster.filter(
                 (participant) => participant.status === "JOINED",
               ).length;
@@ -249,6 +418,111 @@ export function MatchOrganizerDashboard() {
                   <span><b>Ocupación</b><small>{occupancy}% · {match.availablePlayers} cupos libres</small></span>
                   <div><i style={{ width: `${occupancy}%` }} /></div>
                 </div>
+                <div className="organizerShareActions">
+                  <button className="secondary" onClick={() => void copyRoster(match, roster)} type="button">
+                    <CopySimple aria-hidden="true" /> Copiar lista
+                  </button>
+                  <button className="organizerWhatsapp" onClick={() => sharePublicMatch(match)} type="button">
+                    <WhatsappLogo aria-hidden="true" /> Invitar por WhatsApp
+                  </button>
+                </div>
+                <section className="matchInvitationManager">
+                  <div>
+                    <h3>Invitar jugadores</h3>
+                    <span className="pill">
+                      {match.visibility === "PRIVATE"
+                        ? "Privado"
+                        : match.visibility === "LINK"
+                          ? "Con enlace"
+                          : "Público"}
+                    </span>
+                  </div>
+                  <form noValidate onSubmit={(event) => void invite(event, match.id)}>
+                    <label>
+                      Correo de la persona
+                      <input
+                        aria-label={`Correo para invitar a ${match.title}`}
+                        autoComplete="email"
+                        onChange={(event) =>
+                          setInviteEmails((current) => ({
+                            ...current,
+                            [match.id]: event.target.value,
+                          }))
+                        }
+                        placeholder="jugador@correo.com"
+                        required
+                        type="email"
+                        value={inviteEmails[match.id] ?? ""}
+                      />
+                    </label>
+                    <button
+                      className="secondary"
+                      disabled={
+                        inviting === match.id ||
+                        !inviteEmails[match.id]?.trim()
+                      }
+                      type="submit"
+                    >
+                      <PaperPlaneTilt />
+                      {inviting === match.id ? "Creando…" : "Crear invitación"}
+                    </button>
+                  </form>
+                  <div className="matchInvitationList">
+                    {matchInvitations.map((invitation) => (
+                      <div key={invitation.id}>
+                        <span>
+                          <strong>{invitation.email}</strong>
+                          <small>
+                            {invitation.status === "PENDING"
+                              ? "Pendiente"
+                              : invitation.status === "ACCEPTED"
+                                ? "Aceptada"
+                                : invitation.status === "REVOKED"
+                                  ? "Revocada"
+                                  : "Vencida"}
+                          </small>
+                        </span>
+                        {invitation.status === "PENDING" && (
+                          <span className="buttonRow">
+                            <Link
+                              className="secondary"
+                              href={`/partidos/invitaciones/${invitation.id}`}
+                            >
+                              Ver
+                            </Link>
+                            <button
+                              className="secondary"
+                              onClick={() => void copyInvitation(invitation.id)}
+                              type="button"
+                            >
+                              <CopySimple /> Copiar enlace
+                            </button>
+                            <button
+                              className="secondary"
+                              onClick={() => shareInvitation(match, invitation.id)}
+                              type="button"
+                            >
+                              <WhatsappLogo /> WhatsApp
+                            </button>
+                            <button
+                              className="participantRemove"
+                              disabled={inviting === `${match.id}:${invitation.id}`}
+                              onClick={() =>
+                                void revokeInvitation(match.id, invitation.id)
+                              }
+                              type="button"
+                            >
+                              Revocar
+                            </button>
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                    {!matchInvitations.length && (
+                      <p className="emptyRows">Todavía no creaste invitaciones.</p>
+                    )}
+                  </div>
+                </section>
                 <div className="participantTable">
                   <div className="participantRow participantHead">
                     <span>Jugador</span>
@@ -289,6 +563,14 @@ export function MatchOrganizerDashboard() {
           </section>
         </>
       )}
+      <FloatingNotice
+        message={notice || error}
+        onDismiss={() => {
+          setNotice("");
+          setError("");
+        }}
+        tone={error ? "error" : "success"}
+      />
     </main>
   );
 }

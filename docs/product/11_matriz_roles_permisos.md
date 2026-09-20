@@ -97,19 +97,23 @@ backend.
 
 ### Solicitudes de perfil implementadas
 
-Desde el perfil autenticado, una persona puede solicitar organizar partidos abiertos
-(`MATCH_ORGANIZER`) o representar a un dueño de cancha (`VENUE_OWNER`). El backend conserva la
-solicitud con estado `PENDING`, `APPROVED`, `REJECTED` o `REVOKED`, además del motivo y las fechas
-de revisión. La interfaz no concede permisos: la aprobación administrativa y la membresía
-contextual continúan siendo requisitos separados.
+Desde el perfil autenticado, una persona con correo verificado puede activar la organización de sus
+propias pichangas (`MATCH_ORGANIZER`). La activación es inmediata, explícita y auditable; no requiere
+aprobación administrativa. Una revocación por moderación bloquea la reactivación automática.
+
+Representar a un dueño de cancha (`VENUE_OWNER`) sí genera una solicitud con estado `PENDING`,
+`APPROVED`, `REJECTED` o `REVOKED`, además del motivo y las fechas de revisión. La interfaz no concede
+permisos: la aprobación administrativa y la membresía contextual continúan siendo requisitos
+separados para operar un complejo.
 
 Estas solicitudes no activan cobros ni licencias. Los planes comerciales quedan pendientes de una
 decisión aprobada sobre modelo, vigencia, proveedor, cancelación e impuestos.
 
 La revisión administrativa está disponible en `/api/v1/platform/capability-requests` y requiere la
 authority `ROLE_PLATFORM_ADMIN`, derivada exclusivamente de `realm_access.roles` del token emitido
-por Keycloak. Aprobar o rechazar una solicitud genera un evento de auditoría; la aprobación no
-crea por sí sola una membresía de organización.
+por Keycloak. Aprobar o rechazar una solicitud de dueño genera un evento de auditoría; la aprobación
+no crea por sí sola una membresía de organización. La autoactivación del organizador también genera
+un evento de auditoría.
 
 ## Reglas contextuales obligatorias
 

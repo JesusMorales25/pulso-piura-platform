@@ -30,3 +30,6 @@ docs/
 docs/*
 !docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md
 !docs/VSCODE_PORT_SHARE.md
+!docs/product/
+docs/product/*
+!docs/product/35_plan_evolucion_revision_cliente.md

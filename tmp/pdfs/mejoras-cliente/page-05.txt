@@ -1,0 +1,6 @@
+2. Zonificación real:
+Los complejos deportivos no están distribuidos de forma homogénea. El
+usuario piensa en rutas: Los Ejidos, Castilla, Santa María del Pinar, Av.
+Chulucanas, Veintiséis de Octubre o Catacaos.
+filtrar cancha x N de jugadores
+filtrar precios

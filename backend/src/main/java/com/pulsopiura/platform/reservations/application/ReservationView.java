@@ -17,7 +17,9 @@ public record ReservationView(
         long version,
         long paidMinor,
         String venueName,
-        String spaceName) {
+        String spaceName,
+        Integer spaceCapacity,
+        boolean matchAssociated) {
     public ReservationView withPayment(long paid) {
         return new ReservationView(
                 id,
@@ -32,7 +34,9 @@ public record ReservationView(
                 version,
                 paid,
                 venueName,
-                spaceName);
+                spaceName,
+                spaceCapacity,
+                matchAssociated);
     }
 
     public ReservationView withNames(
@@ -51,7 +55,9 @@ public record ReservationView(
                 version,
                 paidMinor,
                 names.venueName(),
-                names.spaceName());
+                names.spaceName(),
+                names.spaceCapacity(),
+                names.matchAssociated());
     }
 
     static ReservationView from(Reservation reservation) {
@@ -68,6 +74,8 @@ public record ReservationView(
                 reservation.version(),
                 0,
                 null,
-                null);
+                null,
+                null,
+                false);
     }
 }

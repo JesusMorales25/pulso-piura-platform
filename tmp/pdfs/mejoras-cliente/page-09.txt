@@ -1,0 +1,12 @@
+3. Crear (+) (Acceso rápido: Armar pichanga o Alquilar cancha)
+4. Tercer Tiempo (Descuentos en bares/comida post-partido)
+5. Perfil (Reputación, billetera y ajustes)
+• Llamada a la acción fija inferior: En la ficha del partido o cancha, el botón de
+acción UNIRME (Reservar mi cupo - S/ 15) debe ser una barra flotante
+inferior con fondo desenfocado (fondo desenfocado), siempre accesible para el
+pulgar sin necesidad de hacer scroll hasta el pie de página.
+3. Ficha de Cancha: Atributos Visuales Rápidos
+Sustituir descripciones largas por una fila de chips visuales:
+• Grass sintético Pro
+• Luz LED blanca
+• Estacionamiento vigilado

@@ -2,6 +2,8 @@ export type Reservation = {
   id: string;
   venueName?: string | null;
   spaceName?: string | null;
+  spaceCapacity?: number | null;
+  matchAssociated?: boolean;
   sportSpaceId: string;
   startsAt: string;
   endsAt: string;

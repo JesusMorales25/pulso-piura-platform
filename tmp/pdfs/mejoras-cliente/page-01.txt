@@ -1,0 +1,15 @@
+Mejoras y Propuestas de Evolución: Pulso Piura
+Plataforma analizada: plataforma pulso-piura.vercel.app
+Equipo evaluador: Diseñador UX · Diseñador UI · Investigador UX · Auditor de UX/UI
+Explora los mejores complejos deportivos de la ciudad desde una sola pantalla.
+"No somos solo una plataforma de reservas, somos un punto de encuentro digital de
+la comunidad de deportistas más activas del norte".
+Dirigido:
+para dueños de complejos deportivos, Organizadores de campeonatos, Clubes,
+Entrenadores, Jugadores
+1. Diagnóstico Ejecutivo
+Pulso Piura tiene una propuesta de valor con un encaje de mercado (Ajuste producto-
+mercado) excepcional: resolver la fricción de armar partidos («pichangas») y reservar
+canchas en el ecosistema deportivo de Piura.
+El proyecto cuenta con una base sólida:
+• Estructura dual clara entre "Encontrar jugadores" y «Reservar cancha».

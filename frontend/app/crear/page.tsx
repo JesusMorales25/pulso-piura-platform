@@ -23,12 +23,11 @@ export default function CreateMatchPage() {
         <p className="eyebrow">ACCESO POR FUNCIONALIDAD</p>
         <h1>Esta opción es para organizadores</h1>
         <p className="pageLead">
-          Tu cuenta de jugador puede reservar canchas y unirse a partidos. La
-          creación y gestión se habilitará cuando tengas una relación de capitán
-          u organizador activa.
+          Si ya verificaste tu correo, puedes activar esta función desde tu
+          perfil y empezar a publicar pichangas públicas o privadas.
         </p>
-        <Link className="primary" href="/?mode=matches">
-          Encontrar un partido
+        <Link className="primary" href="/perfil#capacidades">
+          Activar modo organizador
         </Link>
       </main>
     );

@@ -15,8 +15,13 @@ class JdbcReservationDetailsQuery implements ReservationDetailsQuery {
 
     public Names names(UUID id) {
         return jdbc.queryForObject(
-                "select v.name, s.name from app.reservations r join app.sport_spaces s on s.id=r.sport_space_id join app.venues v on v.id=s.venue_id where r.id=?",
-                (row, index) -> new Names(row.getString(1), row.getString(2)),
+                "select v.name, s.name, s.capacity, exists(select 1 from app.sports_matches m where m.reservation_id=r.id) from app.reservations r join app.sport_spaces s on s.id=r.sport_space_id join app.venues v on v.id=s.venue_id where r.id=?",
+                (row, index) ->
+                        new Names(
+                                row.getString(1),
+                                row.getString(2),
+                                row.getInt(3),
+                                row.getBoolean(4)),
                 id);
     }
 

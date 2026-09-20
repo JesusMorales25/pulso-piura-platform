@@ -67,3 +67,18 @@ El rol global `PLATFORM_ADMIN` administra solicitudes de organizador y dueño de
 Los negocios aliados se guardan primero como borrador y solo pueden publicarse cuando tienen dirección y teléfono de contacto. La configuración visible usa direcciones legibles y permite comprobarlas en Google Maps; las coordenadas son un detalle técnico opcional que no se expone en los formularios. El directorio público consume exclusivamente registros `PUBLISHED` de la base de datos y genera accesos seguros a WhatsApp y Google Maps. Las sedes deportivas usan el mismo criterio de contacto y ruta con los datos públicos que registra el dueño del complejo.
 
 La ubicación exacta de un negocio puede registrarse pegando el enlace obtenido mediante **Compartir** en Google Maps. La plataforma conserva ese destino y lo usa directamente en “Cómo llegar”, sin consumir Google Places ni requerir una clave de pago. El backend acepta exclusivamente enlaces HTTPS de dominios oficiales de Google Maps.
+
+## DEC-2026-09-17 — Autoactivación del organizador y alcance de las pichangas
+
+Estado: aceptada por el usuario en la conversación de implementación. Reemplaza únicamente la parte
+de DEC-2026-09-09 que exigía aprobación administrativa para `MATCH_ORGANIZER`.
+
+Un jugador activo con correo verificado puede activar `MATCH_ORGANIZER` mediante una acción explícita
+en su perfil. La activación es inmediata, queda auditada y solo permite crear y administrar sus
+propias pichangas. Una capacidad revocada por moderación no puede reactivarse automáticamente. La
+capacidad `VENUE_OWNER` mantiene revisión del administrador de plataforma y requiere además una
+membresía contextual para administrar un complejo.
+
+Las pichangas admiten visibilidad `PUBLIC`, `LINK` y `PRIVATE`. Solo las públicas aparecen en Buscar
+partido; las de enlace no se indexan y las privadas requieren invitación o autorización explícita.
+El organizador puede invitar participantes y conserva la gestión de los partidos que creó.

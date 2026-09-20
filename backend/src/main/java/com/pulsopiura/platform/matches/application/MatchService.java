@@ -19,6 +19,8 @@ public class MatchService {
     private final MatchParticipantStore participants;
     private final ApplicationEventPublisher events;
     private final MatchParticipantPreviewService participantPreviews;
+    private final MatchDetailMetadataService detailMetadata;
+    private final MatchAccessPolicy accessPolicy;
     private final Clock clock;
 
     @Autowired
@@ -28,6 +30,8 @@ public class MatchService {
             VenueSpaceQuery spaces,
             MatchParticipantStore participants,
             MatchParticipantPreviewService participantPreviews,
+            MatchDetailMetadataService detailMetadata,
+            MatchAccessPolicy accessPolicy,
             ApplicationEventPublisher events) {
         this(
                 matches,
@@ -35,6 +39,8 @@ public class MatchService {
                 spaces,
                 participants,
                 participantPreviews,
+                detailMetadata,
+                accessPolicy,
                 events,
                 Clock.systemUTC());
     }
@@ -45,6 +51,8 @@ public class MatchService {
             VenueSpaceQuery spaces,
             MatchParticipantStore participants,
             MatchParticipantPreviewService participantPreviews,
+            MatchDetailMetadataService detailMetadata,
+            MatchAccessPolicy accessPolicy,
             ApplicationEventPublisher events,
             Clock clock) {
         this.matches = matches;
@@ -52,6 +60,8 @@ public class MatchService {
         this.spaces = spaces;
         this.participants = participants;
         this.participantPreviews = participantPreviews;
+        this.detailMetadata = detailMetadata;
+        this.accessPolicy = accessPolicy;
         this.events = events;
         this.clock = clock;
     }
@@ -126,12 +136,12 @@ public class MatchService {
     }
 
     @Transactional(readOnly = true)
-    public MatchView publicDetail(String publicSlug) {
+    public MatchView detail(String publicSlug, UUID actorId) {
         var match =
                 matches.findPublishedBySlug(publicSlug)
-                        .filter(item -> item.visibility() != MatchVisibility.PRIVATE)
                         .orElseThrow(() -> new NoSuchElementException("Partido no encontrado"));
-        return view(match);
+        accessPolicy.requireCanAccess(match, actorId);
+        return view(match, true);
     }
 
     @Transactional(readOnly = true)
@@ -143,6 +153,10 @@ public class MatchService {
     }
 
     private MatchView view(SportsMatch match) {
+        return view(match, false);
+    }
+
+    private MatchView view(SportsMatch match, boolean includeDetailMetadata) {
         var joined = participants.countByMatchAndStatus(match.id(), MatchParticipantStatus.JOINED);
         var occupied = Math.toIntExact(joined) + (match.organizerCounts() ? 1 : 0);
         var space = spaces.requirePublishedSpace(match.sportSpaceId());
@@ -152,7 +166,10 @@ public class MatchService {
                 space.spaceName(),
                 space.venueName(),
                 space.venueAddress(),
-                participantPreviews.publicParticipants(match.id()));
+                participantPreviews.publicParticipants(match.id()),
+                includeDetailMetadata
+                        ? detailMetadata.load(match.organizerUserId(), match.sportSpaceId())
+                        : null);
     }
 
     private SkillLevel parseLevel(String value) {

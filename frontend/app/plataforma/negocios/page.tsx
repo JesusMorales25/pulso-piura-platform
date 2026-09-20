@@ -233,6 +233,7 @@ export default function PlatformBusinessesPage() {
           <label>
             Descripción
             <textarea
+              className="resize-none"
               defaultValue={editing?.description ?? ""}
               name="description"
               maxLength={500}

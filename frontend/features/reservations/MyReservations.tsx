@@ -24,6 +24,9 @@ function ReservationItem({
               ...next,
               venueName: next.venueName ?? current.venueName,
               spaceName: next.spaceName ?? current.spaceName,
+              spaceCapacity: next.spaceCapacity ?? current.spaceCapacity,
+              matchAssociated:
+                next.matchAssociated ?? current.matchAssociated,
             },
       ),
     [],
@@ -43,6 +46,50 @@ function ReservationItem({
     </article>
   );
 }
+
+function FocusedReservation({
+  accessToken,
+  reservationId,
+}: {
+  accessToken: string;
+  reservationId: string;
+}) {
+  const [reservation, setReservation] = useState<Reservation | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void apiRequest<Reservation>(`/reservations/${reservationId}`, accessToken, {
+      signal: controller.signal,
+    })
+      .then((value) => {
+        if (!controller.signal.aborted) setReservation(value);
+      })
+      .catch((reason) => {
+        if (!controller.signal.aborted) {
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : "No se pudo cargar esta reserva.",
+          );
+        }
+      });
+    return () => controller.abort();
+  }, [accessToken, reservationId]);
+
+  if (error) return <p className="inlineAlert errorNotice" role="alert">{error}</p>;
+  if (!reservation) return <p className="notice">Preparando tu reserva…</p>;
+
+  return (
+    <div className="reservationList focusedReservationList">
+      <ReservationItem accessToken={accessToken} highlighted initial={reservation} />
+      <Link className="secondary focusedReservationHistoryLink" href="/actividad">
+        Ver todas mis reservas
+      </Link>
+    </div>
+  );
+}
+
 function ReservationsList({
   accessToken,
   highlightedReservationId,
@@ -163,10 +210,17 @@ export function MyReservations({
       </div>
     );
   return (
-    <ReservationsList
-      key={accessToken}
-      accessToken={accessToken}
-      highlightedReservationId={highlightedReservationId ?? ""}
-    />
+    highlightedReservationId ? (
+      <FocusedReservation
+        accessToken={accessToken}
+        reservationId={highlightedReservationId}
+      />
+    ) : (
+      <ReservationsList
+        key={accessToken}
+        accessToken={accessToken}
+        highlightedReservationId=""
+      />
+    )
   );
 }

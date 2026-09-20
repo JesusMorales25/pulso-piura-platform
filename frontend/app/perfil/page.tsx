@@ -33,9 +33,9 @@ type CapabilityRequest = {
 const capabilityOptions = [
   {
     capability: "MATCH_ORGANIZER" as const,
-    title: "Quiero organizar partidos",
+    title: "Organiza tu pichanga",
     description:
-      "Publica partidos abiertos, completa cupos y coordina participantes desde un solo lugar.",
+      "Crea partidos, completa cupos y gestiona a tus participantes desde un solo lugar.",
   },
   {
     capability: "VENUE_OWNER" as const,
@@ -138,9 +138,17 @@ export default function ProfilePage() {
           }),
         },
       );
-      setCapabilityRequests((current) => [request, ...current]);
+      setCapabilityRequests((current) => [
+        request,
+        ...current.filter((item) => item.id !== request.id),
+      ]);
+      window.dispatchEvent(new Event("pulso:capabilities-changed"));
       setMessageTone("success");
-      setMessage("Recibimos tu solicitud. Te avisaremos cuando sea revisada.");
+      setMessage(
+        capability === "MATCH_ORGANIZER"
+          ? "Ya puedes crear y gestionar tus pichangas."
+          : "Recibimos tu solicitud. Te avisaremos cuando sea revisada.",
+      );
     } catch (e) {
       setMessageTone("error");
       setMessage(
@@ -267,12 +275,13 @@ export default function ProfilePage() {
           </Link>
         </p>
       )}
-      <section className="capabilitySection" aria-labelledby="capability-title">
+      <section className="capabilitySection" id="capacidades" aria-labelledby="capability-title">
         <p className="eyebrow">NUEVAS POSIBILIDADES</p>
         <h2 id="capability-title">También puedes darle forma al juego</h2>
         <p className="pageLead">
-          Solicita una capacidad y nuestro equipo revisará la información antes
-          de habilitar las herramientas de gestión.
+          Activa la organización de pichangas con tu correo verificado. Para
+          publicar y administrar un complejo, nuestro equipo debe validar que
+          representas al dueño de la cancha.
         </p>
         <div className="capabilityGrid">
           {capabilityOptions.map((option) => {
@@ -280,18 +289,47 @@ export default function ProfilePage() {
               (item) => item.capability === option.capability,
             );
             const isPending = request?.status === "PENDING";
-            const canRequest =
+            const isOrganizer = option.capability === "MATCH_ORGANIZER";
+            const canRequestOwner =
               !request ||
               request.status === "REJECTED" ||
               request.status === "REVOKED";
+            const canActivateOrganizer =
+              isOrganizer &&
+              request?.status !== "APPROVED" &&
+              request?.status !== "REVOKED";
+            const requestLabel =
+              canActivateOrganizer && request
+                ? "Activación disponible"
+                : request
+                  ? statusLabel[request.status]
+                  : "Disponible";
             return (
               <article className="capabilityCard" key={option.capability}>
-                <span className="pill">
-                  {request ? statusLabel[request.status] : "Disponible"}
-                </span>
+                <span className="pill">{requestLabel}</span>
                 <h3>{option.title}</h3>
                 <p>{option.description}</p>
-                {canRequest ? (
+                {canActivateOrganizer ? (
+                  <>
+                    <p className="capabilityStatus">
+                      {me?.emailVerified
+                        ? "Tu correo ya está verificado. La activación es inmediata."
+                        : "Verifica tu correo para activar esta función."}
+                    </p>
+                    <button
+                      className="primary borderless"
+                      disabled={
+                        !me?.emailVerified || requesting === option.capability
+                      }
+                      onClick={() => void requestCapability(option.capability)}
+                      type="button"
+                    >
+                      {requesting === option.capability
+                        ? "Activando…"
+                        : "Activar organización de pichangas"}
+                    </button>
+                  </>
+                ) : !isOrganizer && canRequestOwner ? (
                   <>
                     <label>
                       Cuéntanos brevemente
@@ -321,9 +359,11 @@ export default function ProfilePage() {
                   </>
                 ) : (
                   <p className="capabilityStatus">
-                    {isPending
-                      ? "Estamos revisando tu solicitud."
-                      : "Esta capacidad está habilitada para tu cuenta."}
+                    {request?.status === "REVOKED"
+                      ? "Esta capacidad fue revocada. Contacta al soporte si necesitas una revisión."
+                      : isPending
+                        ? "Estamos revisando tu solicitud."
+                        : "Esta capacidad está habilitada para tu cuenta."}
                   </p>
                 )}
               </article>
