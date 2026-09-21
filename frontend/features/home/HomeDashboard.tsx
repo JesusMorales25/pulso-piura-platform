@@ -36,9 +36,11 @@ const heroSlides: Record<HomeMode, string[]> = {
 export function HomeDashboard({
   initialMode = "matches",
   preparingDirectBooking = false,
+  returnToCreate = false,
 }: {
   initialMode?: HomeMode;
   preparingDirectBooking?: boolean;
+  returnToCreate?: boolean;
 }) {
   const { accessToken } = useAuth();
   const [mode, setMode] = useState<HomeMode>(initialMode);
@@ -95,7 +97,7 @@ export function HomeDashboard({
     return (
       <main className="homePage hybridHome mode-venues directBookingPage">
         <div className="hybridContent">
-          <PublicVenueCatalog embedded preparingDirectBooking />
+          <PublicVenueCatalog embedded preparingDirectBooking returnToCreate={returnToCreate} />
         </div>
       </main>
     );
@@ -146,7 +148,7 @@ export function HomeDashboard({
             <HomeVenuePreview loading={loadingVenues} venues={venues} />
           </>
         ) : (
-          <PublicVenueCatalog embedded />
+          <PublicVenueCatalog embedded returnToCreate={returnToCreate} />
         )}
         {mode === "matches" && <ThirdTimeSection />}
       </div>

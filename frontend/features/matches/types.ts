@@ -68,4 +68,5 @@ export type MatchParticipantAdmin = {
   paymentMethod: "YAPE" | "PLIN" | null;
   paidAt: string | null;
   joinedAt: string | null;
+  checkedInAt: string | null;
 };

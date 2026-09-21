@@ -89,9 +89,11 @@ type DiscoveryMode = "all" | "venues" | "matches";
 export function PublicVenueCatalog({
   embedded = false,
   preparingDirectBooking = false,
+  returnToCreate = false,
 }: {
   embedded?: boolean;
   preparingDirectBooking?: boolean;
+  returnToCreate?: boolean;
 }) {
   const router = useRouter();
   const { accessToken, loading: authLoading, login } = useAuth();
@@ -563,6 +565,7 @@ export function PublicVenueCatalog({
         reserve: "1",
       });
       returnQuery.set("mode", "venues");
+      if (returnToCreate) returnQuery.set("from", "create");
       await login(false, `/?${returnQuery}`);
       setPreparingCheckout(false);
       return;
@@ -602,7 +605,9 @@ export function PublicVenueCatalog({
         },
       );
       setReservation(createdReservation);
-      router.push(`/actividad?reservation=${createdReservation.id}`);
+      const activityQuery = new URLSearchParams({ reservation: createdReservation.id });
+      if (returnToCreate) activityQuery.set("from", "create");
+      router.push(`/actividad?${activityQuery}`);
     } catch (reason) {
       setPreparingCheckout(false);
       setError(
@@ -885,57 +890,33 @@ export function PublicVenueCatalog({
                       <MapPin aria-hidden="true" size={14} weight="fill" />
                       {venue.address}
                     </p>
-                    {offer && (
-                      <div
-                        aria-label={`Características de ${offer.space.name}`}
-                        className="venueAttributeChips"
-                      >
-                        <span>
-                          {names.get(offer.space.sportCode) ??
-                            offer.space.sportCode}
-                        </span>
-                        <span>{offer.space.formatCode.replaceAll("_", " ")}</span>
-                        {offer.space.indoor && <span>Techada</span>}
-                        {Array.from(
-                          new Set([
-                            ...venue.amenityCodes,
-                            ...offer.space.amenityCodes,
-                          ]),
-                        )
-                          .slice(0, 4)
-                          .map((code) => (
-                            <span key={code}>{names.get(code) ?? code}</span>
-                          ))}
-                      </div>
-                    )}
-                    <div className="exploreVenueContactActions">
-                      {whatsappUrl(venue.publicPhone) && (
-                        <a
-                          href={whatsappUrl(venue.publicPhone) ?? undefined}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          <WhatsappLogo
-                            aria-hidden="true"
-                            size={16}
-                            weight="fill"
-                          />
-                          Escribir
-                        </a>
-                      )}
-                      <a
-                        href={googleMapsUrl({
-                          latitude: venue.latitude,
-                          longitude: venue.longitude,
-                          address: `${venue.name}, ${venue.address}, Piura`,
-                        })}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        <MapPin aria-hidden="true" size={16} weight="fill" />
-                        Cómo llegar
-                      </a>
+                  </div>
+                  {offer && (
+                    <div
+                      aria-label={`Características de ${offer.space.name}`}
+                      className="venueAttributeChips"
+                    >
+                      <span>{names.get(offer.space.sportCode) ?? offer.space.sportCode}</span>
+                      <span>{offer.space.formatCode.replaceAll("_", " ")}</span>
+                      {offer.space.indoor && <span>Techada</span>}
+                      {Array.from(new Set([...venue.amenityCodes, ...offer.space.amenityCodes]))
+                        .slice(0, 4)
+                        .map((code) => <span key={code}>{names.get(code) ?? code}</span>)}
                     </div>
+                  )}
+                  <div className="exploreVenueContactActions">
+                    {whatsappUrl(venue.publicPhone) && (
+                      <a href={whatsappUrl(venue.publicPhone) ?? undefined} rel="noreferrer" target="_blank">
+                        <WhatsappLogo aria-hidden="true" size={16} weight="fill" /> Escribir
+                      </a>
+                    )}
+                    <a
+                      href={googleMapsUrl({ latitude: venue.latitude, longitude: venue.longitude, address: `${venue.name}, ${venue.address}, Piura` })}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      <MapPin aria-hidden="true" size={16} weight="fill" /> Cómo llegar
+                    </a>
                   </div>
                 </div>
                 <div className="exploreSheetAvailability">

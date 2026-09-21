@@ -74,7 +74,7 @@ Add-Line $Lines
 Add-Line $Lines '- SaaS multicomplejo y web responsive mobile-first.'
 Add-Line $Lines '- Frontend Next.js, React y TypeScript.'
 Add-Line $Lines '- Backend Java 21 y Spring Boot como monolito modular.'
-Add-Line $Lines '- Keycloak/OIDC; Google sera un proveedor federado.'
+Add-Line $Lines '- Proveedor OIDC configurable; Google sera una conexion federada.'
 Add-Line $Lines '- PostgreSQL y Flyway; no editar migraciones aplicadas.'
 Add-Line $Lines '- Dinero en unidad minima; UTC en datos y America/Lima en presentacion.'
 Add-Line $Lines '- Reservas y pagos: transaccion, idempotencia, auditoria y control de concurrencia.'

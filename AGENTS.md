@@ -15,7 +15,7 @@ Reglas invariables:
 1. Este es un producto SaaS multicomplejo, no software a medida.
 2. La primera experiencia es web responsive mobile-first; no crear una app nativa.
 3. Backend Java/Spring Boot como monolito modular; frontend Next.js/TypeScript.
-4. Keycloak es el proveedor OIDC; Spring Security valida tokens y aplica autorización de negocio.
+4. La identidad usa un proveedor OIDC configurable; Spring Security valida tokens y aplica autorización de negocio.
 5. Todo acceso de organización debe validar pertenencia y alcance; nunca confiar en un `orgId` enviado por el cliente.
 6. No almacenar secretos, tokens, contraseñas ni credenciales de Google o pagos en Git.
 7. Reservas y pagos requieren idempotencia, auditoría y estados explícitos.

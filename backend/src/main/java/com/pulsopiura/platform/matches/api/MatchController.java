@@ -1,5 +1,6 @@
 package com.pulsopiura.platform.matches.api;
 
+import com.pulsopiura.platform.foundation.security.OidcRoleClaims;
 import com.pulsopiura.platform.identity.application.CurrentUserService;
 import com.pulsopiura.platform.matches.application.*;
 import jakarta.validation.Valid;
@@ -23,6 +24,8 @@ public class MatchController {
     private final MatchActivityQueryService activityQueries;
     private final MatchOrganizerAuthorization organizerAuthorization;
     private final MatchInvitationService invitations;
+    private final MatchCheckInService checkIns;
+    private final OidcRoleClaims roleClaims;
 
     public MatchController(
             CurrentUserService users,
@@ -33,7 +36,9 @@ public class MatchController {
             MatchOrganizerManagementService organizerManagement,
             MatchActivityQueryService activityQueries,
             MatchOrganizerAuthorization organizerAuthorization,
-            MatchInvitationService invitations) {
+            MatchInvitationService invitations,
+            MatchCheckInService checkIns,
+            OidcRoleClaims roleClaims) {
         this.users = users;
         this.matches = matches;
         this.participation = participation;
@@ -43,6 +48,8 @@ public class MatchController {
         this.activityQueries = activityQueries;
         this.organizerAuthorization = organizerAuthorization;
         this.invitations = invitations;
+        this.checkIns = checkIns;
+        this.roleClaims = roleClaims;
     }
 
     @GetMapping
@@ -89,6 +96,31 @@ public class MatchController {
     @PreAuthorize("isAuthenticated()")
     List<MatchActivityQueryService.ActivityView> activity(@AuthenticationPrincipal Jwt jwt) {
         return activityQueries.forPlayer(users.provision(jwt).id());
+    }
+
+    @PostMapping("/{publicSlug:[a-z0-9-]+}/check-in-pass")
+    @PreAuthorize("isAuthenticated()")
+    MatchCheckInService.MatchPass issueCheckInPass(
+            @AuthenticationPrincipal Jwt jwt, @PathVariable String publicSlug) {
+        return checkIns.issue(users.provision(jwt).id(), publicSlug);
+    }
+
+    @PostMapping("/{matchId:[0-9a-fA-F-]{36}}/check-in/preview")
+    @PreAuthorize("isAuthenticated()")
+    MatchCheckInService.CheckInPlayer previewCheckIn(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID matchId,
+            @Valid @RequestBody MatchCheckInRequest request) {
+        return checkIns.preview(users.provision(jwt).id(), matchId, request.payload());
+    }
+
+    @PostMapping("/{matchId:[0-9a-fA-F-]{36}}/check-in")
+    @PreAuthorize("isAuthenticated()")
+    MatchCheckInService.CheckInPlayer confirmCheckIn(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID matchId,
+            @Valid @RequestBody MatchCheckInRequest request) {
+        return checkIns.checkIn(users.provision(jwt).id(), matchId, request.payload());
     }
 
     @GetMapping("/{publicSlug:[a-z0-9-]+}/participants/me")
@@ -216,16 +248,7 @@ public class MatchController {
     }
 
     private void requireOrganizer(Jwt jwt, UUID actor) {
-        var realm = jwt.getClaimAsMap("realm_access");
-        var rawRoles = realm == null ? null : realm.get("roles");
-        var roles =
-                rawRoles instanceof Collection<?> values
-                        ? values.stream()
-                                .filter(String.class::isInstance)
-                                .map(String.class::cast)
-                                .toList()
-                        : List.<String>of();
-        organizerAuthorization.requireOrganizer(actor, roles);
+        organizerAuthorization.requireOrganizer(actor, roleClaims.roles(jwt));
     }
 
     public record CreateMatchRequest(
@@ -243,4 +266,6 @@ public class MatchController {
             @NotNull com.pulsopiura.platform.matches.domain.MatchPaymentMethod method) {}
 
     public record InviteToMatchRequest(@NotBlank @Email String email) {}
+
+    public record MatchCheckInRequest(@NotBlank @Size(max = 100) String payload) {}
 }

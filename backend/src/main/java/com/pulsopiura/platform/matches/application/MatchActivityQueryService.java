@@ -22,7 +22,7 @@ public class MatchActivityQueryService {
                    s.name space_name, v.name venue_name, v.address venue_address,
                    m.starts_at, m.ends_at, p.status participation_status,
                    coalesce(o.status, case when m.price_minor = 0 then 'NOT_REQUIRED' else 'UNPAID' end) payment_status,
-                   coalesce(o.amount_minor, 0) paid_minor, m.currency
+                   coalesce(o.amount_minor, 0) paid_minor, m.currency, pass.consumed_at checked_in_at
             from app.match_participants p
             join app.sports_matches m on m.id = p.match_id
             join app.sport_spaces s on s.id = m.sport_space_id
@@ -32,6 +32,7 @@ public class MatchActivityQueryService {
               where jo.match_id = p.match_id and jo.payer_user_id = p.user_id
               order by (jo.status = 'PAID') desc, jo.created_at desc limit 1
             ) o on true
+            left join app.match_check_in_passes pass on pass.participant_id = p.id
             where p.user_id = ? and p.status <> 'WITHDRAWN'
             order by m.starts_at desc
             """,
@@ -50,7 +51,8 @@ public class MatchActivityQueryService {
                                 rs.getString("participation_status"),
                                 rs.getString("payment_status"),
                                 rs.getLong("paid_minor"),
-                                rs.getString("currency")),
+                                rs.getString("currency"),
+                                timestamp(rs, "checked_in_at")),
                 actor);
     }
 
@@ -68,5 +70,12 @@ public class MatchActivityQueryService {
             String participationStatus,
             String paymentStatus,
             long paidMinor,
-            String currency) {}
+            String currency,
+            Instant checkedInAt) {}
+
+    private static Instant timestamp(java.sql.ResultSet result, String column)
+            throws java.sql.SQLException {
+        var value = result.getTimestamp(column);
+        return value == null ? null : value.toInstant();
+    }
 }

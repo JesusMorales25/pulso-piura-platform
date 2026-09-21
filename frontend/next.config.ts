@@ -9,7 +9,10 @@ function origin(value: string | undefined, fallback: string): string {
 }
 
 const apiOrigin = origin(process.env.NEXT_PUBLIC_API_BASE_URL, "http://localhost:8080");
-const identityOrigin = origin(process.env.NEXT_PUBLIC_OIDC_ISSUER, "http://localhost:8180");
+const identityOrigin = origin(
+  process.env.NEXT_PUBLIC_OIDC_ISSUER,
+  "http://localhost:8180",
+);
 const scriptSource =
   process.env.NODE_ENV === "production"
     ? "script-src 'self' 'unsafe-inline'"
@@ -21,7 +24,7 @@ const contentSecurityPolicy = [
   `form-action 'self' ${identityOrigin}`,
   `frame-src 'self' ${identityOrigin}`,
   "object-src 'none'",
-  "img-src 'self' data: blob: https:",
+  `img-src 'self' data: blob: https: ${apiOrigin}`,
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   scriptSource,

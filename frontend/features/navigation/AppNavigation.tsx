@@ -4,49 +4,68 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CalendarDots,
+  Buildings,
   Compass,
   ForkKnife,
+  GearSix,
   Plus,
   UserCircle,
 } from "@phosphor-icons/react";
+import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 
 export function AppNavigation() {
   const pathname = usePathname();
+  const { capabilities } = useUserCapabilities();
+  const centralItem = capabilities.canManagePlatform
+    ? {
+        href: "/plataforma",
+        label: "Administrar",
+        Icon: GearSix,
+        active: pathname.startsWith("/plataforma"),
+      }
+    : capabilities.canOperateOrganizations
+      ? {
+          href: "/organizaciones",
+          label: "Mi cancha",
+          Icon: Buildings,
+          active:
+            pathname.startsWith("/organizaciones") || pathname.startsWith("/admin/"),
+        }
+      : {
+          href: "/crear",
+          label: "Crear",
+          Icon: Plus,
+          active: pathname.startsWith("/crear") || pathname.startsWith("/organizador"),
+        };
   const items = [
     {
       href: "/",
       label: "Explorar",
       Icon: Compass,
       active: pathname === "/" || pathname.startsWith("/partidos") || pathname === "/canchas",
+      featured: false,
     },
     {
       href: "/actividad",
       label: "Actividad",
       Icon: CalendarDots,
       active: pathname.startsWith("/actividad"),
+      featured: false,
     },
-    {
-      href: "/crear",
-      label: "Crear",
-      Icon: Plus,
-      active: pathname.startsWith("/crear") || pathname.startsWith("/organizador"),
-      featured: true,
-    },
+    { ...centralItem, featured: true },
     {
       href: "/tercer-tiempo",
       label: "Tercer tiempo",
       Icon: ForkKnife,
       active: pathname.startsWith("/tercer-tiempo"),
+      featured: false,
     },
     {
       href: "/perfil",
       label: "Perfil",
       Icon: UserCircle,
-      active:
-        pathname.startsWith("/perfil") ||
-        pathname.startsWith("/plataforma") ||
-        pathname.startsWith("/organizaciones") ||
-        pathname.startsWith("/admin/"),
+      active: pathname.startsWith("/perfil"),
+      featured: false,
     },
   ];
 

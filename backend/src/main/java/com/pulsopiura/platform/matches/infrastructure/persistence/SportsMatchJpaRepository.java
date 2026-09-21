@@ -24,6 +24,9 @@ interface SportsMatchJpaRepository extends JpaRepository<SportsMatchJpaEntity, U
 
     boolean existsByReservationId(UUID reservationId);
 
+    boolean existsByStatusAndStartsAtAfterAndTitleIgnoreCase(
+            MatchStatus status, Instant now, String title);
+
     List<SportsMatchJpaEntity> findAllByStatusAndVisibilityAndStartsAtAfterOrderByStartsAtAsc(
             MatchStatus status, MatchVisibility visibility, Instant now);
 

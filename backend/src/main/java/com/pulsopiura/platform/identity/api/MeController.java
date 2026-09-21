@@ -1,5 +1,6 @@
 package com.pulsopiura.platform.identity.api;
 
+import com.pulsopiura.platform.foundation.security.OidcRoleClaims;
 import com.pulsopiura.platform.identity.application.CapabilityRequestService;
 import com.pulsopiura.platform.identity.application.CurrentUserService;
 import com.pulsopiura.platform.identity.domain.CapabilityType;
@@ -16,14 +17,17 @@ public class MeController {
     private final CurrentUserService users;
     private final PlayerProfileService profiles;
     private final CapabilityRequestService capabilityRequests;
+    private final OidcRoleClaims roleClaims;
 
     public MeController(
             CurrentUserService users,
             PlayerProfileService profiles,
-            CapabilityRequestService capabilityRequests) {
+            CapabilityRequestService capabilityRequests,
+            OidcRoleClaims roleClaims) {
         this.users = users;
         this.profiles = profiles;
         this.capabilityRequests = capabilityRequests;
+        this.roleClaims = roleClaims;
     }
 
     @GetMapping
@@ -37,7 +41,8 @@ public class MeController {
                 user.displayName(),
                 user.avatarUrl(),
                 user.status().name(),
-                profile.onboardingStatus());
+                profile.onboardingStatus(),
+                roleClaims.isPlatformAdmin(jwt));
     }
 
     @GetMapping("/profile")
@@ -88,7 +93,8 @@ public class MeController {
             String displayName,
             String avatarUrl,
             String status,
-            String onboardingStatus) {}
+            String onboardingStatus,
+            boolean platformAdmin) {}
 
     public record UpdateProfileRequest(
             String homeDistrictCode,

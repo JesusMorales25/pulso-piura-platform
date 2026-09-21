@@ -1,25 +1,23 @@
-import { MyReservations } from "@/features/reservations/MyReservations";
-import { MyMatchParticipations } from "@/features/matches/MyMatchParticipations";
-import { QrCode, ShieldCheck } from "@phosphor-icons/react/dist/ssr";
+import { ActivityDashboard } from "@/features/activity/ActivityDashboard";
 export default async function ActivityPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reservation?: string }>;
+  searchParams: Promise<{ reservation?: string; from?: string }>;
 }) {
-  const { reservation } = await searchParams;
+  const { reservation, from } = await searchParams;
   return (
     <main className="section activityPage">
       <section className="activityPassHero">
-        <span><QrCode aria-hidden="true" size={30} weight="duotone" /></span>
         <div>
-          <p className="eyebrow">PASES DIGITALES</p>
-          <h1>Mis partidos y turnos reservados</h1>
-          <p>Encuentra tus cupos, pagos y códigos de llegada en un solo lugar.</p>
+          <p className="eyebrow">TU JUEGO EN PIURA</p>
+          <h1>Partidos, canchas y próximos encuentros</h1>
+          <p>Consulta lo que viene y lleva contigo cada pase de llegada.</p>
         </div>
-        <small><ShieldCheck aria-hidden="true" weight="fill" /> Acceso ligado a tu cuenta</small>
       </section>
-      {!reservation && <MyMatchParticipations />}
-      <MyReservations highlightedReservationId={reservation ?? ""} />
+      <ActivityDashboard
+        highlightedReservationId={reservation ?? ""}
+        returnToCreate={from === "create"}
+      />
     </main>
   );
 }

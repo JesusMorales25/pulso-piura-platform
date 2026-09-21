@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PartnerBusinessService {
+    private static final int MAX_IMAGE_BYTES = 5 * 1024 * 1024;
     private static final Set<String> CATEGORIES =
             Set.of("CHOPERIA", "RESTAURANT", "SPORTS_BAR", "OTHER");
     private static final Set<String> STATUSES = Set.of("DRAFT", "PUBLISHED", "ARCHIVED");
@@ -104,9 +105,47 @@ public class PartnerBusinessService {
         return find(id);
     }
 
+    @Transactional
+    public BusinessView updateImage(UUID actor, UUID id, String contentType, byte[] content) {
+        var normalizedType = validateImage(contentType, content);
+        var changed =
+                jdbc.update(
+                        """
+                        update app.partner_businesses
+                        set image_content = ?, image_content_type = ?, image_url = null,
+                            updated_by = ?, updated_at = ?, version = version + 1
+                        where id = ?
+                        """,
+                        content,
+                        normalizedType,
+                        actor,
+                        Timestamp.from(clock.instant()),
+                        id);
+        if (changed == 0) throw new java.util.NoSuchElementException("Negocio no encontrado");
+        auditEvents.save(
+                AuditEventEntity.resourceAction(
+                        actor, null, "PLATFORM_BUSINESS_IMAGE_UPDATED", "PARTNER_BUSINESS", id));
+        return find(id);
+    }
+
+    @Transactional(readOnly = true)
+    public BusinessImage image(UUID id) {
+        return jdbc
+                .query(
+                        "select image_content, image_content_type from app.partner_businesses where id = ? and image_content is not null",
+                        (rs, row) ->
+                                new BusinessImage(
+                                        rs.getBytes("image_content"),
+                                        rs.getString("image_content_type")),
+                        id)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new java.util.NoSuchElementException("Imagen no encontrada"));
+    }
+
     private List<BusinessView> query(String condition) {
         return jdbc.query(
-                "select id, name, category, zone, description, image_url, contact_phone, maps_url, latitude, longitude, status, updated_at from app.partner_businesses "
+                "select id, name, category, zone, description, case when image_content is not null then concat('/api/v1/businesses/', id, '/image') else image_url end as image_url, contact_phone, maps_url, latitude, longitude, status, updated_at from app.partner_businesses "
                         + condition
                         + " order by updated_at desc",
                 (rs, row) ->
@@ -128,7 +167,7 @@ public class PartnerBusinessService {
     private BusinessView find(UUID id) {
         return jdbc
                 .query(
-                        "select id, name, category, zone, description, image_url, contact_phone, maps_url, latitude, longitude, status, updated_at from app.partner_businesses where id = ?",
+                        "select id, name, category, zone, description, case when image_content is not null then concat('/api/v1/businesses/', id, '/image') else image_url end as image_url, contact_phone, maps_url, latitude, longitude, status, updated_at from app.partner_businesses where id = ?",
                         (rs, row) ->
                                 new BusinessView(
                                         rs.getObject("id", UUID.class),
@@ -163,7 +202,9 @@ public class PartnerBusinessService {
                         ? null
                         : input.imageUrl().trim();
         if (image != null
-                && (!image.startsWith("/images/") && !image.startsWith("https://")
+                && (!image.startsWith("/images/")
+                                && !image.matches("/api/v1/businesses/[0-9a-fA-F-]{36}/image")
+                                && !image.startsWith("https://")
                         || image.length() > 500)) {
             throw new IllegalArgumentException(
                     "La imagen debe usar HTTPS o una imagen local permitida");
@@ -243,6 +284,45 @@ public class PartnerBusinessService {
         }
     }
 
+    private String validateImage(String contentType, byte[] content) {
+        if (content == null || content.length == 0) {
+            throw new IllegalArgumentException("Selecciona una imagen");
+        }
+        if (content.length > MAX_IMAGE_BYTES) {
+            throw new IllegalArgumentException("La imagen no puede superar los 5 MB");
+        }
+        var normalized = contentType == null ? "" : contentType.toLowerCase(Locale.ROOT);
+        var valid =
+                switch (normalized) {
+                    case "image/jpeg" ->
+                            content.length >= 3
+                                    && (content[0] & 0xff) == 0xff
+                                    && (content[1] & 0xff) == 0xd8
+                                    && (content[2] & 0xff) == 0xff;
+                    case "image/png" ->
+                            content.length >= 8
+                                    && (content[0] & 0xff) == 0x89
+                                    && content[1] == 0x50
+                                    && content[2] == 0x4e
+                                    && content[3] == 0x47;
+                    case "image/webp" ->
+                            content.length >= 12
+                                    && content[0] == 0x52
+                                    && content[1] == 0x49
+                                    && content[2] == 0x46
+                                    && content[3] == 0x46
+                                    && content[8] == 0x57
+                                    && content[9] == 0x45
+                                    && content[10] == 0x42
+                                    && content[11] == 0x50;
+                    default -> false;
+                };
+        if (!valid) {
+            throw new IllegalArgumentException("Usa una imagen JPEG, PNG o WebP válida");
+        }
+        return normalized;
+    }
+
     public record BusinessCommand(
             String name,
             String category,
@@ -268,4 +348,6 @@ public class PartnerBusinessService {
             BigDecimal longitude,
             String status,
             Instant updatedAt) {}
+
+    public record BusinessImage(byte[] content, String contentType) {}
 }

@@ -15,6 +15,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+    private final OidcRoleClaims roleClaims;
+
+    public SecurityConfig(OidcRoleClaims roleClaims) {
+        this.roleClaims = roleClaims;
+    }
+
     @Bean
     SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
@@ -31,6 +37,7 @@ public class SecurityConfig {
                                                 "/api/v1/spaces/*/bookable-slots",
                                                 "/api/v1/venue-catalogs",
                                                 "/api/v1/businesses",
+                                                "/api/v1/businesses/*/image",
                                                 "/api/v1/payment-orders/capabilities",
                                                 "/api/v1/matches",
                                                 "/api/v1/matches/*")
@@ -49,20 +56,13 @@ public class SecurityConfig {
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
         var converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(
-                jwt -> {
-                    var realmAccess = jwt.getClaimAsMap("realm_access");
-                    if (realmAccess == null) return List.of();
-                    var roles = realmAccess.get("roles");
-                    if (!(roles instanceof Collection<?> values)) return List.of();
-                    return values.stream()
-                            .filter(String.class::isInstance)
-                            .map(String.class::cast)
-                            .map(
-                                    role ->
-                                            (GrantedAuthority)
-                                                    new SimpleGrantedAuthority("ROLE_" + role))
-                            .toList();
-                });
+                jwt ->
+                        roleClaims.roles(jwt).stream()
+                                .map(
+                                        role ->
+                                                (GrantedAuthority)
+                                                        new SimpleGrantedAuthority("ROLE_" + role))
+                                .toList());
         return converter;
     }
 }

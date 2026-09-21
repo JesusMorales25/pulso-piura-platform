@@ -89,6 +89,6 @@ El resultado de la revisión OWASP y sus límites están en
 La publicación simplificada en una VM de Oracle administrada con Coolify está en
 [`deploy/coolify/README.md`](deploy/coolify/README.md).
 
-La demostración temporal con frontend en Vercel y API, identidad y PostgreSQL en
+La demostración temporal con frontend en Vercel, Auth0 y API/PostgreSQL en
 Render está documentada en
 [`deploy/render-vercel/README.md`](deploy/render-vercel/README.md).

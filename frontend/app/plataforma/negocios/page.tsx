@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { PencilSimple, Phone, Storefront } from "@phosphor-icons/react";
+import { ImageSquare, ListBullets, PencilSimple, Phone, Plus, Storefront } from "@phosphor-icons/react";
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { FriendlyLocationPicker } from "@/components/forms/FriendlyLocationPicker";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
-import { apiRequest } from "@/lib/api";
+import { apiAssetUrl, apiRequest } from "@/lib/api";
 
 type Business = {
   id: string;
@@ -22,6 +22,7 @@ type Business = {
 };
 
 type Notice = { message: string; tone: "success" | "error" };
+type BusinessMode = "add" | "list";
 
 const categoryLabels: Record<Business["category"], string> = {
   CHOPERIA: "Chopería",
@@ -35,9 +36,18 @@ export default function PlatformBusinessesPage() {
   const { capabilities, loading } = useUserCapabilities();
   const [items, setItems] = useState<Business[]>([]);
   const [editing, setEditing] = useState<Business | null>(null);
+  const [activeMode, setActiveMode] = useState<BusinessMode>("add");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
   const dismissNotice = useCallback(() => setNotice(null), []);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
 
   useEffect(() => {
     if (!accessToken || !capabilities.canManagePlatform) return;
@@ -73,7 +83,7 @@ export default function PlatformBusinessesPage() {
     setSaving(true);
     setNotice(null);
     try {
-      const saved = await apiRequest<Business>(
+      let saved = await apiRequest<Business>(
         editing ? `/platform/businesses/${editing.id}` : "/platform/businesses",
         accessToken,
         {
@@ -83,7 +93,7 @@ export default function PlatformBusinessesPage() {
             category: data.get("category"),
             zone: data.get("zone"),
             description: nullableText(data.get("description")),
-            imageUrl: nullableText(data.get("imageUrl")),
+            imageUrl: editing?.imageUrl ?? null,
             contactPhone,
             mapsUrl: nullableText(data.get("mapsUrl")),
             latitude: nullableNumber(data.get("latitude")),
@@ -92,12 +102,24 @@ export default function PlatformBusinessesPage() {
           }),
         },
       );
+      if (selectedImage) {
+        const upload = new FormData();
+        upload.set("image", selectedImage);
+        saved = await apiRequest<Business>(
+          `/platform/businesses/${saved.id}/image`,
+          accessToken,
+          { method: "PUT", body: upload },
+        );
+      }
       setItems((current) =>
         editing
           ? current.map((item) => (item.id === saved.id ? saved : item))
           : [saved, ...current],
       );
       setEditing(null);
+      setSelectedImage(null);
+      setImagePreview("");
+      setActiveMode("list");
       form.reset();
       setNotice({
         message: editing
@@ -156,6 +178,36 @@ export default function PlatformBusinessesPage() {
     }
   }
 
+  function startNewBusiness() {
+    setEditing(null);
+    setSelectedImage(null);
+    setImagePreview("");
+    setActiveMode("add");
+  }
+
+  function startEditing(item: Business) {
+    setEditing(item);
+    setSelectedImage(null);
+    setImagePreview(item.imageUrl ? apiAssetUrl(item.imageUrl) : "");
+    setActiveMode("add");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function selectImage(file: File | undefined) {
+    if (!file) return;
+    if (!(["image/jpeg", "image/png", "image/webp"].includes(file.type))) {
+      setNotice({ message: "Selecciona una imagen JPEG, PNG o WebP.", tone: "error" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setNotice({ message: "La imagen no puede superar los 5 MB.", tone: "error" });
+      return;
+    }
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+    setNotice(null);
+  }
+
   if (loading)
     return (
       <main className="section">
@@ -185,7 +237,31 @@ export default function PlatformBusinessesPage() {
         Solo los registros publicados aparecen para todas las personas en “El
         tercer tiempo”.
       </p>
-      <div className="platformBusinessGrid">
+      <div aria-label="Administrar negocios" className="businessModeSwitch" role="tablist">
+        <button
+          aria-selected={activeMode === "add"}
+          className={activeMode === "add" ? "active" : ""}
+          onClick={startNewBusiness}
+          role="tab"
+          type="button"
+        >
+          <Plus aria-hidden="true" size={19} weight="bold" />
+          {editing ? "Editar negocio" : "Agregar negocio"}
+        </button>
+        <button
+          aria-selected={activeMode === "list"}
+          className={activeMode === "list" ? "active" : ""}
+          onClick={() => setActiveMode("list")}
+          role="tab"
+          type="button"
+        >
+          <ListBullets aria-hidden="true" size={19} weight="bold" />
+          Negocios publicados
+          <small>{items.length}</small>
+        </button>
+      </div>
+      <div className="platformBusinessWorkspace">
+        {activeMode === "add" && (
         <form
           className="card adminForm platformBusinessForm"
           key={editing?.id ?? "new"}
@@ -252,13 +328,21 @@ export default function PlatformBusinessesPage() {
             />
           </label>
           <label>
-            Imagen
-            <input
-              defaultValue={editing?.imageUrl ?? ""}
-              name="imageUrl"
-              maxLength={500}
-              placeholder="/images/third-time-restaurant.jpg"
-            />
+            Foto del negocio
+            <span className="businessImagePicker">
+              {imagePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element -- La vista previa puede ser un blob local.
+                <img alt="Vista previa del negocio" src={imagePreview} />
+              ) : (
+                <span><ImageSquare aria-hidden="true" size={30} /><b>Agrega una foto</b><small>JPEG, PNG o WebP · máximo 5 MB</small></span>
+              )}
+              <input
+                accept="image/jpeg,image/png,image/webp"
+                name="imageFile"
+                onChange={(event) => selectImage(event.target.files?.[0])}
+                type="file"
+              />
+            </span>
           </label>
           <label>
             Estado
@@ -275,7 +359,12 @@ export default function PlatformBusinessesPage() {
           {editing && (
             <button
               className="secondary"
-              onClick={() => setEditing(null)}
+              onClick={() => {
+                setEditing(null);
+                setSelectedImage(null);
+                setImagePreview("");
+                setActiveMode("list");
+              }}
               type="button"
             >
               Cancelar edición
@@ -289,29 +378,32 @@ export default function PlatformBusinessesPage() {
                 : "Guardar negocio"}
           </button>
         </form>
+        )}
+        {activeMode === "list" && (
         <section
           className="platformBusinessList"
           aria-label="Negocios registrados"
         >
           {items.map((item) => (
             <article className="card" key={item.id}>
-              <span className="pill">{statusLabel(item.status)}</span>
-              <h3>{item.name}</h3>
-              <p>
-                {categoryLabels[item.category]} · {item.zone}
-              </p>
-              {item.description && <small>{item.description}</small>}
-              <div className="platformBusinessMeta">
-                <span>
-                  <Phone aria-hidden="true" size={16} />{" "}
-                  {item.contactPhone || "Sin contacto"}
-                </span>
+              {item.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element -- La imagen puede provenir de la API o de HTTPS.
+                <img className="platformBusinessThumb" alt="" src={apiAssetUrl(item.imageUrl)} />
+              )}
+              <div className="platformBusinessCardBody">
+                <span className={`pill businessStatus businessStatus--${item.status.toLowerCase()}`}>{statusLabel(item.status)}</span>
+                <h3>{item.name}</h3>
+                <p>{categoryLabels[item.category]} · {item.zone}</p>
+                {item.description && <small>{item.description}</small>}
+                <div className="platformBusinessMeta">
+                  <span><Phone aria-hidden="true" size={16} /> {item.contactPhone || "Sin contacto"}</span>
+                </div>
               </div>
-              <div className="buttonRow">
+              <div className="businessCardActions">
                 <button
                   className="secondary"
                   disabled={saving}
-                  onClick={() => setEditing(item)}
+                  onClick={() => startEditing(item)}
                   type="button"
                 >
                   <PencilSimple aria-hidden="true" size={17} /> Editar
@@ -356,6 +448,7 @@ export default function PlatformBusinessesPage() {
             </div>
           )}
         </section>
+        )}
       </div>
     </main>
   );

@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Clock, MapPin, SoccerBall, UsersThree, X } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
+import { X } from "@phosphor-icons/react";
 import { CardSkeletons } from "@/features/feedback/CardSkeletons";
+import { FeaturedMatchCardV2 } from "@/features/home/FeaturedMatchCardV2";
 import { apiRequest } from "@/lib/api";
 import type { MatchSummary } from "./types";
 
@@ -25,6 +26,7 @@ const localStartHour = (isoValue: string) =>
   );
 
 export function MatchCatalog() {
+  const router = useRouter();
   const [sport, setSport] = useState("");
   const [items, setItems] = useState<MatchSummary[]>([]);
   const [zone, setZone] = useState("");
@@ -170,40 +172,17 @@ export function MatchCatalog() {
         <div className="empty"><h2>No encontramos coincidencias</h2><p>Amplía la zona, los cupos, el horario o el precio máximo.</p></div>
       )}
 
-      <div className="matchCatalogGrid">
-        {filteredItems.map((match) => {
-          const start = new Date(match.startsAt);
-          const price = new Intl.NumberFormat("es-PE", {
-            style: "currency",
-            currency: match.currency,
-          }).format(match.priceMinor / 100);
-          return (
-            <article className="matchCatalogCard" key={match.id}>
-              <div className="matchCatalogIcon"><SoccerBall aria-hidden="true" size={32} /></div>
-              <div>
-                <p className="eyebrow">{match.formatCode.replaceAll("_", " ")}</p>
-                <h2>{match.title}</h2>
-                <p><MapPin aria-hidden="true" size={16} />{match.venueName} · {match.spaceName}</p>
-                <p>
-                  <Clock aria-hidden="true" size={16} />
-                  {start.toLocaleString("es-PE", {
-                    weekday: "short",
-                    day: "numeric",
-                    month: "short",
-                    hour: "numeric",
-                    minute: "2-digit",
-                    timeZone: "America/Lima",
-                  })}
-                </p>
-                <div className="matchCatalogMeta">
-                  <span><UsersThree aria-hidden="true" size={17} />{match.availablePlayers} cupos</span>
-                  <strong>{price}</strong>
-                </div>
-                <Link className="primary" href={`/partidos/${match.publicSlug}`}>Ver y unirme</Link>
-              </div>
-            </article>
-          );
-        })}
+      <div className="matchCatalogGrid matchCatalogFeaturedGrid">
+        {filteredItems.map((match) => (
+          <FeaturedMatchCardV2
+            busy={false}
+            featured={false}
+            key={match.id}
+            match={match}
+            onJoin={() => router.push(`/partidos/${match.publicSlug}`)}
+            participation={null}
+          />
+        ))}
       </div>
     </main>
   );

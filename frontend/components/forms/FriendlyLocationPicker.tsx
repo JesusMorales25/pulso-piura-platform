@@ -9,11 +9,17 @@ export function FriendlyLocationPicker({
   districtFieldName,
   mapsUrlFieldName,
   mapsUrl,
+  latitude,
+  longitude,
+  onCoordinatesChange,
 }: {
   addressFieldName: string;
   districtFieldName?: string;
   mapsUrlFieldName?: string;
   mapsUrl?: string | null;
+  latitude?: string;
+  longitude?: string;
+  onCoordinatesChange?: (latitude: string, longitude: string) => void;
 }) {
   const latitudeInput = useRef<HTMLInputElement>(null);
   const longitudeInput = useRef<HTMLInputElement>(null);
@@ -74,10 +80,13 @@ export function FriendlyLocationPicker({
     setFeedback("Obteniendo tu ubicación…");
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const nextLatitude = String(position.coords.latitude);
+        const nextLongitude = String(position.coords.longitude);
         if (latitudeInput.current && longitudeInput.current) {
-          latitudeInput.current.value = String(position.coords.latitude);
-          longitudeInput.current.value = String(position.coords.longitude);
+          latitudeInput.current.value = nextLatitude;
+          longitudeInput.current.value = nextLongitude;
         }
+        onCoordinatesChange?.(nextLatitude, nextLongitude);
         setFeedback("Ubicación exacta agregada.");
         setLocating(false);
       },
@@ -108,8 +117,8 @@ export function FriendlyLocationPicker({
           </small>
         </label>
       )}
-      <input name="latitude" ref={latitudeInput} type="hidden" />
-      <input name="longitude" ref={longitudeInput} type="hidden" />
+      <input defaultValue={latitude ?? ""} name="latitude" ref={latitudeInput} type="hidden" />
+      <input defaultValue={longitude ?? ""} name="longitude" ref={longitudeInput} type="hidden" />
       <div>
         <button
           className="locationPreviewButton"

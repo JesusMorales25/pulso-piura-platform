@@ -1,5 +1,6 @@
 package com.pulsopiura.platform.identity.application;
 
+import com.pulsopiura.platform.foundation.security.OidcUserClaims;
 import com.pulsopiura.platform.identity.domain.UserStatus;
 import com.pulsopiura.platform.identity.infrastructure.persistence.UserEntity;
 import com.pulsopiura.platform.identity.infrastructure.persistence.UserRepository;
@@ -17,15 +18,22 @@ public class CurrentUserService {
     private final UserRepository users;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final OidcUserClaims claims;
 
     @Autowired
-    public CurrentUserService(UserRepository users, ApplicationEventPublisher events) {
-        this(users, events, Clock.systemUTC());
+    public CurrentUserService(
+            UserRepository users, ApplicationEventPublisher events, OidcUserClaims claims) {
+        this(users, events, claims, Clock.systemUTC());
     }
 
-    CurrentUserService(UserRepository users, ApplicationEventPublisher events, Clock clock) {
+    CurrentUserService(
+            UserRepository users,
+            ApplicationEventPublisher events,
+            OidcUserClaims claims,
+            Clock clock) {
         this.users = users;
         this.events = events;
+        this.claims = claims;
         this.clock = clock;
     }
 
@@ -41,9 +49,9 @@ public class CurrentUserService {
             user =
                     UserEntity.create(
                             jwt.getSubject(),
-                            jwt.getClaimAsString("email"),
-                            Boolean.TRUE.equals(jwt.getClaim("email_verified")),
-                            jwt.getClaimAsString("name"),
+                            claims.email(jwt),
+                            claims.emailVerified(jwt),
+                            claims.name(jwt),
                             clock.instant());
             try {
                 user = users.saveAndFlush(user);
@@ -54,10 +62,10 @@ public class CurrentUserService {
         }
         if (user.status() != UserStatus.ACTIVE) throw new AccessDeniedException("Cuenta no activa");
         user.refreshClaims(
-                jwt.getClaimAsString("email"),
-                Boolean.TRUE.equals(jwt.getClaim("email_verified")),
-                jwt.getClaimAsString("name"),
-                jwt.getClaimAsString("picture"),
+                claims.email(jwt),
+                claims.emailVerified(jwt),
+                claims.name(jwt),
+                claims.picture(jwt),
                 clock.instant());
         if (created) events.publishEvent(new UserProvisioned(user.id()));
         return new CurrentUser(

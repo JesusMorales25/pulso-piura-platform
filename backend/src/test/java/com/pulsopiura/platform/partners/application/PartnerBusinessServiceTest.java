@@ -1,6 +1,8 @@
 package com.pulsopiura.platform.partners.application;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.pulsopiura.platform.audit.infrastructure.persistence.AuditEventRepository;
@@ -107,5 +109,48 @@ class PartnerBusinessServiceTest {
                 .hasMessageContaining("Google Maps");
         verifyNoInteractions(jdbc);
         verifyNoInteractions(auditEvents);
+    }
+
+    @Test
+    void rejectsImageContentThatDoesNotMatchItsDeclaredType() {
+        var service = new PartnerBusinessService(jdbc, auditEvents);
+
+        assertThatThrownBy(
+                        () ->
+                                service.updateImage(
+                                        UUID.randomUUID(),
+                                        UUID.randomUUID(),
+                                        "image/png",
+                                        "not-an-image"
+                                                .getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("JPEG, PNG o WebP");
+
+        verifyNoInteractions(jdbc);
+        verifyNoInteractions(auditEvents);
+    }
+
+    @Test
+    void acceptsAValidJpegAndAttemptsToPersistIt() {
+        var service = new PartnerBusinessService(jdbc, auditEvents);
+        var actor = UUID.randomUUID();
+        var business = UUID.randomUUID();
+        var jpeg = new byte[] {(byte) 0xff, (byte) 0xd8, (byte) 0xff, 0x00};
+        org.mockito.Mockito.when(
+                        jdbc.update(
+                                anyString(),
+                                eq(jpeg),
+                                eq("image/jpeg"),
+                                eq(actor),
+                                any(java.sql.Timestamp.class),
+                                eq(business)))
+                .thenReturn(1);
+
+        assertThatThrownBy(() -> service.updateImage(actor, business, "image/jpeg", jpeg))
+                .isInstanceOf(java.util.NoSuchElementException.class)
+                .hasMessage("Negocio no encontrado");
+
+        verify(jdbc)
+                .update(anyString(), eq(jpeg), eq("image/jpeg"), eq(actor), any(), eq(business));
     }
 }

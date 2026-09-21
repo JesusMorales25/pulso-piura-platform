@@ -2,6 +2,15 @@ import { rejectToken } from "./auth-session";
 import { getUserManager } from "./oidc";
 const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
+export function apiAssetUrl(value: string): string {
+  if (!value.startsWith("/api/")) return value;
+  try {
+    return new URL(value, apiBase).toString();
+  } catch {
+    return value;
+  }
+}
+
 let renewal: Promise<string | null> | undefined;
 export class ApiError extends Error {
   constructor(
@@ -16,13 +25,14 @@ export async function apiRequest<T>(
   accessToken: string | null = null,
   init: RequestInit = {},
 ): Promise<T> {
+  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
   const send = (token: string | null) =>
     fetch(`${apiBase}${path}`, {
       ...init,
       signal: init.signal ?? AbortSignal.timeout(15_000),
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(init.body ? { "Content-Type": "application/json" } : {}),
+        ...(init.body && !isFormData ? { "Content-Type": "application/json" } : {}),
         ...init.headers,
       },
     });

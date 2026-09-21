@@ -2,51 +2,38 @@ package com.pulsopiura.platform.matches.application;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
 import com.pulsopiura.platform.matches.domain.*;
-import com.pulsopiura.platform.matches.infrastructure.persistence.MatchInvitationRepository;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
-@ExtendWith(MockitoExtension.class)
 class MatchAccessPolicyTest {
-    @Mock MatchInvitationRepository invitations;
-
     @Test
-    void privateMatchAllowsOrganizerAndAcceptedGuest() {
+    void privateMatchAllowsOrganizerAndAuthenticatedGuestWithSharedLink() {
         var organizer = UUID.randomUUID();
         var guest = UUID.randomUUID();
         var match = match(MatchVisibility.PRIVATE, organizer);
-        var policy = new MatchAccessPolicy(invitations);
-        when(invitations.existsByMatchIdAndAcceptedByAndStatus(match.id(), guest, "ACCEPTED"))
-                .thenReturn(true);
+        var policy = new MatchAccessPolicy();
 
         assertThatCode(() -> policy.requireCanAccess(match, organizer)).doesNotThrowAnyException();
         assertThatCode(() -> policy.requireCanAccess(match, guest)).doesNotThrowAnyException();
     }
 
     @Test
-    void privateMatchRejectsStrangerAndAnonymousUser() {
+    void privateMatchRejectsOnlyAnonymousUser() {
         var organizer = UUID.randomUUID();
-        var stranger = UUID.randomUUID();
         var match = match(MatchVisibility.PRIVATE, organizer);
-        var policy = new MatchAccessPolicy(invitations);
+        var policy = new MatchAccessPolicy();
 
-        assertThatThrownBy(() -> policy.requireCanAccess(match, stranger))
-                .isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(() -> policy.requireCanAccess(match, null))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
     void publicAndLinkMatchesRemainAccessible() {
-        var policy = new MatchAccessPolicy(invitations);
+        var policy = new MatchAccessPolicy();
 
         assertThatCode(
                         () ->

@@ -139,10 +139,10 @@ function ReservationsList({
   if (!result) return <p className="notice">Cargando tus reservas…</p>;
   return (
     <div className="reservationList">
-      <p className="notice">
-        Pagos en modo de pruebas. No hay cobros reales. Puedes cancelar hasta 2
-        horas antes; los importes pagados se retienen sin devolución.
-      </p>
+      <aside className="reservationListNotice">
+        <strong>Pagos de demostración</strong>
+        <span>No se realizan cobros reales. Puedes cancelar hasta 2 horas antes.</span>
+      </aside>
       {result.items.length === 0 ? (
         <div className="empty">
           <h2>Aún no tienes reservas</h2>
@@ -153,7 +153,7 @@ function ReservationsList({
       ) : (
         result.items.map((reservation) => (
           <ReservationItem
-            key={`${accessToken}:${reservation.id}`}
+            key={reservation.id}
             initial={reservation}
             accessToken={accessToken}
             highlighted={reservation.id === highlightedReservationId}
@@ -216,11 +216,7 @@ export function MyReservations({
         reservationId={highlightedReservationId}
       />
     ) : (
-      <ReservationsList
-        key={accessToken}
-        accessToken={accessToken}
-        highlightedReservationId=""
-      />
+      <ReservationsList accessToken={accessToken} highlightedReservationId="" />
     )
   );
 }

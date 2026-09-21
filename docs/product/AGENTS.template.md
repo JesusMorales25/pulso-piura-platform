@@ -11,7 +11,7 @@ Antes de analizar o modificar código, lee completamente:
 
 - Backend: Java + Spring Boot, monolito modular.
 - Frontend: Next.js + React + TypeScript, móvil primero/PWA.
-- Identidad: Keycloak/OIDC con Google federado.
+- Identidad: proveedor OIDC configurable con Google federado.
 - Autorización: Spring Security + permisos contextuales en PostgreSQL.
 - Datos: PostgreSQL + Flyway.
 - API: REST/JSON + OpenAPI.

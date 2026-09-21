@@ -207,7 +207,7 @@ export default function ProfilePage() {
           </h1>
           <p>{me?.email}</p>
         </div>
-        <button className="secondary" onClick={logout}>
+        <button className="secondary profileLogout" onClick={logout}>
           Cerrar sesión
         </button>
       </div>

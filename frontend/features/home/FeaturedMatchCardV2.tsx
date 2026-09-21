@@ -7,7 +7,7 @@ import {
   CalendarBlank,
   Check,
   Clock,
-  CopySimple,
+  ShareNetwork,
   MapPin,
   ShieldCheck,
   SoccerBall,
@@ -30,11 +30,13 @@ export function FeaturedMatchCardV2({
   busy,
   participation,
   onJoin,
+  featured = true,
 }: {
   match: MatchSummary;
   busy: boolean;
   participation: MatchParticipation | null;
   onJoin: () => void;
+  featured?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const date = new Date(match.startsAt);
@@ -68,16 +70,17 @@ export function FeaturedMatchCardV2({
 
   const preview = match.participantPreview ?? [];
   const hiddenConfirmed = Math.max(0, match.occupiedPlayers - preview.length);
+  const titleId = `match-card-title-${match.id}`;
 
   return (
-    <article className={styles.card} aria-labelledby="featured-match-title">
+    <article className={styles.card} aria-labelledby={titleId}>
       <div className={styles.hero}>
         <Image className={styles.photo} src={image} alt="" fill priority sizes="(max-width: 760px) 100vw, 760px" />
         <div className={styles.heroShade} />
-        <p className={styles.label}><UsersThree aria-hidden="true" size={15} /> Partido abierto destacado</p>
+        <p className={styles.label}><UsersThree aria-hidden="true" size={15} /> {featured ? "Partido abierto destacado" : "Partido abierto"}</p>
         <div className={styles.identity}>
           <span className={styles.sportBadge}><SoccerBall aria-hidden="true" weight="duotone" /><small>{format}</small></span>
-          <div><h2 id="featured-match-title">{match.title}</h2><p><MapPin aria-hidden="true" weight="fill" /> {match.venueName}</p></div>
+          <div><h2 id={titleId}>{match.title}</h2><p><MapPin aria-hidden="true" weight="fill" /> {match.venueName}</p></div>
         </div>
       </div>
 
@@ -105,7 +108,7 @@ export function FeaturedMatchCardV2({
 
         <div className={styles.footer}>
           <div className={styles.price}><small>Cuota por jugador</small><strong>{match.priceMinor > 0 ? price : "Gratis"} <em>{match.priceMinor > 0 ? "/ persona" : ""}</em></strong></div>
-          <button aria-label={copied ? "Enlace copiado" : "Copiar enlace del partido"} className={styles.share} onClick={() => void copyMatchLink()} title={copied ? "Enlace copiado" : "Compartir partido"} type="button">{copied ? <Check weight="bold" /> : <CopySimple />}</button>
+          <button aria-label={copied ? "Enlace copiado" : "Compartir enlace del partido"} className={styles.share} onClick={() => void copyMatchLink()} title={copied ? "Enlace copiado" : "Compartir partido"} type="button">{copied ? <Check weight="bold" /> : <ShareNetwork />}</button>
           {participation ? (
             <button className={styles.joined} onClick={onJoin} type="button"><Check weight="bold" /> {participation.status === "JOINED" ? "Inscrito" : `Espera ${participation.waitlistPosition}`}<ArrowRight /></button>
           ) : (

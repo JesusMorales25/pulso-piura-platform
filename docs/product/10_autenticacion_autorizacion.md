@@ -2,9 +2,9 @@
 
 ## Decisión de diseño
 
-La identidad se delegará a un proveedor OIDC compatible, inicialmente Keycloak. Spring Boot funcionará como OAuth 2.0 Resource Server y será la autoridad de autorización del producto.
+La identidad se delegará a un proveedor OIDC compatible. Auth0 se usa en la demostración y Keycloak permanece disponible para entornos autogestionados. Spring Boot funcionará como OAuth 2.0 Resource Server y será la autoridad de autorización del producto.
 
-Google será un proveedor social federado en Keycloak. El backend seguirá confiando en un solo emisor: Keycloak.
+Google será una conexión social del proveedor OIDC. El backend confiará en un solo emisor por ambiente.
 
 ```text
 Next.js ── Authorization Code + PKCE ── Keycloak

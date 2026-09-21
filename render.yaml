@@ -1,90 +1,5 @@
 services:
   - type: web
-    name: pulso-piura-identity-jesusmorales25
-    runtime: docker
-    plan: free
-    region: virginia
-    dockerfilePath: ./infra/keycloak/Dockerfile.render
-    dockerContext: ./infra/keycloak
-    healthCheckPath: /realms/pulso-piura
-    autoDeployTrigger: commit
-    buildFilter:
-      paths:
-        - infra/keycloak/**
-        - render.yaml
-    envVars:
-      - key: RENDER_DATABASE_URL
-        fromDatabase:
-          name: pulso-piura-demo-db
-          property: connectionString
-      - key: KC_DB
-        value: postgres
-      - key: KC_DB_USERNAME
-        fromDatabase:
-          name: pulso-piura-demo-db
-          property: user
-      - key: KC_DB_PASSWORD
-        fromDatabase:
-          name: pulso-piura-demo-db
-          property: password
-      - key: KC_BOOTSTRAP_ADMIN_USERNAME
-        value: kc_bootstrap_admin
-      - key: KC_BOOTSTRAP_ADMIN_PASSWORD
-        generateValue: true
-      - key: KC_HOSTNAME
-        value: https://pulso-piura-identity-jesusmorales25.onrender.com
-      - key: KC_HTTP_ENABLED
-        value: "true"
-      - key: KC_PROXY_HEADERS
-        value: xforwarded
-      - key: KC_HOSTNAME_BACKCHANNEL_DYNAMIC
-        value: "true"
-      - key: KC_HEALTH_ENABLED
-        value: "true"
-      - key: KC_CACHE
-        value: local
-      - key: KC_DB_POOL_INITIAL_SIZE
-        value: "1"
-      - key: KC_DB_POOL_MIN_SIZE
-        value: "1"
-      - key: KC_DB_POOL_MAX_SIZE
-        value: "5"
-      - key: KEYCLOAK_STARTUP_MAX_ATTEMPTS
-        value: "100"
-      - key: KEYCLOAK_STARTUP_RETRY_SECONDS
-        value: "3"
-      - key: KEYCLOAK_ADMIN_MAX_ATTEMPTS
-        value: "20"
-      - key: KEYCLOAK_ADMIN_RETRY_SECONDS
-        value: "3"
-      - key: KEYCLOAK_CONFIGURATION_MAX_ATTEMPTS
-        value: "5"
-      - key: JAVA_OPTS_KC_HEAP
-        value: -XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=40 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20
-      - key: KEYCLOAK_PUBLIC_URL
-        value: https://pulso-piura-identity-jesusmorales25.onrender.com
-      - key: FRONTEND_PUBLIC_URL
-        value: https://pulso-piura-platform.vercel.app
-      - key: PASSWORD_REGISTRATION_ENABLED
-        value: "false"
-      - key: LOCAL_REQUIRE_EMAIL_VERIFICATION
-        value: "true"
-      - key: LOCAL_DEMO_USERS_ENABLED
-        value: "false"
-      - key: RESET_BOOTSTRAP_USER_PASSWORDS
-        value: "true"
-      - key: PLATFORM_ADMIN_EMAIL
-        sync: false
-      - key: PLATFORM_ADMIN_PASSWORD
-        sync: false
-      - key: GOOGLE_LOGIN_ENABLED
-        value: "true"
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-
-  - type: web
     name: pulso-piura-api-jesusmorales25
     runtime: docker
     plan: free
@@ -112,12 +27,18 @@ services:
         fromDatabase:
           name: pulso-piura-demo-db
           property: password
+      - key: AUTH_PROVIDER
+        value: auth0
       - key: OIDC_ISSUER_URI
-        value: https://pulso-piura-identity-jesusmorales25.onrender.com/realms/pulso-piura
-      - key: OIDC_JWK_SET_URI
-        value: https://pulso-piura-identity-jesusmorales25.onrender.com/realms/pulso-piura/protocol/openid-connect/certs
+        sync: false
       - key: OIDC_AUDIENCE
-        value: pulso-api
+        sync: false
+      - key: OIDC_ROLES_CLAIM
+        value: https://pulsopiura.app/roles
+      - key: OIDC_CLAIMS_NAMESPACE
+        value: https://pulsopiura.app
+      - key: PLATFORM_ADMIN_EMAIL
+        sync: false
       - key: WEB_ALLOWED_ORIGIN
         value: https://pulso-piura-platform.vercel.app
       - key: RESERVATION_HOLD_DURATION

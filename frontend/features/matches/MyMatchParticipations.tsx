@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { CalendarDots, CheckCircle, MapPin, UsersThree } from "@phosphor-icons/react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
+import { MatchQrPass } from "./MatchQrPass";
 
 type MatchActivity = {
   id: string; publicSlug: string; title: string; formatCode: string;
@@ -12,6 +13,7 @@ type MatchActivity = {
   startsAt: string; endsAt: string; participationStatus: "JOINED" | "WAITLISTED";
   paymentStatus: "PAID" | "PENDING" | "UNPAID" | "NOT_REQUIRED";
   paidMinor: number; currency: string;
+  checkedInAt: string | null;
 };
 
 export function MyMatchParticipations() {
@@ -34,10 +36,13 @@ export function MyMatchParticipations() {
     {loading && <p className="notice">Cargando tus inscripciones…</p>}
     {error && <p className="inlineAlert errorNotice" role="alert">{error}</p>}
     {!loading && !items.length && <div className="empty compactEmpty"><UsersThree size={34}/><h3>Aún no te has unido a un partido</h3><p>Cuando confirmes un cupo aparecerá aquí.</p></div>}
-    <div className="activityMatchList">{items.map((item) => { const start = new Date(item.startsAt); return <Link className="activityMatchCard" href={`/partidos/${item.publicSlug}`} key={item.id}>
-      <div className="activityMatchDate"><strong>{start.toLocaleDateString("es-PE",{day:"2-digit"})}</strong><span>{start.toLocaleDateString("es-PE",{month:"short"})}</span></div>
-      <div><h3>{item.title}</h3><p><MapPin size={15}/>{item.venueName} · {item.spaceName}</p><p><CalendarDots size={15}/>{start.toLocaleString("es-PE",{dateStyle:"medium",timeStyle:"short"})}</p></div>
-      <span className="activityMatchStatus"><CheckCircle size={17}/>{item.participationStatus === "JOINED" ? "Confirmado" : "En espera"}<small>{item.paymentStatus === "PAID" ? "Pagado" : item.paymentStatus === "NOT_REQUIRED" ? "Sin costo" : "Pago pendiente"}</small></span>
-    </Link>; })}</div>
+    <div className="activityMatchList">{items.map((item) => { const start = new Date(item.startsAt); return <article className="activityMatchEntry" key={item.id}>
+      <Link className="activityMatchCard" href={`/partidos/${item.publicSlug}`}>
+        <div className="activityMatchDate"><strong>{start.toLocaleDateString("es-PE",{day:"2-digit"})}</strong><span>{start.toLocaleDateString("es-PE",{month:"short"})}</span></div>
+        <div><h3>{item.title}</h3><p><MapPin size={15}/>{item.venueName} · {item.spaceName}</p><p><CalendarDots size={15}/>{start.toLocaleString("es-PE",{dateStyle:"medium",timeStyle:"short"})}</p></div>
+        <span className="activityMatchStatus"><CheckCircle size={17}/>{item.checkedInAt ? "Ingreso registrado" : item.participationStatus === "JOINED" ? "Confirmado" : "En espera"}<small>{item.paymentStatus === "PAID" ? "Pagado" : item.paymentStatus === "NOT_REQUIRED" ? "Sin costo" : "Pago pendiente"}</small></span>
+      </Link>
+      {item.participationStatus === "JOINED" && <MatchQrPass accessToken={accessToken} checkedInAt={item.checkedInAt} publicSlug={item.publicSlug}/>}
+    </article>; })}</div>
   </section>;
 }

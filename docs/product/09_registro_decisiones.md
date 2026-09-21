@@ -22,6 +22,7 @@
 | DEC-016 | 2026-09-04 | Incorporar por fases los aportes reutilizables de `Requerimientos.docx` | Evita duplicación y protege el núcleo del MVP frente a CRM, publicidad e integraciones prematuras | Aceptada |
 | DEC-017 | 2026-09-04 | El pase QR será opaco y no demostrará pago | Reduce exposición de datos y evita usar el comprobante como autoridad financiera | Aceptada |
 | DEC-018 | 2026-09-04 | CRM, marketing y comercios aliados requieren consentimiento y módulos separados | Protege privacidad, autorización multi-tenant y evolución independiente | Aceptada |
+| DEC-019 | 2026-09-21 | Proveedor OIDC configurable; Auth0 para la demostración y Keycloak como alternativa | Reduce memoria y operación sin incorporar contraseñas al producto | Aceptada |
 
 ## Decisiones pendientes
 

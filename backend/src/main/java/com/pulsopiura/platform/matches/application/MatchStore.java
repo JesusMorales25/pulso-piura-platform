@@ -19,6 +19,8 @@ public interface MatchStore {
 
     boolean existsByReservationId(UUID reservationId);
 
+    boolean existsPublishedUpcomingByTitle(String title, Instant now);
+
     List<SportsMatch> findPublicUpcoming(Instant now, String sportCode);
 
     List<SportsMatch> findByOrganizer(UUID organizerUserId);

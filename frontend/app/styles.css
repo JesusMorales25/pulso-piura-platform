@@ -12,9 +12,10 @@
   --danger: #ff8c8c;
   --success: #72e0bd;
   --radius-sm: 12px;
-  --radius: 18px;
-  --radius-lg: 26px;
-  --shadow: 0 18px 60px rgba(0, 7, 13, 0.28);
+  --radius: 16px;
+  --radius-lg: 20px;
+  --shadow: 0 14px 42px rgba(0, 7, 13, 0.24);
+  --font-ui: "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
 }
 
 * {
@@ -41,14 +42,22 @@ body {
     ),
     var(--midnight);
   color: var(--white);
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
+  font-optical-sizing: auto;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
 }
 a {
   color: inherit;
@@ -5980,6 +5989,8 @@ html {
 }
 .venueAttributeChips {
   display: flex;
+  grid-column: 1 / -1;
+  width: 100%;
   flex-wrap: wrap;
   gap: 5px;
   margin-top: 8px;
@@ -5995,15 +6006,18 @@ html {
   line-height: 1.2;
 }
 .exploreVenueContactActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  gap: 8px;
   margin-top: 9px;
 }
 .exploreVenueContactActions a {
   display: inline-flex;
-  min-height: 32px;
+  min-height: 40px;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   padding: 6px 9px;
   border: 1px solid rgba(16, 198, 210, 0.38);
@@ -6012,6 +6026,15 @@ html {
   font-size: 0.66rem;
   font-weight: 850;
   text-decoration: none;
+}
+.exploreVenueContactActions a:only-child {
+  grid-column: 1 / -1;
+}
+.exploreFeaturedActions button {
+  min-height: 44px;
+  padding-inline: 12px;
+  font-size: 0.74rem;
+  line-height: 1.15;
 }
 .scheduleModalBackdrop {
   position: fixed;
@@ -6686,6 +6709,12 @@ body:has(.scheduleModal) .appNavigation {
   font-size: 0.67rem;
   font-weight: 600;
 }
+.matchBuilderForm label > .matchFieldError {
+  color: var(--danger);
+}
+.matchBuilderForm input[aria-invalid="true"] {
+  border-color: color-mix(in srgb, var(--danger) 72%, transparent);
+}
 .selectedCourtSummary {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr) auto;
@@ -6765,6 +6794,9 @@ body:has(.scheduleModal) .appNavigation {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
+.visibilityChoiceTwo > div {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 .visibilityChoice label {
   position: relative;
   grid-template-columns: auto minmax(0, 1fr);
@@ -6799,6 +6831,49 @@ body:has(.scheduleModal) .appNavigation {
   font-size: 0.61rem;
   font-weight: 600;
   line-height: 1.25;
+}
+.matchShareHint,
+.matchCourtEmpty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid rgba(16, 198, 210, 0.22);
+  border-radius: 12px;
+  background: rgba(16, 198, 210, 0.055);
+  color: var(--cyan);
+}
+.matchShareHint p,
+.matchCourtEmpty h3,
+.matchCourtEmpty p {
+  margin: 0;
+}
+.matchShareHint p,
+.matchCourtEmpty > div {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+}
+.matchShareHint b,
+.matchCourtEmpty h3 {
+  color: var(--white);
+  font-size: 0.8rem;
+}
+.matchShareHint span,
+.matchCourtEmpty p {
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+.matchCourtEmpty {
+  align-items: flex-start;
+  border-color: rgba(200, 242, 56, 0.22);
+  background: rgba(200, 242, 56, 0.045);
+  color: var(--lime);
+}
+.matchCourtEmpty .secondary {
+  flex: 0 0 auto;
 }
 .publishMatchButton {
   min-height: 48px;
@@ -7105,6 +7180,9 @@ body:has(.scheduleModal) .appNavigation {
     overflow: visible;
     padding: 0;
   }
+  .visibilityChoiceTwo > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .visibilityChoice label {
     min-width: 0;
     min-height: 92px;
@@ -7117,6 +7195,14 @@ body:has(.scheduleModal) .appNavigation {
   }
   .visibilityChoice label > span {
     justify-items: center;
+  }
+  .matchCourtEmpty {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .matchCourtEmpty .secondary {
+    grid-column: 1 / -1;
+    width: 100%;
   }
   .matchComposerPreview {
     position: static;
@@ -7260,6 +7346,81 @@ body:has(.scheduleModal) .appNavigation {
   color: var(--success);
   font-weight: 800;
 }
+.activityDashboard {
+  display: grid;
+  gap: 22px;
+}
+.activityReturnToDraft {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  border: 1px solid rgba(200, 242, 56, 0.34);
+  border-radius: 14px;
+  background: linear-gradient(120deg, rgba(200, 242, 56, 0.09), rgba(16, 198, 210, 0.055));
+  color: var(--lime);
+}
+.activityReturnToDraft p {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.activityReturnToDraft b {
+  color: var(--white);
+  font-size: 0.82rem;
+}
+.activityReturnToDraft span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.activityReturnToDraft .secondary {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-inline: 13px;
+  border-color: rgba(200, 242, 56, 0.55);
+  color: var(--lime);
+  font-size: 0.72rem;
+  text-decoration: none;
+}
+.activityModeSwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: min(620px, 100%);
+  margin-inline: auto;
+  padding: 6px;
+  border: 1px solid rgba(146, 199, 217, 0.2);
+  border-radius: 15px;
+  background: rgba(3, 20, 33, 0.82);
+}
+.activityModeSwitch button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+.activityModeSwitch button.active {
+  border-color: rgba(16, 198, 210, 0.5);
+  background: var(--cyan);
+  color: #00151f;
+  box-shadow: 0 9px 24px rgba(16, 198, 210, 0.14);
+}
+.activityTabPanel {
+  min-width: 0;
+  animation: match-step-in 180ms ease-out;
+}
 .activityPage .reservationPass {
   border-color: rgba(16, 198, 210, 0.4);
   background:
@@ -7399,6 +7560,26 @@ body:has(.scheduleModal) .appNavigation {
     grid-column: 1 / -1;
     justify-content: center;
   }
+  .activityDashboard {
+    gap: 16px;
+  }
+  .activityReturnToDraft {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 12px;
+  }
+  .activityReturnToDraft .secondary {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .activityModeSwitch {
+    gap: 5px;
+    padding: 5px;
+  }
+  .activityModeSwitch button {
+    min-height: 46px;
+    padding-inline: 8px;
+    font-size: 0.72rem;
+  }
   .thirdTimeHero {
     min-height: 410px;
     background:
@@ -7431,6 +7612,192 @@ body:has(.scheduleModal) .appNavigation {
   }
   .organizerShareActions {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Escala visual 2026: más información útil por pantalla y una jerarquía estable. */
+.pageLead {
+  max-width: 68ch;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+.hybridHome .hybridHeroContent {
+  width: min(1000px, 90vw);
+  padding-top: 76px;
+}
+.hybridHome .prototypeGreeting {
+  margin-bottom: 0.4rem;
+  font-size: 1.05rem;
+}
+.hybridHome .hybridHeroContent h1 {
+  max-width: 570px;
+  margin: 0.35rem 0 1.15rem;
+  font-size: clamp(2.4rem, 5.2vw, 4.05rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+.hybridHome .hybridContent {
+  width: min(1000px, 92vw);
+  padding-bottom: 104px;
+}
+.homeModeSwitch {
+  border-radius: 15px;
+}
+.homeModeSwitch button {
+  min-height: 46px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 780;
+}
+.hybridHome .sportChips,
+.hybridHome .dateStrip {
+  padding-bottom: 16px;
+}
+.hybridHome .sportChips button,
+.hybridHome .dateStrip button {
+  font-size: 0.78rem;
+  font-weight: 740;
+}
+.sectionHeading h2,
+.thirdTimeHeading h2,
+.agendaHeading h2 {
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+.compactVenuePreview {
+  padding-top: 34px;
+}
+.venueShowcaseCard,
+.thirdTimeCard,
+.activityMatchCard,
+.organizerMatchCard,
+.platformModules > a,
+.platformUserList article {
+  border-radius: 14px;
+}
+.venueShowcaseImage {
+  height: 164px;
+}
+.venueShowcaseCopy {
+  gap: 6px;
+  padding: 13px;
+}
+.venueShowcaseCopy > strong {
+  font-size: 1rem;
+}
+.venueShowcaseCopy b {
+  font-size: 1.2rem;
+}
+.thirdTimeSection {
+  padding-top: 42px;
+}
+.thirdTimeRail {
+  gap: 12px;
+  margin-top: 14px;
+}
+.thirdTimeImage {
+  height: 150px;
+}
+.thirdTimeCopy {
+  gap: 6px;
+  padding: 12px;
+}
+.activityPassHero {
+  margin: 20px 0 24px;
+  padding: 18px;
+  border-radius: 16px;
+}
+.activityPassHero h1 {
+  font-size: clamp(1.55rem, 3.4vw, 2.15rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+.matchComposerHeading h1 {
+  font-size: clamp(1.9rem, 3.7vw, 3rem);
+  line-height: 1.04;
+}
+.matchExperienceTitle h1 {
+  max-width: 680px;
+  font-size: clamp(1.9rem, 4.6vw, 3.7rem);
+  line-height: 1;
+}
+.matchFormSection,
+.matchBuilderForm,
+.matchComposerPreview {
+  border-radius: 16px;
+}
+.matchFormSection {
+  padding: 16px;
+}
+.platformKpis article,
+.platformModules > a,
+.platformUserList article {
+  padding: 16px;
+}
+
+@media (max-width: 760px) {
+  body {
+    font-size: 0.9rem;
+  }
+  .mode-matches .hybridHero {
+    min-height: 280px;
+  }
+  .hybridHome .hybridHeroContent,
+  .mode-matches .hybridHeroContent {
+    padding: 90px 16px 0;
+  }
+  .hybridHome .prototypeGreeting,
+  .mode-matches .prototypeGreeting {
+    font-size: 0.82rem;
+  }
+  .hybridHome .hybridHeroContent h1,
+  .mode-matches .hybridHeroContent h1 {
+    max-width: 315px;
+    margin-bottom: 0.85rem;
+    font-size: clamp(1.85rem, 9vw, 2.35rem);
+    line-height: 1.02;
+  }
+  .homeModeSwitch button {
+    min-height: 44px;
+    gap: 6px;
+    font-size: 0.72rem;
+  }
+  .compactVenuePreview {
+    padding-top: 30px;
+  }
+  .compactVenuePreview .sectionHeading h2,
+  .thirdTimeHeading h2,
+  .agendaHeading h2 {
+    font-size: 1.3rem;
+  }
+  .venueShowcaseCard {
+    min-width: min(72vw, 270px);
+  }
+  .venueShowcaseImage {
+    height: 132px;
+  }
+  .thirdTimeSection {
+    padding-top: 34px;
+  }
+  .thirdTimeImage {
+    height: 138px;
+  }
+  .activityPassHero {
+    margin: 14px 0 18px;
+    padding: 14px;
+  }
+  .activityPassHero h1 {
+    font-size: 1.38rem;
+  }
+  .activityPassHero div > p:last-child {
+    font-size: 0.76rem;
+  }
+  .matchComposerHeading h1 {
+    font-size: clamp(1.65rem, 8vw, 2.15rem);
+  }
+  .matchExperienceTitle h1 {
+    font-size: clamp(1.65rem, 8vw, 2.25rem);
   }
 }
 .platformDashboard {
@@ -7651,6 +8018,281 @@ body:has(.scheduleModal) .appNavigation {
     grid-template-columns: 1fr;
   }
 }
+
+/* Directorio comercial: dos tareas claras y carga segura de fotografías. */
+.businessModeSwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  width: min(680px, 100%);
+  margin: 22px auto 18px;
+  padding: 5px;
+  border: 1px solid rgba(146, 199, 217, 0.2);
+  border-radius: 15px;
+  background: rgba(3, 20, 33, 0.86);
+}
+.businessModeSwitch button {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+.businessModeSwitch button.active {
+  border-color: rgba(16, 198, 210, 0.45);
+  background: var(--cyan);
+  color: #00151f;
+}
+.businessModeSwitch small {
+  display: grid;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 0.66rem;
+}
+.platformBusinessWorkspace {
+  width: min(780px, 100%);
+  margin-inline: auto;
+}
+.platformBusinessForm {
+  padding: clamp(16px, 3vw, 24px);
+}
+.businessImagePicker {
+  position: relative;
+  display: grid;
+  min-height: 170px;
+  overflow: hidden;
+  place-items: center;
+  border: 1px dashed rgba(16, 198, 210, 0.5);
+  border-radius: 13px;
+  background: #061b2a;
+  color: var(--muted);
+}
+.businessImagePicker > span {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 20px;
+  text-align: center;
+}
+.businessImagePicker > span b {
+  color: var(--white);
+  font-size: 0.82rem;
+}
+.businessImagePicker > span small {
+  font-size: 0.68rem;
+}
+.businessImagePicker img {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+}
+.businessImagePicker input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  opacity: 0;
+}
+.platformBusinessList article {
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.platformBusinessThumb {
+  width: 132px;
+  height: 100%;
+  min-height: 156px;
+  object-fit: cover;
+}
+.platformBusinessCardBody {
+  display: grid;
+  min-width: 0;
+  align-content: center;
+  gap: 6px;
+  padding: 15px;
+}
+.platformBusinessCardBody h3,
+.platformBusinessCardBody p,
+.platformBusinessCardBody small {
+  margin: 0;
+}
+.platformBusinessCardBody p,
+.platformBusinessCardBody > small {
+  color: var(--muted);
+}
+.businessStatus {
+  width: fit-content;
+}
+.businessStatus--published {
+  background: rgba(114, 224, 189, 0.12);
+  color: var(--success);
+}
+.businessStatus--archived {
+  background: rgba(255, 140, 140, 0.1);
+  color: var(--danger);
+}
+.businessCardActions {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--line);
+}
+.businessCardActions button {
+  display: inline-flex;
+  min-height: 42px;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 9px;
+  font-size: 0.72rem;
+}
+.businessCardActions .primary {
+  background: var(--lime);
+  color: #142100;
+}
+
+/* Actividad: cabecera fotográfica y reservas con información en cuadrícula. */
+.activityPassHero {
+  position: relative;
+  display: grid;
+  min-height: 220px;
+  grid-template-columns: 1fr;
+  align-items: end;
+  overflow: hidden;
+  padding: 26px;
+  border-radius: 18px;
+  background:
+    linear-gradient(0deg, rgba(3, 20, 33, 0.98) 0%, rgba(3, 20, 33, 0.68) 72%, rgba(3, 20, 33, 0.18) 100%),
+    url("/images/hero-match-volleyball-night.png") center 46% / cover;
+}
+.activityPassHero > div {
+  z-index: 1;
+  max-width: 600px;
+}
+.activityPassHero h1 {
+  max-width: 560px;
+}
+.activityPage .reservationList {
+  align-items: start;
+  margin-top: 0;
+}
+.reservationListNotice,
+.reservationList > .checkoutActions,
+.reservationList > .empty {
+  grid-column: 1 / -1;
+}
+.reservationListNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  padding: 11px 13px;
+  border: 1px solid rgba(16, 198, 210, 0.22);
+  border-radius: 12px;
+  background: rgba(16, 198, 210, 0.055);
+}
+.reservationListNotice strong {
+  color: var(--cyan);
+  font-size: 0.75rem;
+}
+.reservationListNotice span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-align: right;
+}
+.activityPage .reservationCard {
+  gap: 0;
+  padding: 13px;
+}
+.activityPage .reservationCard .reservationCheckout {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.activityPage .reservationSummary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 13px 0;
+}
+.activityPage .reservationSummary div {
+  min-width: 0;
+  padding: 9px 10px;
+}
+.activityPage .reservationSummary dt {
+  font-size: 0.63rem;
+}
+.activityPage .reservationSummary dd {
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+}
+.activityPage .paymentChoice {
+  padding: 12px;
+}
+.reservationList:not(.focusedReservationList) .mobileReservationAction {
+  position: static;
+  margin-top: 10px;
+  border: 1px solid rgba(200, 242, 56, 0.2);
+  border-radius: 12px;
+}
+
+@media (max-width: 620px) {
+  .businessModeSwitch button {
+    padding-inline: 7px;
+    font-size: 0.7rem;
+  }
+  .platformBusinessList article {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+  .platformBusinessThumb {
+    width: 96px;
+    min-height: 142px;
+  }
+  .platformBusinessCardBody {
+    padding: 12px;
+  }
+  .businessCardActions {
+    gap: 6px;
+  }
+  .businessCardActions button {
+    min-height: 40px;
+    padding-inline: 5px;
+    font-size: 0.66rem;
+  }
+  .activityPassHero {
+    min-height: 190px;
+    align-items: end;
+    padding: 18px;
+  }
+  .activityPassHero h1 {
+    font-size: 1.45rem;
+  }
+  .reservationListNotice {
+    display: grid;
+  }
+  .reservationListNotice span {
+    text-align: left;
+  }
+  .activityPage .reservationSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 .profileAvatar {
   display: grid;
   width: 64px;
@@ -7668,6 +8310,19 @@ body:has(.scheduleModal) .appNavigation {
 }
 .profileHead {
   align-items: center;
+}
+.profileLogout {
+  min-height: 40px;
+  padding: 8px 13px;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+.matchCatalogFeaturedGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: min(760px, 100%);
+  gap: 18px;
+  margin-inline: auto;
 }
 .platformOrganizationList {
   display: grid;
@@ -7734,6 +8389,26 @@ body:has(.scheduleModal) .appNavigation {
   border: 1px solid rgba(16, 198, 210, 0.35);
   border-radius: 14px;
   background: rgba(3, 23, 34, 0.82);
+}
+.activityMatchEntry {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(5, 25, 38, 0.72);
+}
+.activityMatchEntry .activityMatchCard {
+  border: 0;
+  border-radius: 0;
+}
+.activityMatchEntry .matchPass {
+  margin: 0 14px 14px;
+}
+.matchCheckInPanel {
+  margin-block: 14px;
+  padding: 14px;
+}
+.matchCheckInPanel .checkInPanelHead h3 {
+  margin: 3px 0;
 }
 .reservationPass h4,
 .reservationPass p {
@@ -8126,4 +8801,207 @@ body:has(.scheduleModal) .appNavigation {
   .matchExperienceFacts article > svg { display: none; }
   .matchExperienceFacts strong { font-size: 0.8rem; }
   .matchPlayerGrid article { min-height: 100px; padding-inline: 3px; }
+}
+
+/* Flujo guiado para configurar sedes y canchas */
+.venueAdmin { min-width: 0; }
+.venueAdmin > .sectionHeading,
+.venueAdmin > .inlineAlert,
+.venueAdmin > .inlineConfirm,
+.venueSetupTabs,
+.venueWorkspace,
+.venueAvailabilityStep {
+  width: min(100%, 760px);
+  margin-inline: auto;
+}
+.venueSetupTabs { margin-top: 18px; }
+.venueSetupTabs ol {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 13px 10px;
+  border: 1px solid rgba(146, 199, 217, 0.2);
+  border-radius: 16px;
+  background: rgba(6, 29, 45, 0.78);
+  list-style: none;
+}
+.venueSetupTabs li {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+  color: var(--muted);
+}
+.venueSetupTabs li:not(:last-child)::after {
+  position: absolute;
+  top: 16px;
+  right: -20%;
+  width: 40%;
+  height: 1px;
+  background: rgba(146, 199, 217, 0.2);
+  content: "";
+}
+.venueSetupTabs li.completed:not(:last-child)::after { background: rgba(16, 198, 210, 0.7); }
+.venueSetupTabs button {
+  display: grid;
+  width: 100%;
+  min-height: 48px;
+  place-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.venueSetupTabs button > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(146, 199, 217, 0.32);
+  border-radius: 50%;
+  background: var(--navy);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+.venueSetupTabs button > small { font-size: 0.68rem; font-weight: 800; }
+.venueSetupTabs li.active { color: var(--white); }
+.venueSetupTabs li.active button > span {
+  border-color: var(--cyan);
+  background: var(--cyan);
+  color: #00151f;
+  box-shadow: 0 0 0 5px rgba(16, 198, 210, 0.1);
+}
+.venueSetupTabs li.completed { color: var(--cyan); }
+.venueSetupTabs li.completed button > span {
+  border-color: rgba(16, 198, 210, 0.65);
+  background: rgba(16, 198, 210, 0.14);
+}
+.venueSetupTabs button:disabled { cursor: not-allowed; opacity: 0.45; }
+.venueSetupTabs button:focus-visible {
+  border-radius: 10px;
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+.venueWorkspace { display: block; margin-top: 14px; }
+.venueWorkspace > .setupPanel,
+.venueAvailabilityStep {
+  padding: 14px;
+  border: 1px solid rgba(146, 199, 217, 0.2);
+  border-radius: 18px;
+  background: rgba(6, 29, 45, 0.78);
+  animation: match-step-in 180ms ease-out;
+}
+.venueSetupPanelTitle {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-bottom: 16px;
+}
+.venueSetupPanelTitle > span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(16, 198, 210, 0.13);
+  color: var(--cyan);
+  font-weight: 900;
+}
+.venueSetupPanelTitle h3,
+.venueSetupPanelTitle p,
+.venueResourceHeading { margin: 0; }
+.venueSetupPanelTitle h3 { font-size: 1rem; }
+.venueSetupPanelTitle p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+.venueResourceHeading {
+  margin-bottom: 9px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.venueAdmin .venueList,
+.venueAdmin .spaceList { gap: 9px; }
+.venueAdmin .venueSelector,
+.venueAdmin .spaceCard { border-radius: 13px; }
+.venueAdmin .resourceSelect { min-height: 64px; padding: 12px; }
+.venueAdmin .resourceSelect > span:first-child {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.venueAdmin .resourceSelect strong,
+.venueAdmin .resourceSelect small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.venueAdmin .resourceSelect strong { font-size: 0.86rem; }
+.venueAdmin .resourceSelect small { color: var(--muted); font-size: 0.71rem; }
+.resourceSelectMeta {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  color: var(--cyan);
+}
+.venueAdmin .resourceActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 8px 12px 12px;
+}
+.venueAdmin .resourceActions button {
+  min-width: 0;
+  min-height: 40px;
+  padding: 7px 9px;
+  font-size: 0.72rem;
+}
+.venueSetupForm {
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(3, 20, 33, 0.62);
+}
+.venueSetupForm h4 { margin: 0 0 2px; font-size: 0.92rem; }
+.venueSetupForm label,
+.venueSetupForm legend { font-size: 0.76rem; }
+.venueSetupForm input,
+.venueSetupForm select { min-height: 46px; font-size: 0.8rem; }
+.venueSetupForm > .primary,
+.venueSetupForm > .secondary { min-height: 44px; font-size: 0.78rem; }
+.venueStepActions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 14px;
+}
+.venueStepActions button { min-height: 42px; padding: 8px 14px; font-size: 0.76rem; }
+.venueAvailabilityStep { margin-top: 14px; }
+.venueAvailabilityStep .availabilityAdmin { margin-top: 0; padding-top: 0; border-top: 0; }
+.venueAvailabilityStep .availabilityAdmin > .sectionHeading { display: none; }
+
+@media (max-width: 620px) {
+  .venueAdmin { margin-top: 22px; padding-top: 20px; }
+  .venueAdmin > .sectionHeading h2 { font-size: 1.45rem; }
+  .venueAdmin > .sectionHeading .countBadge { display: none; }
+  .venueSetupTabs ol { padding: 12px 6px; }
+  .venueSetupTabs li:not(:last-child)::after { right: -16%; width: 32%; }
+  .venueWorkspace > .setupPanel,
+  .venueAvailabilityStep { padding: 10px; border-radius: 16px; }
+  .venueSetupForm { padding: 12px; }
+  .venueAdmin .resourceActions { gap: 6px; }
+  .venueAdmin .resourceActions button { padding-inline: 5px; font-size: 0.66rem; }
+  .venueAdmin .resourceSelect .pill {
+    max-width: 68px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .venueAvailabilityStep .setupStepper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

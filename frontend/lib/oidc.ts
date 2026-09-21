@@ -3,6 +3,19 @@ import { UserManager, WebStorageStateStore } from "oidc-client-ts";
 import type { User } from "oidc-client-ts";
 let manager: UserManager | undefined;
 let callback: Promise<User> | undefined;
+
+const authProvider = process.env.NEXT_PUBLIC_AUTH_PROVIDER ?? "keycloak";
+const audience = process.env.NEXT_PUBLIC_OIDC_AUDIENCE;
+
+export function socialLoginParameters(
+  google: boolean,
+): Record<string, string | number | boolean> | undefined {
+  if (!google) return undefined;
+  if (authProvider === "auth0") return { connection: "google-oauth2" };
+  if (authProvider === "keycloak") return { kc_idp_hint: "google" };
+  return undefined;
+}
+
 export function completeSignin() {
   // React Strict Mode must not redeem the same authorization code twice.
   callback ??= getUserManager().signinRedirectCallback();
@@ -18,6 +31,7 @@ export function getUserManager() {
     post_logout_redirect_uri: window.location.origin,
     response_type: "code",
     scope: "openid profile email",
+    extraQueryParams: audience ? { audience } : undefined,
     loadUserInfo: false,
     automaticSilentRenew: true,
     accessTokenExpiringNotificationTimeInSeconds: 60,

@@ -1,5 +1,6 @@
 package com.pulsopiura.platform.organizations.api;
 
+import com.pulsopiura.platform.foundation.security.OidcRoleClaims;
 import com.pulsopiura.platform.identity.application.CurrentUserService;
 import com.pulsopiura.platform.organizations.application.*;
 import jakarta.validation.Valid;
@@ -17,16 +18,19 @@ public class OrganizationController {
     private final OrganizationService organizations;
     private final MembershipService memberships;
     private final VenueOwnerAuthorization venueOwnerAuthorization;
+    private final OidcRoleClaims roleClaims;
 
     public OrganizationController(
             CurrentUserService users,
             OrganizationService organizations,
             MembershipService memberships,
-            VenueOwnerAuthorization venueOwnerAuthorization) {
+            VenueOwnerAuthorization venueOwnerAuthorization,
+            OidcRoleClaims roleClaims) {
         this.users = users;
         this.organizations = organizations;
         this.memberships = memberships;
         this.venueOwnerAuthorization = venueOwnerAuthorization;
+        this.roleClaims = roleClaims;
     }
 
     @PostMapping
@@ -34,7 +38,7 @@ public class OrganizationController {
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody CreateOrganizationRequest request) {
         var actor = users.provision(jwt).id();
-        venueOwnerAuthorization.requireCanCreateOrganization(actor, realmRoles(jwt));
+        venueOwnerAuthorization.requireCanCreateOrganization(actor, roleClaims.roles(jwt));
         var result = organizations.create(actor, request.name());
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -84,11 +88,4 @@ public class OrganizationController {
 
     public record InviteMemberRequest(
             @NotBlank @jakarta.validation.constraints.Email String email, @NotBlank String role) {}
-
-    private List<String> realmRoles(Jwt jwt) {
-        var realm = jwt.getClaimAsMap("realm_access");
-        var rawRoles = realm == null ? null : realm.get("roles");
-        if (!(rawRoles instanceof Collection<?> values)) return List.of();
-        return values.stream().filter(String.class::isInstance).map(String.class::cast).toList();
-    }
 }

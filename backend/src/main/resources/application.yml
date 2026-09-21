@@ -1,6 +1,10 @@
 spring:
   application:
     name: pulso-piura-api
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/pulso_piura}
     username: ${POSTGRES_USER:pulso_app}
@@ -22,6 +26,11 @@ spring:
           jwk-set-uri: ${OIDC_JWK_SET_URI:http://localhost:8180/realms/pulso-piura/protocol/openid-connect/certs}
           audiences: ${OIDC_AUDIENCE:pulso-api}
 app:
+  security:
+    provider: ${AUTH_PROVIDER:keycloak}
+    claims-namespace: ${OIDC_CLAIMS_NAMESPACE:https://pulsopiura.app}
+    roles-claim: ${OIDC_ROLES_CLAIM:https://pulsopiura.app/roles}
+    platform-admin-email: ${PLATFORM_ADMIN_EMAIL:}
   web:
     allowed-origin: ${WEB_ALLOWED_ORIGIN:http://localhost:3000}
   reservations:

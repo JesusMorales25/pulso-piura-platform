@@ -60,7 +60,7 @@
   margin: 0;
   max-width: 75%;
   text-transform: uppercase;
-  font-family: Impact, "Arial Narrow", sans-serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-weight: 900;
   line-height: 1.05;

@@ -21,11 +21,19 @@ class PartnerBusinessControllerAuthorizationTest {
                         org.springframework.security.oauth2.jwt.Jwt.class,
                         java.util.UUID.class,
                         PartnerBusinessController.BusinessRequest.class));
+        assertPlatformAdminOnly(
+                method(
+                        "updateImage",
+                        org.springframework.security.oauth2.jwt.Jwt.class,
+                        java.util.UUID.class,
+                        org.springframework.web.multipart.MultipartFile.class));
     }
 
     @Test
     void publicDirectoryDoesNotRequireAnAdministrativeRole() {
         assertThat(method("published").getAnnotation(PreAuthorize.class)).isNull();
+        assertThat(method("image", java.util.UUID.class).getAnnotation(PreAuthorize.class))
+                .isNull();
     }
 
     private Method method(String name, Class<?>... parameterTypes) {

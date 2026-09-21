@@ -26,6 +26,14 @@ test('platform roles are read from the Keycloak access token', () => {
   assert.equal(authRoles.hasRealmRole(user, 'TOURNAMENT_ORGANIZER'), false);
   assert.deepEqual([...authRoles.realmRoles({ ...user, access_token: 'invalid' })], []);
 });
+test('platform roles are read from the configured Auth0 claim', () => {
+  const user = {
+    expired: false,
+    profile: {},
+    access_token: unsignedToken({ 'https://pulsopiura.app/roles': ['PLATFORM_ADMIN'] }),
+  };
+  assert.equal(authRoles.hasRealmRole(user, 'PLATFORM_ADMIN'), true);
+});
 test('login return accepts local journeys and rejects external or malformed redirects', () => {
   for (const input of ['//evil.test', '/\\evil.test', 'https://evil.test', 'javascript:alert(1)', '/\nevil', '/auth/callback?code=old', null]) assert.equal(session.safeReturnTo(input), '/perfil');
   for (const input of ['/?mode=matches', '/canchas?date=2026-09-07', '/invitaciones/abc', '/perfil#preferencias']) assert.equal(session.safeReturnTo(input), input);

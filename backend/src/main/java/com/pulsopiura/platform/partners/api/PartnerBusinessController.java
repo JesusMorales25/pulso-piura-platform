@@ -10,12 +10,15 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class PartnerBusinessController {
@@ -30,6 +33,15 @@ public class PartnerBusinessController {
     @GetMapping("/api/v1/businesses")
     List<PartnerBusinessService.BusinessView> published() {
         return businesses.published();
+    }
+
+    @GetMapping("/api/v1/businesses/{businessId}/image")
+    ResponseEntity<byte[]> image(@PathVariable UUID businessId) {
+        var image = businesses.image(businessId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(image.contentType()))
+                .cacheControl(CacheControl.noCache().cachePublic())
+                .body(image.content());
     }
 
     @GetMapping("/api/v1/platform/businesses")
@@ -53,6 +65,19 @@ public class PartnerBusinessController {
             @PathVariable UUID businessId,
             @Valid @RequestBody BusinessRequest request) {
         return businesses.update(users.provision(jwt).id(), businessId, request.command());
+    }
+
+    @PutMapping(
+            value = "/api/v1/platform/businesses/{businessId}/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
+    PartnerBusinessService.BusinessView updateImage(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID businessId,
+            @RequestPart("image") MultipartFile image)
+            throws java.io.IOException {
+        return businesses.updateImage(
+                users.provision(jwt).id(), businessId, image.getContentType(), image.getBytes());
     }
 
     public record BusinessRequest(

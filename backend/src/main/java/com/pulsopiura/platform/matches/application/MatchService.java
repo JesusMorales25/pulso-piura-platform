@@ -80,6 +80,11 @@ public class MatchService {
         if (!now.isBefore(reservation.timeRange().startsAt())) {
             throw new IllegalStateException("La reserva ya inició");
         }
+        var title = normalizeTitle(command.title());
+        if (matches.existsPublishedUpcomingByTitle(title, now)) {
+            throw new IllegalStateException(
+                    "Ya existe una pichanga activa con ese nombre. Usa un nombre diferente.");
+        }
         if (matches.existsByReservationId(reservation.id())) {
             throw new IllegalStateException("La reserva ya tiene un partido asociado");
         }
@@ -96,7 +101,7 @@ public class MatchService {
                         reservation.id(),
                         reservation.sportSpaceId(),
                         actorId,
-                        command.title(),
+                        title,
                         space.sportCode(),
                         space.formatCode(),
                         parseLevel(command.skillLevel()),
@@ -132,7 +137,9 @@ public class MatchService {
     @Transactional(readOnly = true)
     public List<MatchView> publicCatalog(String sportCode) {
         var sport = normalizeOptional(sportCode);
-        return matches.findPublicUpcoming(clock.instant(), sport).stream().map(this::view).toList();
+        return matches.findPublicUpcoming(clock.instant(), sport).stream()
+                .map(match -> view(match, true))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -196,6 +203,13 @@ public class MatchService {
 
     private String normalizeOptional(String value) {
         return value == null || value.isBlank() ? null : value.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeTitle(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("El nombre de la pichanga es obligatorio");
+        }
+        return value.trim().replaceAll("\\s+", " ");
     }
 
     public record CreateCommand(

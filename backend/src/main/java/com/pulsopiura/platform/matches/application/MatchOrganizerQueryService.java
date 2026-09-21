@@ -36,7 +36,7 @@ public class MatchOrganizerQueryService {
                        p.status,
                        coalesce(o.status, case when m.price_minor = 0 then 'NOT_REQUIRED' else 'UNPAID' end) payment_status,
                        case when o.status = 'PAID' then o.amount_minor else 0 end paid_minor,
-                       o.method payment_method, o.paid_at, p.joined_at
+                       o.method payment_method, o.paid_at, p.joined_at, pass.consumed_at checked_in_at
                 from app.match_participants p
                 join app.users u on u.id = p.user_id
                 join app.sports_matches m on m.id = p.match_id
@@ -48,6 +48,7 @@ public class MatchOrganizerQueryService {
                   order by (jo.status = 'PAID') desc, jo.created_at desc
                   limit 1
                 ) o on true
+                left join app.match_check_in_passes pass on pass.participant_id = p.id
                 where p.match_id = ? and p.status <> 'WITHDRAWN'
                 order by p.joined_at nulls last, u.display_name
                 """,
@@ -63,7 +64,8 @@ public class MatchOrganizerQueryService {
                             rs.getLong("paid_minor"),
                             rs.getString("payment_method"),
                             timestamp(rs, "paid_at"),
-                            joinedAt == null ? null : joinedAt.toInstant());
+                            joinedAt == null ? null : joinedAt.toInstant(),
+                            timestamp(rs, "checked_in_at"));
                 },
                 matchId);
     }
@@ -78,7 +80,8 @@ public class MatchOrganizerQueryService {
             long paidMinor,
             String paymentMethod,
             Instant paidAt,
-            Instant joinedAt) {}
+            Instant joinedAt,
+            Instant checkedInAt) {}
 
     private static Instant timestamp(java.sql.ResultSet result, String column)
             throws java.sql.SQLException {

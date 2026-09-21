@@ -1,11 +1,21 @@
 import type { User } from "oidc-client-ts";
 
 type RealmAccess = { roles?: unknown };
-type TokenClaims = { realm_access?: RealmAccess };
+type TokenClaims = Record<string, unknown> & { realm_access?: RealmAccess; roles?: unknown };
+
+const configuredRolesClaim =
+  process.env.NEXT_PUBLIC_OIDC_ROLES_CLAIM ?? "https://pulsopiura.app/roles";
 
 function roleNames(value: RealmAccess | undefined): string[] {
   if (!Array.isArray(value?.roles)) return [];
   return value.roles.filter(
+    (role): role is string => typeof role === "string" && role.length > 0,
+  );
+}
+
+function directRoleNames(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
     (role): role is string => typeof role === "string" && role.length > 0,
   );
 }
@@ -28,16 +38,21 @@ function accessTokenClaims(accessToken: string | undefined): TokenClaims {
 }
 
 /**
- * Reads roles from the access token, where Keycloak publishes authorization
- * claims, and keeps ID-token claims as a compatibility fallback. The API still
- * validates the signed token and remains the authorization authority.
+ * Reads global roles from Keycloak and from a configurable OIDC claim used by
+ * providers such as Auth0. The API still validates the signed token and remains
+ * the authorization authority.
  */
 export function realmRoles(user: User | null): Set<string> {
-  const profileRoles = roleNames(
-    (user?.profile as { realm_access?: RealmAccess } | undefined)?.realm_access,
-  );
-  const tokenRoles = roleNames(accessTokenClaims(user?.access_token).realm_access);
-  return new Set([...profileRoles, ...tokenRoles]);
+  const profile = user?.profile as TokenClaims | undefined;
+  const token = accessTokenClaims(user?.access_token);
+  return new Set([
+    ...roleNames(profile?.realm_access),
+    ...roleNames(token.realm_access),
+    ...directRoleNames(profile?.roles),
+    ...directRoleNames(token.roles),
+    ...directRoleNames(profile?.[configuredRolesClaim]),
+    ...directRoleNames(token[configuredRolesClaim]),
+  ]);
 }
 
 export function hasRealmRole(user: User | null, role: string): boolean {

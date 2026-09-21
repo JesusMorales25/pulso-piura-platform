@@ -8,7 +8,7 @@ import {
   MapPin,
   WhatsappLogo,
 } from "@phosphor-icons/react";
-import { apiRequest } from "@/lib/api";
+import { apiAssetUrl, apiRequest } from "@/lib/api";
 import { googleMapsUrl, whatsappUrl } from "@/lib/public-links";
 import { CardSkeletons } from "@/features/feedback/CardSkeletons";
 
@@ -104,7 +104,7 @@ export function ThirdTimeSection() {
                 <div className="thirdTimeImage">
                   <img
                     alt={`${categoryLabels[place.category]} ${place.name}`}
-                    src={place.imageUrl || "/images/third-time-restaurant.jpg"}
+                    src={place.imageUrl ? apiAssetUrl(place.imageUrl) : "/images/third-time-restaurant.jpg"}
                   />
                   <span>
                     <Icon aria-hidden="true" size={15} weight="fill" />{" "}

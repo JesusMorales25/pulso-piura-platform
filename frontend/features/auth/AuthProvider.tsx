@@ -9,13 +9,14 @@ import {
   useState,
 } from "react";
 import type { User } from "oidc-client-ts";
-import { getUserManager } from "@/lib/oidc";
+import { getUserManager, socialLoginParameters } from "@/lib/oidc";
 import { onRejectedToken, safeReturnTo } from "@/lib/auth-session";
 import { hasRealmRole } from "@/lib/auth-roles";
 import { apiRequest } from "@/lib/api";
 
 type AccountPresentation = {
   avatarUrl: string | null;
+  platformAdmin?: boolean;
 };
 
 type AuthState = {
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [platformAdmin, setPlatformAdmin] = useState(false);
   useEffect(() => {
     const manager = getUserManager();
     let active = true;
@@ -66,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             )
               return;
             setAvatarUrl(profile.avatarUrl || account.avatarUrl || tokenPicture);
+            setPlatformAdmin(Boolean(account.platformAdmin));
           })
           .catch(() => {
             // La sesión puede seguir siendo válida aunque la presentación no cargue.
@@ -77,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (active) {
         setUser(null);
         setAvatarUrl(null);
+        setPlatformAdmin(false);
       }
     };
     const endExpiredSession = () => {
@@ -143,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setNotice("");
     try {
       await getUserManager().signinRedirect({
-        extraQueryParams: google ? { kc_idp_hint: "google" } : undefined,
+        extraQueryParams: socialLoginParameters(google),
         state: {
           returnTo: safeReturnTo(
             returnTo ?? window.location.pathname + window.location.search,
@@ -172,12 +176,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
       accessToken: user && !user.expired ? user.access_token : null,
-      isPlatformAdmin: hasRealmRole(user, "PLATFORM_ADMIN"),
+      isPlatformAdmin:
+        platformAdmin || hasRealmRole(user, "PLATFORM_ADMIN"),
       googleLoginEnabled,
       avatarUrl,
       setProfileAvatarUrl: setAvatarUrl,
     }),
-    [user, loading, login, logout, avatarUrl],
+    [user, loading, login, logout, avatarUrl, platformAdmin],
   );
   return (
     <AuthContext.Provider value={value}>

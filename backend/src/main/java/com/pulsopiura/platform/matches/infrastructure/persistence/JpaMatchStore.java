@@ -47,6 +47,12 @@ class JpaMatchStore implements MatchStore {
     }
 
     @Override
+    public boolean existsPublishedUpcomingByTitle(String title, Instant now) {
+        return matches.existsByStatusAndStartsAtAfterAndTitleIgnoreCase(
+                MatchStatus.PUBLISHED, now, title);
+    }
+
+    @Override
     public List<SportsMatch> findPublicUpcoming(Instant now, String sportCode) {
         var entities =
                 sportCode == null

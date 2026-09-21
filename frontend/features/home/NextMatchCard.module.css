@@ -27,7 +27,7 @@
 }
 
 .date strong {
-  font-family: Impact, "Arial Narrow", sans-serif;
+  font-family: var(--font-ui);
   font-size: 1.7rem;
 }
 

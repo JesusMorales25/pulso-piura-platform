@@ -24,6 +24,7 @@ import type {
   MatchParticipantAdmin,
   MatchSummary,
 } from "./types";
+import { MatchCheckInScanner } from "./MatchCheckInScanner";
 
 export function MatchOrganizerDashboard() {
   const { accessToken, login } = useAuth();
@@ -426,6 +427,16 @@ export function MatchOrganizerDashboard() {
                     <WhatsappLogo aria-hidden="true" /> Invitar por WhatsApp
                   </button>
                 </div>
+                <MatchCheckInScanner
+                  accessToken={accessToken}
+                  matchId={match.id}
+                  onCheckedIn={() => {
+                    void apiRequest<MatchParticipantAdmin[]>(
+                      `/matches/${match.id}/participants`,
+                      accessToken,
+                    ).then((updated) => setPeople((current) => ({ ...current, [match.id]: updated })));
+                  }}
+                />
                 <section className="matchInvitationManager">
                   <div>
                     <h3>Invitar jugadores</h3>
@@ -527,7 +538,7 @@ export function MatchOrganizerDashboard() {
                   <div className="participantRow participantHead">
                     <span>Jugador</span>
                     <span>Pago</span>
-                    <span>Registro</span>
+                    <span>Llegada</span>
                     <span>Acción</span>
                   </div>
                   {roster.map((participant) => (
@@ -550,7 +561,7 @@ export function MatchOrganizerDashboard() {
                             : "Pendiente"}</strong>
                         <small>{participant.paidAt ? `${participant.paymentMethod} · ${new Date(participant.paidAt).toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" })}` : "Sin pago registrado"}</small>
                       </span>
-                      <span className="participantJoined"><strong>{participant.joinedAt ? new Date(participant.joinedAt).toLocaleDateString("es-PE", { day: "2-digit", month: "short" }) : "—"}</strong><small>{participant.joinedAt ? new Date(participant.joinedAt).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" }) : "Sin fecha"}</small></span>
+                      <span className="participantJoined"><strong>{participant.checkedInAt ? "Presente" : "Pendiente"}</strong><small>{participant.checkedInAt ? new Date(participant.checkedInAt).toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" }) : "Sin validar"}</small></span>
                       <span>{participant.paymentStatus === "PAID" ? <small className="lockedParticipant"><ShieldCheck/> Pago protegido</small> : <button className="participantRemove" disabled={removing === `${match.id}:${participant.userId}`} onClick={() => void removeParticipant(match.id, participant.userId)} type="button"><UserMinus/>{removing === `${match.id}:${participant.userId}` ? "Retirando…" : "Retirar"}</button>}</span>
                     </div>
                   ))}

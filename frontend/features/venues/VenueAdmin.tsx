@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { ArrowRight, Check } from "@phosphor-icons/react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { FriendlyLocationPicker } from "@/components/forms/FriendlyLocationPicker";
 import { AvailabilityAdmin } from "@/features/venues/AvailabilityAdmin";
@@ -42,11 +43,58 @@ type SportSpace = {
   version: number;
 };
 
+type SetupStep = "venue" | "space" | "availability";
+type VenueDraft = {
+  name: string;
+  address: string;
+  districtCode: string;
+  publicPhone: string;
+  latitude: string;
+  longitude: string;
+  amenityCodes: string[];
+};
+type SpaceDraft = {
+  name: string;
+  sportCode: string;
+  formatCode: string;
+  capacity: string;
+  surfaceType: string;
+  indoor: boolean;
+  amenityCodes: string[];
+};
+type VenueSetupDraft = {
+  setupStep: SetupStep;
+  selectedVenueId: string | null;
+  selectedSpaceId: string | null;
+  venue: VenueDraft;
+  space: SpaceDraft;
+};
+
 const emptyCatalog: VenueCatalog = {
   sports: [],
   formats: [],
   surfaces: [],
   amenities: [],
+};
+
+const emptyVenueDraft: VenueDraft = {
+  name: "",
+  address: "",
+  districtCode: "",
+  publicPhone: "",
+  latitude: "",
+  longitude: "",
+  amenityCodes: [],
+};
+
+const emptySpaceDraft: SpaceDraft = {
+  name: "",
+  sportCode: "",
+  formatCode: "",
+  capacity: "",
+  surfaceType: "",
+  indoor: false,
+  amenityCodes: [],
 };
 
 export function VenueAdmin({
@@ -57,7 +105,7 @@ export function VenueAdmin({
   role: "OWNER" | "ADMIN" | "OPERATOR";
 }) {
   const canManage = role === "OWNER" || role === "ADMIN";
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const [catalog, setCatalog] = useState(emptyCatalog);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
@@ -65,9 +113,10 @@ export function VenueAdmin({
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
   const [editingSpace, setEditingSpace] = useState<SportSpace | null>(null);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
-  const [setupStep, setSetupStep] = useState<
-    "venue" | "space" | "availability"
-  >("venue");
+  const [setupStep, setSetupStep] = useState<SetupStep>("venue");
+  const [venueDraft, setVenueDraft] = useState<VenueDraft>(emptyVenueDraft);
+  const [spaceDraft, setSpaceDraft] = useState<SpaceDraft>(emptySpaceDraft);
+  const [draftReady, setDraftReady] = useState(false);
   const [pendingArchive, setPendingArchive] = useState<
     { kind: "venue"; item: Venue } | { kind: "space"; item: SportSpace } | null
   >(null);
@@ -75,6 +124,7 @@ export function VenueAdmin({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const draftStorageKey = `pulso:venue-setup:${String(user?.profile.sub ?? "current")}:${organizationId}`;
 
   const selectedVenue = useMemo(
     () => venues.find((venue) => venue.id === selectedVenueId) ?? null,
@@ -84,6 +134,42 @@ export function VenueAdmin({
     () => spaces.find((space) => space.id === selectedSpaceId) ?? null,
     [selectedSpaceId, spaces],
   );
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDraftReady(false);
+      try {
+        const saved = window.sessionStorage.getItem(draftStorageKey);
+        if (saved) {
+          const draft = JSON.parse(saved) as Partial<VenueSetupDraft>;
+          if (["venue", "space", "availability"].includes(String(draft.setupStep))) {
+            setSetupStep(draft.setupStep as SetupStep);
+          }
+          if (draft.selectedVenueId !== undefined) setSelectedVenueId(draft.selectedVenueId);
+          if (draft.selectedSpaceId !== undefined) setSelectedSpaceId(draft.selectedSpaceId);
+          if (draft.venue) setVenueDraft({ ...emptyVenueDraft, ...draft.venue });
+          if (draft.space) setSpaceDraft({ ...emptySpaceDraft, ...draft.space });
+        }
+      } catch {
+        window.sessionStorage.removeItem(draftStorageKey);
+      } finally {
+        setDraftReady(true);
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [draftStorageKey]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    const draft: VenueSetupDraft = {
+      setupStep,
+      selectedVenueId,
+      selectedSpaceId,
+      venue: venueDraft,
+      space: spaceDraft,
+    };
+    window.sessionStorage.setItem(draftStorageKey, JSON.stringify(draft));
+  }, [draftReady, draftStorageKey, selectedSpaceId, selectedVenueId, setupStep, spaceDraft, venueDraft]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -99,7 +185,11 @@ export function VenueAdmin({
         if (!active) return;
         setCatalog(catalogResult);
         setVenues(venueResult);
-        setSelectedVenueId((current) => current ?? venueResult[0]?.id ?? null);
+        setSelectedVenueId((current) =>
+          current && venueResult.some((venue) => venue.id === current)
+            ? current
+            : venueResult[0]?.id ?? null,
+        );
       })
       .catch((requestError: unknown) => {
         if (active) setError(errorMessage(requestError));
@@ -122,7 +212,11 @@ export function VenueAdmin({
       .then((result) => {
         if (!active) return;
         setSpaces(result);
-        setSelectedSpaceId((current) => current ?? result[0]?.id ?? null);
+        setSelectedSpaceId((current) =>
+          current && result.some((space) => space.id === current)
+            ? current
+            : result[0]?.id ?? null,
+        );
       })
       .catch((requestError: unknown) => {
         if (active) setError(errorMessage(requestError));
@@ -165,7 +259,7 @@ export function VenueAdmin({
       setSelectedSpaceId(null);
       setSelectedVenueId(venue.id);
       setEditingVenue(null);
-      formElement.reset();
+      setVenueDraft(emptyVenueDraft);
       setSetupStep("space");
       setMessage(
         editingVenue ? "Sede actualizada." : "Sede creada como borrador.",
@@ -208,7 +302,7 @@ export function VenueAdmin({
       setSpaces((current) => upsertById(current, space));
       setSelectedSpaceId(space.id);
       setEditingSpace(null);
-      formElement.reset();
+      setSpaceDraft(emptySpaceDraft);
       setSetupStep("availability");
       setMessage(
         editingSpace ? "Cancha actualizada." : "Cancha creada como borrador.",
@@ -226,12 +320,58 @@ export function VenueAdmin({
   }
 
   function selectVenue(venueId: string) {
-    if (venueId === selectedVenueId) return;
-    setSpaces([]);
-    setSelectedSpaceId(null);
-    setEditingSpace(null);
-    setSelectedVenueId(venueId);
+    if (venueId !== selectedVenueId) {
+      setSpaces([]);
+      setSelectedSpaceId(null);
+      setEditingSpace(null);
+      setSpaceDraft(emptySpaceDraft);
+      setSelectedVenueId(venueId);
+    }
     setSetupStep("space");
+  }
+
+  function editVenue(venue: Venue) {
+    setEditingVenue(venue);
+    setVenueDraft({
+      name: venue.name,
+      address: venue.address,
+      districtCode: venue.districtCode,
+      publicPhone: venue.publicPhone ?? "",
+      latitude: "",
+      longitude: "",
+      amenityCodes: venue.amenityCodes,
+    });
+    setSetupStep("venue");
+  }
+
+  function editSpace(space: SportSpace) {
+    setEditingSpace(space);
+    setSpaceDraft({
+      name: space.name,
+      sportCode: space.sportCode,
+      formatCode: space.formatCode,
+      capacity: String(space.capacity),
+      surfaceType: space.surfaceType ?? "",
+      indoor: space.indoor,
+      amenityCodes: space.amenityCodes,
+    });
+    setSetupStep("space");
+  }
+
+  function cancelVenueEdit() {
+    setEditingVenue(null);
+    setVenueDraft(emptyVenueDraft);
+  }
+
+  function cancelSpaceEdit() {
+    setEditingSpace(null);
+    setSpaceDraft(emptySpaceDraft);
+  }
+
+  function openStep(step: SetupStep) {
+    if (step === "space" && !selectedVenue) return;
+    if (step === "availability" && !selectedSpace) return;
+    setSetupStep(step);
   }
 
   async function publishVenue(venue: Venue) {
@@ -341,33 +481,40 @@ export function VenueAdmin({
         </div>
       )}
 
-      <nav className="setupStepper" aria-label="Configuración de la sede">
-        <button
-          aria-current={setupStep === "venue" ? "step" : undefined}
-          className={setupStep === "venue" ? "active" : ""}
-          onClick={() => setSetupStep("venue")}
-          type="button"
-        >
-          <span>1</span> Sede
-        </button>
-        <button
-          aria-current={setupStep === "space" ? "step" : undefined}
-          className={setupStep === "space" ? "active" : ""}
-          disabled={!selectedVenue}
-          onClick={() => setSetupStep("space")}
-          type="button"
-        >
-          <span>2</span> Cancha
-        </button>
-        <button
-          aria-current={setupStep === "availability" ? "step" : undefined}
-          className={setupStep === "availability" ? "active" : ""}
-          disabled={!selectedSpace}
-          onClick={() => setSetupStep("availability")}
-          type="button"
-        >
-          <span>3</span> Horarios
-        </button>
+      <nav className="venueSetupTabs" aria-label="Creación del complejo">
+        <ol>
+          {(
+            [
+              ["venue", "Sede"],
+              ["space", "Cancha"],
+              ["availability", "Horarios"],
+            ] as const
+          ).map(([step, label], index) => {
+            const active = setupStep === step;
+            const completed =
+              (step === "venue" && Boolean(selectedVenue)) ||
+              (step === "space" && Boolean(selectedSpace));
+            const disabled =
+              (step === "space" && !selectedVenue) ||
+              (step === "availability" && !selectedSpace);
+            return (
+              <li
+                className={`${active ? "active" : ""} ${completed && !active ? "completed" : ""}`}
+                key={step}
+              >
+                <button
+                  aria-current={active ? "step" : undefined}
+                  disabled={disabled}
+                  onClick={() => openStep(step)}
+                  type="button"
+                >
+                  <span>{completed && !active ? <Check size={15} weight="bold" /> : index + 1}</span>
+                  <small>{label}</small>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
       </nav>
 
       {pendingArchive && (
@@ -408,7 +555,14 @@ export function VenueAdmin({
       <div className="venueWorkspace">
         {setupStep === "venue" && (
           <div className="venueColumn setupPanel">
-            <h3>Sedes</h3>
+            <div className="venueSetupPanelTitle">
+              <span>1</span>
+              <div>
+                <h3>Datos de la sede</h3>
+                <p>Registra la ubicación principal de tu complejo deportivo.</p>
+              </div>
+            </div>
+            <h4 className="venueResourceHeading">Sedes registradas</h4>
             {venues.length === 0 ? (
               <div className="compactEmpty">
                 <p>Aún no registraste una sede.</p>
@@ -429,14 +583,17 @@ export function VenueAdmin({
                         <strong>{venue.name}</strong>
                         <small>{venue.address}</small>
                       </span>
-                      <span className="pill">{venue.status}</span>
+                      <span className="resourceSelectMeta">
+                        <span className="pill">{venue.status}</span>
+                        <ArrowRight aria-hidden="true" size={18} />
+                      </span>
                     </button>
                     {canManage && venue.status !== "ARCHIVED" && (
                       <div className="resourceActions">
                         <button
                           className="secondary"
                           type="button"
-                          onClick={() => setEditingVenue(venue)}
+                          onClick={() => editVenue(venue)}
                         >
                           Editar
                         </button>
@@ -470,13 +627,15 @@ export function VenueAdmin({
               <VenueForm
                 key={editingVenue?.id ?? "new-venue"}
                 initial={editingVenue}
+                value={venueDraft}
+                onChange={setVenueDraft}
                 amenities={catalog.amenities.filter(
                   (item) => item.scope !== "SPORT_SPACE",
                 )}
                 disabled={submitting}
                 onSubmit={saveVenue}
                 onCancel={
-                  editingVenue ? () => setEditingVenue(null) : undefined
+                  editingVenue ? cancelVenueEdit : undefined
                 }
               />
             )}
@@ -485,9 +644,14 @@ export function VenueAdmin({
 
         {setupStep === "space" && (
           <div className="venueColumn setupPanel">
-            <h3>
-              {selectedVenue ? `Canchas de ${selectedVenue.name}` : "Canchas"}
-            </h3>
+            <div className="venueSetupPanelTitle">
+              <span>2</span>
+              <div>
+                <h3>Datos de la cancha</h3>
+                <p>{selectedVenue ? `Agrega las canchas disponibles en ${selectedVenue.name}.` : "Primero completa los datos de la sede."}</p>
+              </div>
+            </div>
+            <h4 className="venueResourceHeading">Canchas registradas</h4>
             {!selectedVenue ? (
               <div className="compactEmpty">
                 <p>Selecciona o crea una sede para continuar.</p>
@@ -518,14 +682,17 @@ export function VenueAdmin({
                           {labelFor(catalog.formats, space.formatCode)}
                         </small>
                       </span>
-                      <span className="pill">{space.status}</span>
+                      <span className="resourceSelectMeta">
+                        <span className="pill">{space.status}</span>
+                        <ArrowRight aria-hidden="true" size={18} />
+                      </span>
                     </button>
                     {canManage && space.status !== "ARCHIVED" && (
                       <div className="resourceActions">
                         <button
                           className="secondary"
                           type="button"
-                          onClick={() => setEditingSpace(space)}
+                          onClick={() => editSpace(space)}
                         >
                           Editar
                         </button>
@@ -564,14 +731,21 @@ export function VenueAdmin({
                 <SpaceForm
                   key={editingSpace?.id ?? `new-space-${selectedVenue.id}`}
                   initial={editingSpace}
+                  value={spaceDraft}
+                  onChange={setSpaceDraft}
                   catalog={catalog}
                   disabled={submitting}
                   onSubmit={saveSpace}
                   onCancel={
-                    editingSpace ? () => setEditingSpace(null) : undefined
+                    editingSpace ? cancelSpaceEdit : undefined
                   }
                 />
               )}
+            <div className="venueStepActions">
+              <button className="secondary" onClick={() => openStep("venue")} type="button">
+                Volver a sede
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -579,12 +753,26 @@ export function VenueAdmin({
       {setupStep === "availability" &&
         selectedSpace &&
         selectedSpace.status !== "ARCHIVED" && (
-          <AvailabilityAdmin
-            key={selectedSpace.id}
-            organizationId={organizationId}
-            space={selectedSpace}
-            role={role}
-          />
+          <div className="venueAvailabilityStep">
+            <div className="venueSetupPanelTitle">
+              <span>3</span>
+              <div>
+                <h3>Horarios y precios</h3>
+                <p>Define cuándo se puede reservar {selectedSpace.name}.</p>
+              </div>
+            </div>
+            <AvailabilityAdmin
+              key={selectedSpace.id}
+              organizationId={organizationId}
+              space={selectedSpace}
+              role={role}
+            />
+            <div className="venueStepActions">
+              <button className="secondary" onClick={() => openStep("space")} type="button">
+                Volver a canchas
+              </button>
+            </div>
+          </div>
         )}
       {setupStep === "availability" && !selectedSpace && (
         <div className="compactEmpty setupEmpty">
@@ -607,27 +795,32 @@ export function VenueAdmin({
 
 function VenueForm({
   initial,
+  value,
+  onChange,
   amenities,
   disabled,
   onSubmit,
   onCancel,
 }: {
   initial: Venue | null;
+  value: VenueDraft;
+  onChange: (value: VenueDraft) => void;
   amenities: Amenity[];
   disabled: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancel?: () => void;
 }) {
   return (
-    <form className="card adminForm compactForm" noValidate onSubmit={onSubmit}>
+    <form className="card adminForm compactForm venueSetupForm" noValidate onSubmit={onSubmit}>
       <h4>{initial ? "Editar sede" : "Nueva sede"}</h4>
       <label>
         Nombre
         <input
           name="name"
           maxLength={160}
-          defaultValue={initial?.name}
+          onChange={(event) => onChange({ ...value, name: event.target.value })}
           required
+          value={value.name}
         />
       </label>
       <label>
@@ -635,21 +828,29 @@ function VenueForm({
         <input
           name="address"
           maxLength={240}
-          defaultValue={initial?.address}
+          onChange={(event) => onChange({ ...value, address: event.target.value })}
           required
+          value={value.address}
         />
       </label>
       <FriendlyLocationPicker
         addressFieldName="address"
         districtFieldName="districtCode"
+        key={`${initial?.id ?? "new"}-${value.latitude}-${value.longitude}`}
+        latitude={value.latitude}
+        longitude={value.longitude}
+        onCoordinatesChange={(latitude, longitude) =>
+          onChange({ ...value, latitude, longitude })
+        }
       />
       <label>
         Distrito
         <input
           name="districtCode"
           maxLength={60}
-          defaultValue={initial?.districtCode}
+          onChange={(event) => onChange({ ...value, districtCode: event.target.value })}
           required
+          value={value.districtCode}
         />
       </label>
       <label>
@@ -658,10 +859,15 @@ function VenueForm({
           name="publicPhone"
           maxLength={30}
           inputMode="tel"
-          defaultValue={initial?.publicPhone ?? ""}
+          onChange={(event) => onChange({ ...value, publicPhone: event.target.value })}
+          value={value.publicPhone}
         />
       </label>
-      <AmenityFields amenities={amenities} selected={initial?.amenityCodes} />
+      <AmenityFields
+        amenities={amenities}
+        onChange={(amenityCodes) => onChange({ ...value, amenityCodes })}
+        selected={value.amenityCodes}
+      />
       {onCancel && (
         <button className="secondary" type="button" onClick={onCancel}>
           Cancelar edición
@@ -676,33 +882,39 @@ function VenueForm({
 
 function SpaceForm({
   initial,
+  value,
+  onChange,
   catalog,
   disabled,
   onSubmit,
   onCancel,
 }: {
   initial: SportSpace | null;
+  value: SpaceDraft;
+  onChange: (value: SpaceDraft) => void;
   catalog: VenueCatalog;
   disabled: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancel?: () => void;
 }) {
-  const [sportCode, setSportCode] = useState(
-    initial?.sportCode ?? catalog.sports[0]?.code ?? "",
-  );
+  const sportCode = value.sportCode || catalog.sports[0]?.code || "";
   const formats = catalog.formats.filter(
     (format) => format.sportCode === sportCode,
   );
+  const formatCode = formats.some((format) => format.code === value.formatCode)
+    ? value.formatCode
+    : formats[0]?.code ?? "";
   return (
-    <form className="card adminForm compactForm" noValidate onSubmit={onSubmit}>
+    <form className="card adminForm compactForm venueSetupForm" noValidate onSubmit={onSubmit}>
       <h4>{initial ? "Editar cancha" : "Nueva cancha"}</h4>
       <label>
         Nombre
         <input
           name="name"
           maxLength={160}
-          defaultValue={initial?.name}
+          onChange={(event) => onChange({ ...value, name: event.target.value })}
           required
+          value={value.name}
         />
       </label>
       <label>
@@ -710,7 +922,17 @@ function SpaceForm({
         <select
           name="sportCode"
           value={sportCode}
-          onChange={(event) => setSportCode(event.target.value)}
+          onChange={(event) => {
+            const nextSport = event.target.value;
+            const nextFormat = catalog.formats.find(
+              (format) => format.sportCode === nextSport,
+            );
+            onChange({
+              ...value,
+              sportCode: nextSport,
+              formatCode: nextFormat?.code ?? "",
+            });
+          }}
           required
         >
           {catalog.sports.map((item) => (
@@ -722,7 +944,12 @@ function SpaceForm({
       </label>
       <label>
         Modalidad
-        <select name="formatCode" defaultValue={initial?.formatCode} required>
+        <select
+          name="formatCode"
+          onChange={(event) => onChange({ ...value, formatCode: event.target.value })}
+          required
+          value={formatCode}
+        >
           {formats.map((item) => (
             <option key={item.code} value={item.code}>
               {item.name}
@@ -735,14 +962,20 @@ function SpaceForm({
         <input
           name="capacity"
           type="number"
+          inputMode="numeric"
           min={1}
-          defaultValue={initial?.capacity}
+          onChange={(event) => onChange({ ...value, capacity: event.target.value })}
           required
+          value={value.capacity}
         />
       </label>
       <label>
         Superficie
-        <select name="surfaceType" defaultValue={initial?.surfaceType ?? ""}>
+        <select
+          name="surfaceType"
+          onChange={(event) => onChange({ ...value, surfaceType: event.target.value })}
+          value={value.surfaceType}
+        >
           <option value="">Sin especificar</option>
           {catalog.surfaces.map((item) => (
             <option key={item.code} value={item.code}>
@@ -752,12 +985,18 @@ function SpaceForm({
         </select>
       </label>
       <label className="check">
-        <input name="indoor" type="checkbox" defaultChecked={initial?.indoor} />{" "}
+        <input
+          checked={value.indoor}
+          name="indoor"
+          onChange={(event) => onChange({ ...value, indoor: event.target.checked })}
+          type="checkbox"
+        />{" "}
         Espacio techado
       </label>
       <AmenityFields
         amenities={catalog.amenities.filter((item) => item.scope !== "VENUE")}
-        selected={initial?.amenityCodes}
+        onChange={(amenityCodes) => onChange({ ...value, amenityCodes })}
+        selected={value.amenityCodes}
       />
       {onCancel && (
         <button className="secondary" type="button" onClick={onCancel}>
@@ -777,9 +1016,11 @@ function SpaceForm({
 function AmenityFields({
   amenities,
   selected = [],
+  onChange,
 }: {
   amenities: Amenity[];
   selected?: string[];
+  onChange: (selected: string[]) => void;
 }) {
   if (amenities.length === 0) return null;
   return (
@@ -791,7 +1032,14 @@ function AmenityFields({
             name="amenityCodes"
             type="checkbox"
             value={item.code}
-            defaultChecked={selected.includes(item.code)}
+            checked={selected.includes(item.code)}
+            onChange={(event) =>
+              onChange(
+                event.target.checked
+                  ? [...selected, item.code]
+                  : selected.filter((code) => code !== item.code),
+              )
+            }
           />{" "}
           {item.name}
         </label>

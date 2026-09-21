@@ -10,18 +10,19 @@ import {
 
 export function useUserCapabilities() {
   const { accessToken, loading: authLoading, user } = useAuth();
+  const subject = typeof user?.profile?.sub === "string" ? user.profile.sub : null;
   const [membershipState, setMembershipState] = useState<{
-    token: string | null;
+    subject: string | null;
     items: OrganizationMembership[];
-  }>({ token: null, items: [] });
+  }>({ subject: null, items: [] });
   const [requestState, setRequestState] = useState<{
-    token: string | null;
+    subject: string | null;
     organizerApproved: boolean;
     venueOwnerApproved: boolean;
-  }>({ token: null, organizerApproved: false, venueOwnerApproved: false });
+  }>({ subject: null, organizerApproved: false, venueOwnerApproved: false });
   const memberships = useMemo(
-    () => (membershipState.token === accessToken ? membershipState.items : []),
-    [accessToken, membershipState],
+    () => (membershipState.subject === subject ? membershipState.items : []),
+    [membershipState, subject],
   );
 
   useEffect(() => {
@@ -34,27 +35,35 @@ export function useUserCapabilities() {
         apiRequest<OrganizationMembership[]>(
           "/organizations",
           accessToken,
-        ).catch(() => []),
+        ).catch(() => null),
         apiRequest<Array<{ capability: string; status: string }>>(
           "/me/capability-requests",
           accessToken,
-        ).catch(() => []),
+        ).catch(() => null),
       ]).then(([organizations, requests]) => {
         if (!active) return;
-        setMembershipState({ token: accessToken, items: organizations });
-        setRequestState({
-          token: accessToken,
-          organizerApproved: requests.some(
-            (request) =>
-              request.capability === "MATCH_ORGANIZER" &&
-              request.status === "APPROVED",
-          ),
-          venueOwnerApproved: requests.some(
-            (request) =>
-              request.capability === "VENUE_OWNER" &&
-              request.status === "APPROVED",
-          ),
-        });
+        setMembershipState((current) =>
+          organizations === null && current.subject === subject
+            ? current
+            : { subject, items: organizations ?? [] },
+        );
+        setRequestState((current) =>
+          requests === null && current.subject === subject
+            ? current
+            : {
+                subject,
+                organizerApproved: (requests ?? []).some(
+                  (request) =>
+                    request.capability === "MATCH_ORGANIZER" &&
+                    request.status === "APPROVED",
+                ),
+                venueOwnerApproved: (requests ?? []).some(
+                  (request) =>
+                    request.capability === "VENUE_OWNER" &&
+                    request.status === "APPROVED",
+                ),
+              },
+        );
       });
     };
 
@@ -68,7 +77,7 @@ export function useUserCapabilities() {
         loadCapabilities,
       );
     };
-  }, [accessToken, authLoading]);
+  }, [accessToken, authLoading, subject]);
 
   return {
     capabilities: useMemo(
@@ -76,18 +85,18 @@ export function useUserCapabilities() {
         resolveCapabilities(
           user,
           memberships,
-          requestState.token === accessToken && requestState.organizerApproved,
-          requestState.token === accessToken && requestState.venueOwnerApproved,
+          requestState.subject === subject && requestState.organizerApproved,
+          requestState.subject === subject && requestState.venueOwnerApproved,
         ),
-      [accessToken, memberships, requestState, user],
+      [memberships, requestState, subject, user],
     ),
     memberships,
     loading:
       authLoading ||
       Boolean(
-        accessToken &&
-        (membershipState.token !== accessToken ||
-          requestState.token !== accessToken),
+        accessToken && subject &&
+        (membershipState.subject !== subject ||
+          requestState.subject !== subject),
       ),
   };
 }
