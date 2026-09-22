@@ -9048,20 +9048,41 @@ body:has(.scheduleModal) .appNavigation {
   background: linear-gradient(rgba(20, 97, 54, 0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 97, 54, 0.25) 1px, transparent 1px), #073622;
   background-size: 30px 30px;
 }
-.matchPlayerGrid article { display: grid; min-width: 0; min-height: 118px; align-content: center; justify-items: center; gap: 5px; padding: 9px 6px; border-radius: 12px; text-align: center; }
+.matchPlayerGrid article, .matchPlayerGrid > button { display: grid; min-width: 0; min-height: 118px; align-content: center; justify-items: center; gap: 5px; padding: 9px 6px; border-radius: 12px; text-align: center; }
 .matchPlayerGrid article.confirmed { border: 1px solid rgba(16, 198, 210, 0.35); background: rgba(3, 20, 33, 0.82); }
-.matchPlayerGrid article.vacant { border: 1px dashed rgba(200, 242, 56, 0.48); background: rgba(200, 242, 56, 0.04); color: var(--lime); }
+.matchPlayerGrid article.vacant, .matchPlayerGrid > button.vacant { border: 1px dashed rgba(200, 242, 56, 0.48); background: rgba(200, 242, 56, 0.04); color: var(--lime); }
+.manualSlotButton { cursor: pointer; font: inherit; transition: border-color 150ms ease, background 150ms ease, transform 150ms ease; }
+.manualSlotButton:hover { border-color: var(--lime) !important; background: rgba(200, 242, 56, 0.1) !important; transform: translateY(-1px); }
+.manualSlotButton:focus-visible { outline: 3px solid rgba(31, 207, 218, 0.45); outline-offset: 2px; }
 .playerPortrait, .vacantNumber, .organizerPortrait { display: grid; place-items: center; border-radius: 50%; background-position: center; background-size: cover; }
 .playerPortrait, .vacantNumber { width: 42px; height: 42px; }
 .playerPortrait { border: 2px solid var(--cyan); color: var(--muted); }
+.playerPortrait > b { color: var(--cyan); font-size: 0.9rem; }
 .playerPortrait svg, .organizerPortrait svg { width: 100%; height: 100%; }
 .vacantNumber { border: 2px dotted var(--lime); font-size: 0.78rem; font-weight: 900; }
-.matchPlayerGrid strong { width: 100%; overflow: hidden; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
+.matchPlayerGrid strong { width: 100%; overflow: hidden; color: inherit; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
 .matchPlayerGrid small { color: var(--muted); font-size: 0.58rem; }
 .matchPlayerGrid .vacant small { color: var(--lime); }
 .matchBoardProgress { height: 6px; margin: 14px 0 6px !important; overflow: hidden; border-radius: 999px; background: rgba(146, 199, 217, 0.15); }
 .matchBoardProgress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--cyan), var(--lime)); }
 .matchTacticalBoard > small { color: var(--muted); font-size: 0.65rem; }
+.matchDialogBackdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 18px; background: rgba(0, 9, 16, 0.78); backdrop-filter: blur(5px); }
+.manualPlayerDialog { width: min(100%, 460px); max-height: calc(100dvh - 36px); overflow-y: auto; padding: 20px; border: 1px solid rgba(31, 207, 218, 0.35); border-radius: 20px; background: #071f2d; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45); }
+.manualPlayerDialog > header { display: grid; grid-template-columns: 42px minmax(0, 1fr) 36px; align-items: center; gap: 10px; }
+.manualPlayerDialog > header > span { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 12px; background: rgba(31, 207, 218, 0.12); color: var(--cyan); }
+.manualPlayerDialog > header h2, .manualPlayerDialog > header p { margin: 0; }
+.manualPlayerDialog > header h2 { margin-top: 2px; font-size: 1.2rem; }
+.manualPlayerDialog > header > button { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--text); }
+.manualPlayerDialog > p { margin: 14px 0 18px; color: var(--muted); font-size: 0.78rem; line-height: 1.55; }
+.manualPlayerDialog form { display: grid; gap: 14px; }
+.manualPlayerDialog form > label:not(.manualPaymentCheck) { display: grid; gap: 7px; font-size: 0.75rem; font-weight: 800; }
+.manualPlayerDialog label > small { color: var(--muted); font-size: 0.64rem; font-weight: 500; }
+.manualPaymentCheck { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 10px; padding: 13px; border: 1px solid var(--line); border-radius: 13px; background: rgba(3, 20, 33, 0.5); }
+.manualPaymentCheck input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--lime); }
+.manualPaymentCheck span { display: grid; gap: 3px; }
+.manualPaymentCheck small { color: var(--muted); font-size: 0.66rem; line-height: 1.4; }
+.manualPlayerActions { display: grid; grid-template-columns: minmax(100px, 0.7fr) minmax(150px, 1.3fr); gap: 9px; margin-top: 3px; }
+.manualPlayerActions button { min-height: 46px; font-size: 0.76rem; }
 .matchIncludes { padding: 20px; }
 .matchIncludes > p, .matchIncludes h2 { margin: 0; }
 .matchIncludes h2 { margin: 4px 0 13px; font-size: 1.1rem; }
@@ -9097,7 +9118,7 @@ body:has(.scheduleModal) .appNavigation {
   .matchExperienceFacts article { min-height: 98px; padding: 12px; }
   .matchTacticalBoard, .matchIncludes { padding: 14px; }
   .matchPlayerGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; padding: 9px; }
-  .matchPlayerGrid article { min-height: 106px; }
+  .matchPlayerGrid article, .matchPlayerGrid > button { min-height: 106px; }
   .matchShareCard { grid-template-columns: auto minmax(0, 1fr); }
   .matchShareCard button { width: 100%; }
   .matchExperienceBooking { position: static; }
@@ -9107,7 +9128,7 @@ body:has(.scheduleModal) .appNavigation {
   .matchExperienceFacts article { grid-template-columns: 1fr; }
   .matchExperienceFacts article > svg { display: none; }
   .matchExperienceFacts strong { font-size: 0.8rem; }
-  .matchPlayerGrid article { min-height: 100px; padding-inline: 3px; }
+  .matchPlayerGrid article, .matchPlayerGrid > button { min-height: 100px; padding-inline: 3px; }
 }
 
 /* Flujo guiado para configurar sedes y canchas */

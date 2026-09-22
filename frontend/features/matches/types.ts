@@ -21,6 +21,7 @@ export type MatchSummary = {
   startsAt: string;
   endsAt: string;
   status: "DRAFT" | "PUBLISHED" | "CANCELLED";
+  managedByCurrentUser: boolean;
   participantPreview: Array<{ displayName: string; avatarUrl: string | null }>;
   organizerDisplayName: string | null;
   organizerAvatarUrl: string | null;
@@ -58,14 +59,16 @@ export type MatchJoinOrder = {
 };
 
 export type MatchParticipantAdmin = {
-  userId: string;
+  participantId: string;
+  userId: string | null;
+  source: "ACCOUNT" | "MANUAL";
   displayName: string;
-  email: string;
+  email: string | null;
   avatarUrl: string | null;
   status: "JOINED" | "WAITLISTED";
-  paymentStatus: "PAID" | "PENDING" | "UNPAID" | "NOT_REQUIRED";
+  paymentStatus: "PAID" | "PAID_DIRECT" | "PENDING" | "UNPAID" | "NOT_REQUIRED";
   paidMinor: number;
-  paymentMethod: "YAPE" | "PLIN" | null;
+  paymentMethod: "YAPE" | "PLIN" | "DIRECTO" | null;
   paidAt: string | null;
   joinedAt: string | null;
   checkedInAt: string | null;

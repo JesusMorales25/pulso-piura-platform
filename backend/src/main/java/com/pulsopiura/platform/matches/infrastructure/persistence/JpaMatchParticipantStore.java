@@ -11,9 +11,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 class JpaMatchParticipantStore implements MatchParticipantStore {
     private final MatchParticipantJpaRepository participants;
+    private final ManualMatchParticipantJpaRepository manualParticipants;
 
-    JpaMatchParticipantStore(MatchParticipantJpaRepository participants) {
+    JpaMatchParticipantStore(
+            MatchParticipantJpaRepository participants,
+            ManualMatchParticipantJpaRepository manualParticipants) {
         this.participants = participants;
+        this.manualParticipants = manualParticipants;
     }
 
     @Override
@@ -32,7 +36,10 @@ class JpaMatchParticipantStore implements MatchParticipantStore {
 
     @Override
     public long countByMatchAndStatus(UUID matchId, MatchParticipantStatus status) {
-        return participants.countByMatchIdAndStatus(matchId, status);
+        var registered = participants.countByMatchIdAndStatus(matchId, status);
+        return status == MatchParticipantStatus.JOINED
+                ? registered + manualParticipants.countByMatchId(matchId)
+                : registered;
     }
 
     @Override

@@ -1,3 +1,8 @@
+param(
+    [ValidateSet("keycloak", "auth0")]
+    [string]$AuthProvider
+)
+
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $projectRoot
@@ -22,7 +27,9 @@ function Assert-PortAvailable {
 }
 
 # Maven y Next.js necesitan las mismas variables que Docker Compose.
-. "$PSScriptRoot\import-local-env.ps1"
+. "$PSScriptRoot\import-local-env.ps1" -AuthProvider $AuthProvider
+$selectedAuthProvider = $env:AUTH_PROVIDER
+Write-Host "Proveedor de identidad local: $selectedAuthProvider"
 
 # El backend se compila para Java 21. En Windows es frecuente conservar un
 # JAVA_HOME antiguo aunque `java.exe` ya resuelva al JDK correcto desde PATH;
@@ -49,17 +56,26 @@ $env:JAVA_HOME = Split-Path -Parent $javaBin
 $env:Path = "$javaBin;$env:Path"
 Write-Host "Java local preparado: $env:JAVA_HOME"
 
-docker compose up -d --wait --remove-orphans postgres keycloak
-if ($LASTEXITCODE -ne 0) {
-    docker compose logs keycloak --tail 160
-    throw "No se pudieron iniciar PostgreSQL y Keycloak. Revisa el log anterior."
+if ($selectedAuthProvider -eq "keycloak") {
+    docker compose up -d --wait --remove-orphans postgres keycloak
+    $infrastructureExitCode = $LASTEXITCODE
+} else {
+    docker compose up -d --wait --remove-orphans postgres
+    $infrastructureExitCode = $LASTEXITCODE
+    docker compose stop keycloak 2>$null | Out-Null
+}
+if ($infrastructureExitCode -ne 0) {
+    if ($selectedAuthProvider -eq "keycloak") { docker compose logs keycloak --tail 160 }
+    throw "No se pudo iniciar la infraestructura local. Revisa el log anterior."
 }
 
-try {
-    & "$PSScriptRoot\bootstrap-keycloak-local.ps1"
-} catch {
-    docker compose logs keycloak --tail 160
-    throw "No se pudo preparar el usuario local de Keycloak mediante la API administrativa. $($_.Exception.Message)"
+if ($selectedAuthProvider -eq "keycloak") {
+    try {
+        & "$PSScriptRoot\bootstrap-keycloak-local.ps1"
+    } catch {
+        docker compose logs keycloak --tail 160
+        throw "No se pudo preparar el usuario local de Keycloak mediante la API administrativa. $($_.Exception.Message)"
+    }
 }
 
 Assert-PortAvailable -Port 8080 -Service "El backend"
@@ -129,5 +145,10 @@ try {
     throw
 }
 
-Write-Host "Servicios iniciados: web http://localhost:3000, API http://localhost:8080, Keycloak http://localhost:8180"
-Write-Host "Administrador local: consulta DEMO_PLATFORM_ADMIN_EMAIL y TEST_USER_PASSWORD en .env"
+if ($selectedAuthProvider -eq "keycloak") {
+    Write-Host "Servicios iniciados: web http://localhost:3000, API http://localhost:8080, Keycloak http://localhost:8180"
+    Write-Host "Administrador local: consulta DEMO_PLATFORM_ADMIN_EMAIL y TEST_USER_PASSWORD en .env"
+} else {
+    Write-Host "Servicios iniciados: web http://localhost:3000, API http://localhost:8080, identidad Auth0 externa"
+    Write-Host "Auth0 debe permitir callback http://localhost:3000/auth/callback, logout y origen http://localhost:3000"
+}

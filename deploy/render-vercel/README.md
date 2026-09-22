@@ -101,8 +101,15 @@ exports.onExecutePostLogin = async (event, api) => {
   api.accessToken.setCustomClaim(`${namespace}/name`, displayName);
   api.accessToken.setCustomClaim(`${namespace}/picture`, event.user.picture || "");
   api.idToken.setCustomClaim(`${namespace}/roles`, roles);
+  api.idToken.setCustomClaim(`${namespace}/name`, displayName);
+  api.idToken.setCustomClaim(`${namespace}/picture`, event.user.picture || "");
 };
 ```
+
+Las cuentas creadas con correo y contraseña no incluyen una fotografía por defecto. En ese caso la
+interfaz muestra la inicial del nombre; una foto real proviene de Google o de una imagen configurada
+en el perfil. Después de modificar esta Action, ejecuta **Deploy** y vuelve a iniciar sesión para
+recibir los nuevos claims.
 
 Esta Action es obligatoria para que la API reciba correo, verificación, nombre y
 foto en el access token de Auth0. Después de crearla, selecciona **Deploy** y

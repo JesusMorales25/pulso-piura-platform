@@ -21,6 +21,7 @@ public class MatchController {
     private final MatchJoinPaymentService joinPayments;
     private final MatchOrganizerQueryService organizerQueries;
     private final MatchOrganizerManagementService organizerManagement;
+    private final ManualMatchParticipantService manualParticipants;
     private final MatchActivityQueryService activityQueries;
     private final MatchOrganizerAuthorization organizerAuthorization;
     private final MatchInvitationService invitations;
@@ -34,6 +35,7 @@ public class MatchController {
             MatchJoinPaymentService joinPayments,
             MatchOrganizerQueryService organizerQueries,
             MatchOrganizerManagementService organizerManagement,
+            ManualMatchParticipantService manualParticipants,
             MatchActivityQueryService activityQueries,
             MatchOrganizerAuthorization organizerAuthorization,
             MatchInvitationService invitations,
@@ -45,6 +47,7 @@ public class MatchController {
         this.joinPayments = joinPayments;
         this.organizerQueries = organizerQueries;
         this.organizerManagement = organizerManagement;
+        this.manualParticipants = manualParticipants;
         this.activityQueries = activityQueries;
         this.organizerAuthorization = organizerAuthorization;
         this.invitations = invitations;
@@ -89,6 +92,37 @@ public class MatchController {
         var actor = users.provision(jwt).id();
         requireOrganizer(jwt, actor);
         organizerManagement.removeParticipant(actor, matchId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{matchId:[0-9a-fA-F-]{36}}/manual-participants")
+    @PreAuthorize("isAuthenticated()")
+    ResponseEntity<ManualMatchParticipantService.ManualParticipantView> addManualParticipant(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID matchId,
+            @Valid @RequestBody AddManualParticipantRequest request) {
+        var actor = users.provision(jwt).id();
+        requireOrganizer(jwt, actor);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(
+                        manualParticipants.add(
+                                actor,
+                                matchId,
+                                request.displayName(),
+                                request.phone(),
+                                request.paid()));
+    }
+
+    @DeleteMapping(
+            "/{matchId:[0-9a-fA-F-]{36}}/manual-participants/{participantId:[0-9a-fA-F-]{36}}")
+    @PreAuthorize("isAuthenticated()")
+    ResponseEntity<Void> removeManualParticipant(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID matchId,
+            @PathVariable UUID participantId) {
+        var actor = users.provision(jwt).id();
+        requireOrganizer(jwt, actor);
+        manualParticipants.remove(actor, matchId, participantId);
         return ResponseEntity.noContent().build();
     }
 
@@ -266,6 +300,11 @@ public class MatchController {
             @NotNull com.pulsopiura.platform.matches.domain.MatchPaymentMethod method) {}
 
     public record InviteToMatchRequest(@NotBlank @Email String email) {}
+
+    public record AddManualParticipantRequest(
+            @NotBlank @Size(max = 120) String displayName,
+            @Size(max = 30) String phone,
+            boolean paid) {}
 
     public record MatchCheckInRequest(@NotBlank @Size(max = 100) String payload) {}
 }

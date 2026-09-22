@@ -117,7 +117,7 @@ public class MatchService {
         var saved = matches.save(match);
         events.publishEvent(
                 new MatchAuditEvent(actorId, saved.organizationId(), saved.id(), "MATCH_CREATED"));
-        return view(saved);
+        return view(saved, false, true);
     }
 
     @Transactional
@@ -131,14 +131,14 @@ public class MatchService {
         events.publishEvent(
                 new MatchAuditEvent(
                         actorId, saved.organizationId(), saved.id(), "MATCH_PUBLISHED"));
-        return view(saved);
+        return view(saved, false, true);
     }
 
     @Transactional(readOnly = true)
     public List<MatchView> publicCatalog(String sportCode) {
         var sport = normalizeOptional(sportCode);
         return matches.findPublicUpcoming(clock.instant(), sport).stream()
-                .map(match -> view(match, true))
+                .map(match -> view(match, true, false))
                 .toList();
     }
 
@@ -148,22 +148,23 @@ public class MatchService {
                 matches.findPublishedBySlug(publicSlug)
                         .orElseThrow(() -> new NoSuchElementException("Partido no encontrado"));
         accessPolicy.requireCanAccess(match, actorId);
-        return view(match, true);
+        return view(match, true, actorId != null && match.organizerUserId().equals(actorId));
     }
 
     @Transactional(readOnly = true)
     public List<MatchView> organizerCatalog(UUID actorId) {
         return matches.findByOrganizer(actorId).stream()
                 .filter(match -> match.status() == MatchStatus.PUBLISHED)
-                .map(this::view)
+                .map(match -> view(match, false, true))
                 .toList();
     }
 
     private MatchView view(SportsMatch match) {
-        return view(match, false);
+        return view(match, false, false);
     }
 
-    private MatchView view(SportsMatch match, boolean includeDetailMetadata) {
+    private MatchView view(
+            SportsMatch match, boolean includeDetailMetadata, boolean managedByCurrentUser) {
         var joined = participants.countByMatchAndStatus(match.id(), MatchParticipantStatus.JOINED);
         var occupied = Math.toIntExact(joined) + (match.organizerCounts() ? 1 : 0);
         var space = spaces.requirePublishedSpace(match.sportSpaceId());
@@ -173,7 +174,8 @@ public class MatchService {
                 space.spaceName(),
                 space.venueName(),
                 space.venueAddress(),
-                participantPreviews.publicParticipants(match.id()),
+                managedByCurrentUser,
+                participantPreviews.participants(match.id(), managedByCurrentUser),
                 includeDetailMetadata
                         ? detailMetadata.load(match.organizerUserId(), match.sportSpaceId())
                         : null);

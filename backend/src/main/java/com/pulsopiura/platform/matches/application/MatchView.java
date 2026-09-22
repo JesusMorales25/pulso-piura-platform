@@ -28,6 +28,7 @@ public record MatchView(
         Instant startsAt,
         Instant endsAt,
         String status,
+        boolean managedByCurrentUser,
         List<MatchParticipantPreviewService.ParticipantPreview> participantPreview,
         String organizerDisplayName,
         String organizerAvatarUrl,
@@ -40,6 +41,7 @@ public record MatchView(
             String spaceName,
             String venueName,
             String venueAddress,
+            boolean managedByCurrentUser,
             List<MatchParticipantPreviewService.ParticipantPreview> participantPreview,
             MatchDetailMetadataService.Metadata metadata) {
         return new MatchView(
@@ -65,6 +67,7 @@ public record MatchView(
                 match.startsAt(),
                 match.endsAt(),
                 match.status().name(),
+                managedByCurrentUser,
                 participantPreview,
                 metadata == null ? null : metadata.organizerDisplayName(),
                 metadata == null ? null : metadata.organizerAvatarUrl(),

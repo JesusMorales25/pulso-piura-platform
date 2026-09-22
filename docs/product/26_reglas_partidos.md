@@ -43,6 +43,18 @@ PUBLISHED/MINIMUM_REACHED/CONFIRMED → RESCHEDULED
 - eliminar a un participante exige motivo y notificación;
 - el capitán no puede alterar historial de asistencia después del periodo de corrección sin permiso especial.
 
+### Personas agregadas por el organizador
+
+- el organizador puede ocupar un cupo con una persona que confirmó y pagó fuera de la plataforma;
+- el registro manual exige nombre y admite un teléfono privado opcional;
+- el organizador declara el pago como pendiente o pagado directamente; esta declaración no crea ni
+  suplanta una transacción del proveedor de pagos;
+- el cupo manual cuenta para la capacidad máxima y se crea bajo bloqueo transaccional del partido;
+- solo quien creó el partido puede agregar o retirar estos registros;
+- el nombre puede aparecer en la pizarra del partido, pero el teléfono nunca se publica;
+- las altas y bajas quedan auditadas;
+- un jugador con cuenta continúa usando la inscripción y el pago normales.
+
 ## Lista de espera
 
 - orden estable por fecha/criterio publicado;

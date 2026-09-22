@@ -24,9 +24,10 @@ public class MatchOrganizerQueryService {
                         .orElseThrow(() -> new NoSuchElementException("Partido no encontrado"));
         if (!match.organizerUserId().equals(actor))
             throw new AccessDeniedException("Solo el organizador puede ver los participantes");
-        return jdbc.query(
-                """
-                select p.user_id,
+        var registered =
+                jdbc.query(
+                        """
+                select p.id participant_id, p.user_id,
                        coalesce(case when profile.visibility <> 'PRIVATE'
                                      then nullif(profile.preferred_display_name, '') end,
                                 u.display_name) display_name,
@@ -52,26 +53,61 @@ public class MatchOrganizerQueryService {
                 where p.match_id = ? and p.status <> 'WITHDRAWN'
                 order by p.joined_at nulls last, u.display_name
                 """,
-                (rs, row) -> {
-                    var joinedAt = rs.getTimestamp("joined_at");
-                    return new ParticipantView(
-                            rs.getObject("user_id", UUID.class),
-                            rs.getString("display_name"),
-                            rs.getString("email"),
-                            rs.getString("avatar_url"),
-                            rs.getString("status"),
-                            rs.getString("payment_status"),
-                            rs.getLong("paid_minor"),
-                            rs.getString("payment_method"),
-                            timestamp(rs, "paid_at"),
-                            joinedAt == null ? null : joinedAt.toInstant(),
-                            timestamp(rs, "checked_in_at"));
-                },
-                matchId);
+                        (rs, row) -> {
+                            var joinedAt = rs.getTimestamp("joined_at");
+                            return new ParticipantView(
+                                    rs.getObject("participant_id", UUID.class),
+                                    rs.getObject("user_id", UUID.class),
+                                    "ACCOUNT",
+                                    rs.getString("display_name"),
+                                    rs.getString("email"),
+                                    rs.getString("avatar_url"),
+                                    rs.getString("status"),
+                                    rs.getString("payment_status"),
+                                    rs.getLong("paid_minor"),
+                                    rs.getString("payment_method"),
+                                    timestamp(rs, "paid_at"),
+                                    joinedAt == null ? null : joinedAt.toInstant(),
+                                    timestamp(rs, "checked_in_at"));
+                        },
+                        matchId);
+        var manual =
+                jdbc.query(
+                        """
+                select id participant_id, display_name, phone, payment_status,
+                       paid_minor, paid_at, created_at
+                from app.manual_match_participants
+                where match_id = ?
+                order by created_at, id
+                """,
+                        (rs, row) ->
+                                new ParticipantView(
+                                        rs.getObject("participant_id", UUID.class),
+                                        null,
+                                        "MANUAL",
+                                        rs.getString("display_name"),
+                                        rs.getString("phone"),
+                                        null,
+                                        "JOINED",
+                                        rs.getString("payment_status"),
+                                        rs.getLong("paid_minor"),
+                                        rs.getString("payment_status").equals("PAID_DIRECT")
+                                                ? "DIRECTO"
+                                                : null,
+                                        timestamp(rs, "paid_at"),
+                                        timestamp(rs, "created_at"),
+                                        null),
+                        matchId);
+        var result = new ArrayList<ParticipantView>(registered.size() + manual.size());
+        result.addAll(registered);
+        result.addAll(manual);
+        return List.copyOf(result);
     }
 
     public record ParticipantView(
+            UUID participantId,
             UUID userId,
+            String source,
             String displayName,
             String email,
             String avatarUrl,

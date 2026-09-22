@@ -7,8 +7,8 @@ Los dos entornos son independientes. No copies las URLs ni los secretos de uno a
 El entorno local usa estos archivos:
 
 - `.env`, creado a partir de `.env.example` y excluido de Git.
-- `compose.yaml`, que inicia únicamente PostgreSQL y Keycloak en Docker.
-- `scripts/start-local.ps1`, que configura Keycloak mediante su API administrativa y ejecuta Spring Boot y Next.js directamente en Windows.
+- `compose.yaml`, que proporciona PostgreSQL y, cuando se elige, Keycloak.
+- `scripts/start-local.ps1`, que ejecuta Spring Boot y Next.js y selecciona un único proveedor OIDC.
 
 Inicio:
 
@@ -16,7 +16,34 @@ Inicio:
 powershell -ExecutionPolicy Bypass -File scripts\start-local.ps1
 ```
 
-Las URLs locales son `http://localhost:3000`, `http://localhost:8080` y `http://localhost:8180`. Los scripts verifican esos hosts antes de arrancar para detectar una mezcla accidental con producción.
+El comando anterior usa el proveedor definido en `.env` y, si está vacío, selecciona Keycloak.
+También se puede elegirlo explícitamente:
+
+```powershell
+# Keycloak local
+powershell -ExecutionPolicy Bypass -File scripts\start-local.ps1 -AuthProvider keycloak
+
+# Auth0 externo y solo PostgreSQL en Docker
+powershell -ExecutionPolicy Bypass -File scripts\start-local.ps1 -AuthProvider auth0
+```
+
+Para Auth0, `.env` debe tener `AUTH0_OIDC_ISSUER_URI`, `AUTH0_OIDC_JWK_SET_URI`,
+`AUTH0_OIDC_AUDIENCE` y `AUTH0_OIDC_CLIENT_ID` con los mismos valores públicos del ambiente
+publicado. El script los aplica al frontend y backend sin reemplazar la configuración local de
+Keycloak. En Auth0 agrega:
+
+```text
+Allowed Callback URLs: http://localhost:3000/auth/callback
+Allowed Logout URLs: http://localhost:3000
+Allowed Web Origins: http://localhost:3000
+```
+
+El modo Auth0 no inicia ni prepara Keycloak. La contraseña y el Client Secret continúan fuera del
+frontend y del repositorio.
+
+La web y la API locales usan `http://localhost:3000` y `http://localhost:8080`. Keycloak usa
+`http://localhost:8180` únicamente en su modo. Los scripts permiten el issuer HTTPS externo solo
+cuando el proveedor elegido es Auth0.
 
 El bootstrap local está en `scripts/bootstrap-keycloak-local.ps1`. No depende de `kcadm.sh`: Keycloak 26.7.3 devolvía `Cannot parse the JSON [unknown_error]` desde el contenedor auxiliar aunque el endpoint OIDC ya respondía correctamente desde Windows.
 

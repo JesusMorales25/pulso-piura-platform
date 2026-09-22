@@ -60,7 +60,7 @@ public class UserEntity {
     public void refreshClaims(
             String email, boolean verified, String name, String pictureUrl, Instant now) {
         var normalizedEmail = email == null ? null : email.trim().toLowerCase(Locale.ROOT);
-        var normalizedName = name == null || name.isBlank() ? "Jugador" : name.trim();
+        var normalizedName = normalizeDisplayName(name, normalizedEmail);
         var normalizedAvatar = validAvatar(pictureUrl);
         if (Objects.equals(this.email, normalizedEmail)
                 && this.emailVerified == verified
@@ -111,5 +111,26 @@ public class UserEntity {
         if (value == null || value.isBlank()) return null;
         var clean = value.trim();
         return clean.length() <= 500 && clean.startsWith("https://") ? clean : null;
+    }
+
+    private static String normalizeDisplayName(String name, String email) {
+        if (name != null && !name.isBlank()) return name.trim();
+        if (email == null || email.isBlank()) return "Jugador";
+        var localPart =
+                email.substring(0, email.indexOf('@') > 0 ? email.indexOf('@') : email.length());
+        var words =
+                localPart
+                        .replace('.', ' ')
+                        .replace('_', ' ')
+                        .replace('-', ' ')
+                        .trim()
+                        .split("\\s+");
+        var result = new StringBuilder();
+        for (var word : words) {
+            if (word.isBlank()) continue;
+            if (!result.isEmpty()) result.append(' ');
+            result.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+        }
+        return result.isEmpty() ? "Jugador" : result.toString();
     }
 }
