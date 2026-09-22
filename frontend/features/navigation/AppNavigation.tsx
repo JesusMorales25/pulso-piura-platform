@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CalendarCheck,
   CalendarDots,
   Buildings,
   Compass,
@@ -23,6 +24,13 @@ export function AppNavigation() {
         Icon: GearSix,
         active: pathname.startsWith("/plataforma"),
       }
+    : capabilities.isVenueOwner
+      ? {
+          href: "/reservas-cancha",
+          label: "Reservas",
+          Icon: CalendarCheck,
+          active: pathname.startsWith("/reservas-cancha"),
+        }
     : capabilities.canOperateOrganizations
       ? {
           href: "/organizaciones",
@@ -37,6 +45,23 @@ export function AppNavigation() {
           Icon: Plus,
           active: pathname.startsWith("/crear") || pathname.startsWith("/organizador"),
         };
+  const activityItem = capabilities.isVenueOwner
+    ? {
+        href: "/organizaciones",
+        label: "Mis canchas",
+        Icon: Buildings,
+        active:
+          pathname.startsWith("/organizaciones") ||
+          pathname.startsWith("/admin/"),
+        featured: false,
+      }
+    : {
+        href: "/actividad",
+        label: "Actividad",
+        Icon: CalendarDots,
+        active: pathname.startsWith("/actividad"),
+        featured: false,
+      };
   const items = [
     {
       href: "/",
@@ -45,13 +70,7 @@ export function AppNavigation() {
       active: pathname === "/" || pathname.startsWith("/partidos") || pathname === "/canchas",
       featured: false,
     },
-    {
-      href: "/actividad",
-      label: "Actividad",
-      Icon: CalendarDots,
-      active: pathname.startsWith("/actividad"),
-      featured: false,
-    },
+    activityItem,
     { ...centralItem, featured: true },
     {
       href: "/tercer-tiempo",

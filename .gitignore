@@ -20,6 +20,7 @@ deploy/coolify/backups/
 Thumbs.db
 .DS_Store
 README.md
+!deploy/render-vercel/README.md
 UX-CONTRACTS.md
 AGENTS.md
 desing-qa.md
@@ -30,6 +31,9 @@ docs/
 docs/*
 !docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md
 !docs/VSCODE_PORT_SHARE.md
+!docs/adr/
+docs/adr/*
+!docs/adr/ADR-006-proveedor-oidc-configurable.md
 !docs/product/
 docs/product/*
 !docs/product/35_plan_evolucion_revision_cliente.md

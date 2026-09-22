@@ -2,7 +2,17 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { ImageSquare, ListBullets, PencilSimple, Phone, Plus, Storefront } from "@phosphor-icons/react";
+import {
+  Archive,
+  EyeSlash,
+  ImageSquare,
+  ListBullets,
+  MapPin,
+  PencilSimple,
+  Phone,
+  Plus,
+  Storefront,
+} from "@phosphor-icons/react";
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { FriendlyLocationPicker } from "@/components/forms/FriendlyLocationPicker";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
@@ -27,7 +37,7 @@ type BusinessMode = "add" | "list";
 const categoryLabels: Record<Business["category"], string> = {
   CHOPERIA: "Chopería",
   RESTAURANT: "Restaurante",
-  SPORTS_BAR: "Sports bar",
+  SPORTS_BAR: "Bar deportivo",
   OTHER: "Otro negocio",
 };
 
@@ -228,15 +238,24 @@ export default function PlatformBusinessesPage() {
         onDismiss={dismissNotice}
         tone={notice?.tone}
       />
-      <p className="eyebrow">DIRECTORIO COMERCIAL</p>
-      <h1>Choperías, restaurantes y aliados</h1>
-      <Link className="platformBackLink" href="/plataforma">
-        ← Volver a la consola
-      </Link>
-      <p className="pageLead">
-        Solo los registros publicados aparecen para todas las personas en “El
-        tercer tiempo”.
-      </p>
+      <header className="platformBusinessHero">
+        <Link className="platformBackLink" href="/plataforma">
+          ← Volver a la consola
+        </Link>
+        <div>
+          <span className="platformBusinessHeroIcon" aria-hidden="true">
+            <Storefront size={27} weight="duotone" />
+          </span>
+          <div>
+            <p className="eyebrow">DIRECTORIO COMERCIAL</p>
+            <h1>Choperías, restaurantes y aliados</h1>
+            <p>
+              Administra los lugares que las personas descubrirán después del
+              partido.
+            </p>
+          </div>
+        </div>
+      </header>
       <div aria-label="Administrar negocios" className="businessModeSwitch" role="tablist">
         <button
           aria-selected={activeMode === "add"}
@@ -256,7 +275,7 @@ export default function PlatformBusinessesPage() {
           type="button"
         >
           <ListBullets aria-hidden="true" size={19} weight="bold" />
-          Negocios publicados
+          Directorio
           <small>{items.length}</small>
         </button>
       </div>
@@ -287,7 +306,7 @@ export default function PlatformBusinessesPage() {
             >
               <option value="CHOPERIA">Chopería</option>
               <option value="RESTAURANT">Restaurante</option>
-              <option value="SPORTS_BAR">Sports bar</option>
+              <option value="SPORTS_BAR">Bar deportivo</option>
               <option value="OTHER">Otro</option>
             </select>
           </label>
@@ -386,17 +405,25 @@ export default function PlatformBusinessesPage() {
         >
           {items.map((item) => (
             <article className="card" key={item.id}>
-              {item.imageUrl && (
+              <div className="platformBusinessMedia">
+              {item.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- La imagen puede provenir de la API o de HTTPS.
                 <img className="platformBusinessThumb" alt="" src={apiAssetUrl(item.imageUrl)} />
+              ) : (
+                <span aria-hidden="true"><Storefront size={34} weight="duotone" /></span>
               )}
+              </div>
               <div className="platformBusinessCardBody">
-                <span className={`pill businessStatus businessStatus--${item.status.toLowerCase()}`}>{statusLabel(item.status)}</span>
+                <div className="platformBusinessCardTopline">
+                  <span className="businessCategory">{categoryLabels[item.category]}</span>
+                  <span className={`pill businessStatus businessStatus--${item.status.toLowerCase()}`}>{statusLabel(item.status)}</span>
+                </div>
                 <h3>{item.name}</h3>
-                <p>{categoryLabels[item.category]} · {item.zone}</p>
+                <p className="platformBusinessAddress"><MapPin aria-hidden="true" size={17} weight="fill" /> <span>{item.zone}</span></p>
                 {item.description && <small>{item.description}</small>}
                 <div className="platformBusinessMeta">
                   <span><Phone aria-hidden="true" size={16} /> {item.contactPhone || "Sin contacto"}</span>
+                  {item.mapsUrl && <a href={item.mapsUrl} rel="noreferrer" target="_blank">Ver ubicación</a>}
                 </div>
               </div>
               <div className="businessCardActions">
@@ -406,7 +433,7 @@ export default function PlatformBusinessesPage() {
                   onClick={() => startEditing(item)}
                   type="button"
                 >
-                  <PencilSimple aria-hidden="true" size={17} /> Editar
+                  <PencilSimple aria-hidden="true" size={17} /> Editar datos
                 </button>
                 {item.status !== "PUBLISHED" && (
                   <button
@@ -425,7 +452,7 @@ export default function PlatformBusinessesPage() {
                     onClick={() => void changeStatus(item, "DRAFT")}
                     type="button"
                   >
-                    Ocultar
+                    <EyeSlash aria-hidden="true" size={17} /> Ocultar
                   </button>
                 )}
                 {item.status !== "ARCHIVED" && (
@@ -435,7 +462,7 @@ export default function PlatformBusinessesPage() {
                     onClick={() => void changeStatus(item, "ARCHIVED")}
                     type="button"
                   >
-                    Archivar
+                    <Archive aria-hidden="true" size={17} /> Archivar
                   </button>
                 )}
               </div>

@@ -5,6 +5,10 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
+import {
+  organizationRoleLabel,
+  organizationStatusLabel,
+} from "@/lib/organization-labels";
 
 type Organization = {
   id: string;
@@ -128,9 +132,11 @@ export function OrganizationWorkspace() {
                   key={organization.id}
                 >
                   <div>
-                    <span className="pill">{organization.role}</span>
+                    <span className="pill">
+                      {organizationRoleLabel(organization.role)}
+                    </span>
                     <h3>{organization.name}</h3>
-                    <p>{organization.status}</p>
+                    <p>{organizationStatusLabel(organization.status)}</p>
                   </div>
                   <Link className="primary" href={`/admin/${organization.id}`}>
                     Abrir panel

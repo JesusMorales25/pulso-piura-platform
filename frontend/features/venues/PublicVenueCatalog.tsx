@@ -23,6 +23,7 @@ import { googleMapsUrl, whatsappUrl } from "@/lib/public-links";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { ReservationCheckout } from "@/features/reservations/ReservationCheckout";
 import type { Reservation } from "@/features/reservations/types";
+import { filterSpacesBySport } from "@/lib/venue-selection";
 
 type CatalogItem = { code: string; name: string };
 type VenueCatalog = {
@@ -159,6 +160,7 @@ export function PublicVenueCatalog({
   const loadVenueOffers = async (
     availableVenues: Venue[],
     dateValue: string,
+    sportValue = "",
   ) => {
     const request = ++offersRequest.current;
     setOffersLoading(true);
@@ -169,9 +171,10 @@ export function PublicVenueCatalog({
           const venueSpaces = await apiRequest<Space[]>(
             `/venues/${venue.publicSlug}/spaces`,
           );
+          const eligibleSpaces = filterSpacesBySport(venueSpaces, sportValue);
           const candidates = (
             await Promise.all(
-              venueSpaces.map(async (space) => {
+              eligibleSpaces.map(async (space) => {
                 try {
                   const spaceAvailability = await apiRequest<Availability>(
                     `/spaces/${space.id}/bookable-slots?date=${dateValue}`,
@@ -240,7 +243,11 @@ export function PublicVenueCatalog({
             )
           : result.items;
       setVenues(filteredVenues);
-      void loadVenueOffers(filteredVenues, dateValue);
+      void loadVenueOffers(
+        filteredVenues,
+        dateValue,
+        sportValue || sportFromSearch || "",
+      );
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -279,6 +286,7 @@ export function PublicVenueCatalog({
         const requestedSpace = requestedParams.get("space")?.trim() ?? "";
         const requestedStart = requestedParams.get("startsAt")?.trim() ?? "";
         const requestedEnd = requestedParams.get("endsAt")?.trim() ?? "";
+        const requestedSport = requestedParams.get("sport")?.trim() ?? "";
         const reserveRequested = requestedParams.get("reserve") === "1";
         if (requestedDistrict) setDistrict(requestedDistrict);
         if (
@@ -289,6 +297,12 @@ export function PublicVenueCatalog({
         }
         const result = await apiRequest<VenueCatalog>("/venue-catalogs");
         setCatalog(result);
+        const validRequestedSport = result.sports.some(
+          (item) => item.code === requestedSport,
+        )
+          ? requestedSport
+          : "";
+        if (validRequestedSport) setSport(validRequestedSport);
         const initialQuery = new URLSearchParams({
           size: "20",
           date:
@@ -298,11 +312,16 @@ export function PublicVenueCatalog({
               : localDate(),
         });
         if (requestedDistrict) initialQuery.set("district", requestedDistrict);
+        if (validRequestedSport) initialQuery.set("sport", validRequestedSport);
         const venuesResult = await apiRequest<VenuePage>(
           `/venues?${initialQuery}`,
         );
         setVenues(venuesResult.items);
-        void loadVenueOffers(venuesResult.items, initialQuery.get("date")!);
+        void loadVenueOffers(
+          venuesResult.items,
+          initialQuery.get("date")!,
+          validRequestedSport,
+        );
         if (requestedVenue) {
           setShowOtherSchedules(true);
           let firstVenue = venuesResult.items.find(

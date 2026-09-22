@@ -17,6 +17,7 @@ export type UserCapabilities = {
   canOperateOrganizations: boolean;
   canManageOrganizations: boolean;
   canManagePlatform: boolean;
+  isVenueOwner: boolean;
 };
 
 /**
@@ -34,6 +35,9 @@ export function resolveCapabilities(
   const organizationRoles = new Set(
     memberships.map((membership) => membership.role),
   );
+  const isVenueOwner =
+    authenticated &&
+    (venueOwnerApproved || organizationRoles.has("OWNER"));
 
   return {
     canBrowseVenues: true,
@@ -55,5 +59,6 @@ export function resolveCapabilities(
       (venueOwnerApproved ||
         (["OWNER", "ADMIN"] as const).some((role) => organizationRoles.has(role))),
     canManagePlatform: authenticated && roles.has("PLATFORM_ADMIN"),
+    isVenueOwner,
   };
 }

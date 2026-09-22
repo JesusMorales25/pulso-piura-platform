@@ -4,7 +4,10 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { VenueAdmin } from "@/features/venues/VenueAdmin";
-import { OrganizationReservations } from "@/features/reservations/OrganizationReservations";
+import {
+  organizationRoleLabel,
+  organizationStatusLabel,
+} from "@/lib/organization-labels";
 
 type Organization = {
   id: string;
@@ -187,9 +190,13 @@ export function OrganizationAdmin({
         <div>
           <p className="eyebrow">PANEL DEL COMPLEJO</p>
           <h1>{organization.name}</h1>
-          <p className="muted">Rol actual: {organization.role}</p>
+          <p className="muted">
+            Rol actual: {organizationRoleLabel(organization.role)}
+          </p>
         </div>
-        <span className="pill">{organization.status}</span>
+        <span className="pill">
+          {organizationStatusLabel(organization.status)}
+        </span>
       </div>
 
       {error && (
@@ -230,8 +237,8 @@ export function OrganizationAdmin({
               {members.map((member) => (
                 <li key={member.userId}>
                   <div>
-                    <strong>{member.role}</strong>
-                    <small>{member.userId}</small>
+                    <strong>{organizationRoleLabel(member.role)}</strong>
+                    <small>Identificador: {member.userId}</small>
                   </div>
                   {member.role !== "OWNER" && (
                     <button
@@ -270,9 +277,6 @@ export function OrganizationAdmin({
       </section>
 
       <VenueAdmin organizationId={organizationId} role={organization.role} />
-      {organization.role === "OWNER" && (
-        <OrganizationReservations organizationId={organizationId} />
-      )}
     </>
   );
 }

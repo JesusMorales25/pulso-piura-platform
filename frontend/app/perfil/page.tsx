@@ -1,7 +1,15 @@
 "use client";
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  Buildings,
+  CalendarCheck,
+  CalendarDots,
+  GearSix,
+  SoccerBall,
+} from "@phosphor-icons/react";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { apiRequest } from "@/lib/api";
 type Me = {
@@ -56,9 +64,9 @@ export default function ProfilePage() {
     loading,
     login,
     logout,
-    isPlatformAdmin,
     setProfileAvatarUrl,
   } = useAuth();
+  const { capabilities } = useUserCapabilities();
   const [me, setMe] = useState<Me | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [capabilityRequests, setCapabilityRequests] = useState<
@@ -169,7 +177,7 @@ export default function ProfilePage() {
       <main className="section">
         <p className="eyebrow">TU CUENTA</p>
         <h1>Ingresa para crear tu perfil</h1>
-        <p>Usamos Keycloak para proteger tu identidad.</p>
+        <p>Protegemos tu identidad mediante un inicio de sesión seguro.</p>
         <div className="authActions">
           <button
             className="primary borderless"
@@ -182,7 +190,7 @@ export default function ProfilePage() {
       </main>
     );
   return (
-    <main className="section">
+    <main className="section profilePage">
       <div className="profileHead">
         <div
           className="profileAvatar"
@@ -211,6 +219,36 @@ export default function ProfilePage() {
           Cerrar sesión
         </button>
       </div>
+      <nav className="profileRoleNavigation" aria-label="Accesos de mi cuenta">
+        <Link href="/actividad">
+          <CalendarDots aria-hidden="true" size={21} />
+          <span><strong>Mi actividad</strong><small>Partidos y reservas</small></span>
+        </Link>
+        {capabilities.canCreateMatches && (
+          <Link href="/organizador">
+            <SoccerBall aria-hidden="true" size={21} />
+            <span><strong>Mis pichangas</strong><small>Publicaciones y jugadores</small></span>
+          </Link>
+        )}
+        {capabilities.isVenueOwner && (
+          <>
+            <Link href="/organizaciones">
+              <Buildings aria-hidden="true" size={21} />
+              <span><strong>Mis canchas</strong><small>Sedes, canchas y horarios</small></span>
+            </Link>
+            <Link href="/reservas-cancha">
+              <CalendarCheck aria-hidden="true" size={21} />
+              <span><strong>Reservas</strong><small>Pagos y llegadas</small></span>
+            </Link>
+          </>
+        )}
+        {capabilities.canManagePlatform && (
+          <Link href="/plataforma">
+            <GearSix aria-hidden="true" size={21} />
+            <span><strong>Administración</strong><small>Consola de plataforma</small></span>
+          </Link>
+        )}
+      </nav>
       {profile && (
         <form className="profileForm" noValidate onSubmit={save}>
           <label>
@@ -267,13 +305,6 @@ export default function ProfilePage() {
             {saving ? "Guardando…" : "Guardar perfil"}
           </button>
         </form>
-      )}
-      {isPlatformAdmin && (
-        <p className="platformLink">
-          <Link className="secondary" href="/plataforma/solicitudes">
-            Abrir consola de plataforma
-          </Link>
-        </p>
       )}
       <section className="capabilitySection" id="capacidades" aria-labelledby="capability-title">
         <p className="eyebrow">NUEVAS POSIBILIDADES</p>

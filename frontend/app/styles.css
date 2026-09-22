@@ -274,6 +274,8 @@ button:disabled {
   border-top: 1px solid var(--line);
   background: rgba(3, 17, 28, 0.96);
   backdrop-filter: blur(20px);
+  isolation: isolate;
+  overflow: hidden;
 }
 .appNavigation a {
   position: relative;
@@ -1758,6 +1760,56 @@ button:disabled {
   padding: 14px 0;
   border-top: 1px solid var(--line);
 }
+.memberList li > div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+.memberList small {
+  overflow-wrap: anywhere;
+}
+.ownerReservationsHero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid rgba(16, 198, 210, 0.34);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(16, 198, 210, 0.12), var(--panel));
+}
+.ownerReservationsHero h1,
+.ownerReservationsHero p {
+  margin: 0;
+}
+.ownerReservationsHero h1 {
+  margin: 3px 0 5px;
+  font-size: clamp(1.75rem, 4vw, 2.6rem);
+}
+.ownerReservationsHero > div > p:last-child {
+  color: var(--muted);
+}
+.ownerReservationsHeroIcon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--cyan);
+  color: #00151f;
+}
+.ownerOrganizationPicker {
+  display: grid;
+  max-width: 480px;
+  gap: 8px;
+  margin-top: 22px;
+}
+.ownerReservationsPage .reservationDashboard {
+  margin-top: 24px;
+}
+.ownerReservationsEmpty svg {
+  color: var(--cyan);
+}
 .dangerButton {
   padding: 0.6rem 0.75rem;
   border: 1px solid rgba(255, 140, 140, 0.5);
@@ -1816,7 +1868,7 @@ button:disabled {
 }
 @media (max-width: 899px) {
   body {
-    padding-bottom: 78px;
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
   }
   .floatingNotice {
     top: auto;
@@ -2002,6 +2054,16 @@ button:disabled {
   }
   .organizationCard .primary {
     width: 100%;
+  }
+  .ownerReservationsHero {
+    align-items: flex-start;
+    padding: 18px;
+  }
+  .ownerReservationsHeroIcon {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+    border-radius: 13px;
   }
   .adminHead,
   .profileHead {
@@ -8316,6 +8378,251 @@ body:has(.scheduleModal) .appNavigation {
   padding: 8px 13px;
   font-size: 0.72rem;
   line-height: 1;
+}
+
+/* Administración comercial: jerarquía clara y tarjetas estables con o sin fotografía. */
+.platformBusinessHero {
+  display: grid;
+  gap: 20px;
+  width: min(780px, 100%);
+  margin-inline: auto;
+}
+.platformBusinessHero > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+.platformBusinessHeroIcon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid rgba(16, 198, 210, 0.38);
+  border-radius: 16px;
+  background: rgba(16, 198, 210, 0.12);
+  color: var(--cyan);
+}
+.platformBusinessHero h1 {
+  max-width: 720px;
+  margin: 3px 0 7px;
+  font-size: clamp(1.85rem, 4.6vw, 3.15rem);
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+.platformBusinessHero div p:last-child {
+  margin: 0;
+  color: var(--muted);
+}
+.platformBusinessList article {
+  display: grid;
+}
+.platformBusinessMedia {
+  display: grid;
+  width: 132px;
+  min-height: 170px;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 70% 20%, rgba(200, 242, 56, 0.15), transparent 38%),
+    linear-gradient(145deg, #0c3545, #061a29);
+  color: var(--cyan);
+}
+.platformBusinessMedia > span {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  border: 1px solid rgba(16, 198, 210, 0.28);
+  border-radius: 18px;
+  background: rgba(3, 20, 33, 0.5);
+}
+.platformBusinessMedia .platformBusinessThumb {
+  width: 100%;
+  min-height: 170px;
+}
+.platformBusinessCardBody h3 {
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+.platformBusinessCardTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.businessCategory {
+  color: var(--cyan);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.platformBusinessAddress {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+.platformBusinessAddress svg {
+  margin-top: 2px;
+  color: var(--cyan);
+}
+.platformBusinessMeta a {
+  color: var(--cyan);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+/* Perfil: accesos internos consistentes para jugador, organizador, dueño y plataforma. */
+.profileRoleNavigation {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  max-width: 980px;
+  margin-top: 22px;
+}
+.profilePage .profileHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.profilePage .profileHead > div:nth-child(2) {
+  min-width: 0;
+}
+.profilePage .profileHead h1,
+.profilePage .profileHead p {
+  overflow-wrap: anywhere;
+}
+.profilePage .profileHead h1 {
+  margin: 3px 0;
+}
+.profilePage .profileHead p:last-child {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+.profileRoleNavigation a {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 66px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(7, 31, 46, 0.82);
+  color: var(--white);
+  text-decoration: none;
+}
+.profileRoleNavigation a:hover {
+  border-color: rgba(16, 198, 210, 0.55);
+  background: rgba(16, 198, 210, 0.1);
+}
+.profileRoleNavigation svg {
+  flex: none;
+  color: var(--cyan);
+}
+.profileRoleNavigation span {
+  display: grid;
+  min-width: 0;
+}
+.profileRoleNavigation strong {
+  font-size: 0.78rem;
+}
+.profileRoleNavigation small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .platformBusinessHero {
+    gap: 15px;
+  }
+  .platformBusinessHero > div {
+    grid-template-columns: 44px minmax(0, 1fr);
+    align-items: start;
+    gap: 11px;
+  }
+  .platformBusinessHeroIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+  .platformBusinessHero h1 {
+    font-size: clamp(1.65rem, 8.5vw, 2.2rem);
+  }
+  .platformBusinessList article {
+    grid-template-columns: 104px minmax(0, 1fr);
+  }
+  .platformBusinessMedia {
+    width: 104px;
+    min-height: 174px;
+  }
+  .platformBusinessMedia .platformBusinessThumb {
+    min-height: 174px;
+  }
+  .profilePage {
+    padding-bottom: calc(122px + env(safe-area-inset-bottom));
+  }
+  .profileRoleNavigation {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .profileRoleNavigation a {
+    min-height: 62px;
+    padding: 9px 10px;
+  }
+  .profilePage .profileHead {
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .profilePage .profileAvatar {
+    width: 54px;
+    height: 54px;
+  }
+  .profilePage .profileLogout {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 390px) {
+  .appNavigation {
+    padding-inline: 3px;
+  }
+  .appNavigation a {
+    font-size: 0.61rem;
+  }
+  .appNavigation a svg {
+    width: 21px;
+    height: 21px;
+  }
+  .appNavigation a.featured svg {
+    width: 34px;
+    height: 34px;
+    padding: 7px;
+  }
+  .profileRoleNavigation {
+    grid-template-columns: 1fr;
+  }
+  .platformBusinessList article {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+  .platformBusinessMedia {
+    width: 88px;
+  }
+  .businessCardActions {
+    grid-template-columns: 1fr;
+  }
+  .businessCardActions button {
+    width: 100%;
+  }
 }
 .matchCatalogFeaturedGrid {
   display: grid;

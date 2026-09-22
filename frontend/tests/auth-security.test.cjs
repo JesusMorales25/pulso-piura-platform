@@ -13,6 +13,10 @@ function load(file, dependencies = {}) {
 }
 const session = load('lib/auth-session.ts');
 const authRoles = load('lib/auth-roles.ts');
+const capabilities = load('features/access/capabilities.ts', {
+  '@/lib/auth-roles': authRoles,
+});
+const venueSelection = load('lib/venue-selection.ts');
 function unsignedToken(claims) {
   return `header.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.signature`;
 }
@@ -33,6 +37,28 @@ test('platform roles are read from the configured Auth0 claim', () => {
     access_token: unsignedToken({ 'https://pulsopiura.app/roles': ['PLATFORM_ADMIN'] }),
   };
   assert.equal(authRoles.hasRealmRole(user, 'PLATFORM_ADMIN'), true);
+});
+test('only a venue owner receives the dedicated owner navigation capability', () => {
+  const user = { expired: false, profile: {}, access_token: unsignedToken({}) };
+  assert.equal(
+    capabilities.resolveCapabilities(user, [{ id: '1', name: 'Arena', role: 'OWNER' }]).isVenueOwner,
+    true,
+  );
+  assert.equal(
+    capabilities.resolveCapabilities(user, [{ id: '1', name: 'Arena', role: 'ADMIN' }]).isVenueOwner,
+    false,
+  );
+});
+test('venue offers keep only spaces for the selected sport', () => {
+  const spaces = [
+    { id: 'f7', sportCode: 'FOOTBALL' },
+    { id: 'v6', sportCode: 'VOLLEYBALL' },
+  ];
+  assert.deepEqual(
+    venueSelection.filterSpacesBySport(spaces, 'FOOTBALL').map((space) => space.id),
+    ['f7'],
+  );
+  assert.equal(venueSelection.filterSpacesBySport(spaces, '').length, 2);
 });
 test('login return accepts local journeys and rejects external or malformed redirects', () => {
   for (const input of ['//evil.test', '/\\evil.test', 'https://evil.test', 'javascript:alert(1)', '/\nevil', '/auth/callback?code=old', null]) assert.equal(session.safeReturnTo(input), '/perfil');
@@ -73,6 +99,18 @@ test('OIDC callback redeems authorization code once during repeated mounts', asy
   const first = exports.completeSignin();
   assert.equal(first, exports.completeSignin());
   await first; assert.equal(calls, 1);
+});
+test('Auth0 uses its audience and Google connection without Keycloak parameters', () => {
+  const source = ts.transpileModule(fs.readFileSync(path.join(__dirname, '../lib/oidc.ts'), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+  const exports = {};
+  const settings = [];
+  class Manager { constructor(value) { settings.push(value); } }
+  const browser = { location: { origin: 'https://pulso.example' }, sessionStorage: {} };
+  const auth0Process = { env: { NEXT_PUBLIC_AUTH_PROVIDER: 'auth0', NEXT_PUBLIC_OIDC_ISSUER: 'https://tenant.auth0.com/', NEXT_PUBLIC_OIDC_CLIENT_ID: 'client', NEXT_PUBLIC_OIDC_AUDIENCE: 'https://api.pulsopiura.app' } };
+  vm.runInNewContext(source, { exports, process: auth0Process, window: browser, Error, require: () => ({ UserManager: Manager, WebStorageStateStore: class {} }) });
+  assert.deepEqual({ ...exports.socialLoginParameters(true) }, { connection: 'google-oauth2' });
+  exports.getUserManager();
+  assert.deepEqual({ ...settings[0].extraQueryParams }, { audience: 'https://api.pulsopiura.app' });
 });
 test('OIDC session survives reloads only within the current browser session', () => {
   const source = fs.readFileSync(path.join(__dirname, '../lib/oidc.ts'), 'utf8');
