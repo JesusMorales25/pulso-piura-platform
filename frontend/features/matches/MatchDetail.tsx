@@ -12,6 +12,7 @@ import {
   MapPin,
   ShareNetwork,
   ShieldCheck,
+  Trash,
   UserCircle,
   UserPlus,
   UsersThree,
@@ -22,7 +23,7 @@ import {
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
-import type { MatchJoinOrder, MatchParticipation, MatchSummary } from "./types";
+import type { MatchJoinOrder, MatchParticipantAdmin, MatchParticipation, MatchSummary } from "./types";
 
 const skillLabels: Record<string, string> = {
   BEGINNER: "Principiante",
@@ -39,6 +40,14 @@ const sportLabels: Record<string, string> = {
   TENNIS: "Tenis",
 };
 
+function formatMoney(amountMinor: number, currency: string) {
+  return new Intl.NumberFormat("es-PE", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 0,
+  }).format(amountMinor / 100);
+}
+
 export function MatchDetail({ publicSlug }: { publicSlug: string }) {
   const { accessToken, loading: authLoading, login } = useAuth();
   const [match, setMatch] = useState<MatchSummary | null>(null);
@@ -52,6 +61,9 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
   const [order, setOrder] = useState<MatchJoinOrder | null>(null);
   const [manualSlotOpen, setManualSlotOpen] = useState(false);
   const [manualPaid, setManualPaid] = useState(false);
+  const [organizerRoster, setOrganizerRoster] = useState<MatchParticipantAdmin[]>([]);
+  const [selectedParticipant, setSelectedParticipant] = useState<MatchParticipantAdmin | null>(null);
+  const [confirmingRemoval, setConfirmingRemoval] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -80,6 +92,27 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
     });
     return () => controller.abort();
   }, [accessToken, publicSlug]);
+
+  useEffect(() => {
+    if (!accessToken || !match?.managedByCurrentUser) {
+      return;
+    }
+    const controller = new AbortController();
+    void apiRequest<MatchParticipantAdmin[]>(
+      `/matches/${match.id}/participants`,
+      accessToken,
+      { signal: controller.signal },
+    )
+      .then((roster) => {
+        if (!controller.signal.aborted) setOrganizerRoster(roster);
+      })
+      .catch((reason) => {
+        if (!controller.signal.aborted) {
+          setError(reason instanceof Error ? reason.message : "No pudimos cargar el control de pagos.");
+        }
+      });
+    return () => controller.abort();
+  }, [accessToken, match?.id, match?.managedByCurrentUser]);
 
   async function payAndJoin() {
     if (!accessToken) {
@@ -177,7 +210,12 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
         method: "POST",
         body: JSON.stringify({ displayName, phone: phone || null, paid: manualPaid }),
       });
-      setMatch(await apiRequest<MatchSummary>(`/matches/${publicSlug}`, accessToken));
+      const [updatedMatch, updatedRoster] = await Promise.all([
+        apiRequest<MatchSummary>(`/matches/${publicSlug}`, accessToken),
+        apiRequest<MatchParticipantAdmin[]>(`/matches/${match.id}/participants`, accessToken),
+      ]);
+      setMatch(updatedMatch);
+      setOrganizerRoster(updatedRoster);
       setManualSlotOpen(false);
       setManualPaid(false);
       setNotice(`${displayName} fue agregado al equipo.`);
@@ -188,21 +226,102 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
     }
   }
 
+  async function refreshOrganizerControl() {
+    if (!accessToken || !match) return;
+    const [updatedMatch, updatedRoster] = await Promise.all([
+      apiRequest<MatchSummary>(`/matches/${publicSlug}`, accessToken),
+      apiRequest<MatchParticipantAdmin[]>(`/matches/${match.id}/participants`, accessToken),
+    ]);
+    setMatch(updatedMatch);
+    setOrganizerRoster(updatedRoster);
+    setSelectedParticipant((current) => current
+      ? updatedRoster.find((participant) => participant.participantId === current.participantId) ?? null
+      : null);
+  }
+
+  async function updateManualPayment(paid: boolean) {
+    if (!accessToken || !match || selectedParticipant?.source !== "MANUAL") return;
+    setBusy(true);
+    setError("");
+    try {
+      await apiRequest(
+        `/matches/${match.id}/manual-participants/${selectedParticipant.participantId}/payment`,
+        accessToken,
+        { method: "PATCH", body: JSON.stringify({ paid }) },
+      );
+      await refreshOrganizerControl();
+      setNotice(paid ? "El pago directo quedó registrado." : "El jugador quedó con pago pendiente.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "No pudimos actualizar el pago.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeManagedParticipant() {
+    if (!accessToken || !match || !selectedParticipant) return;
+    if (selectedParticipant.source === "ACCOUNT" && !selectedParticipant.userId) return;
+    setBusy(true);
+    setError("");
+    try {
+      const path = selectedParticipant.source === "MANUAL"
+        ? `/matches/${match.id}/manual-participants/${selectedParticipant.participantId}`
+        : `/matches/${match.id}/participants/${selectedParticipant.userId}`;
+      const removedName = selectedParticipant.displayName;
+      await apiRequest(path, accessToken, { method: "DELETE" });
+      setSelectedParticipant(null);
+      setConfirmingRemoval(false);
+      await refreshOrganizerControl();
+      setNotice(`${removedName} fue retirado del partido.`);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "No pudimos retirar al jugador.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const playerSlots = useMemo(() => {
     if (!match) return [];
-    const slots: Array<{ name: string; avatarUrl: string | null; role: "organizer" | "confirmed" | "vacant" }> = [];
+    const slots: Array<{ name: string; avatarUrl: string | null; role: "organizer" | "confirmed" | "vacant"; participant?: MatchParticipantAdmin }> = [];
     if (match.organizerCounts) {
       slots.push({ name: match.organizerDisplayName || "Organizador", avatarUrl: match.organizerAvatarUrl, role: "organizer" });
     }
-    (match.participantPreview ?? []).forEach((player) => {
+    const visibleParticipants = match.managedByCurrentUser
+      ? organizerRoster.filter((participant) => participant.status === "JOINED")
+      : (match.participantPreview ?? []).map((player) => ({ ...player, participantId: "", userId: null, source: "ACCOUNT" as const, email: null, status: "JOINED" as const, paymentStatus: "NOT_REQUIRED" as const, paidMinor: 0, paymentMethod: null, paidAt: null, joinedAt: null, checkedInAt: null }));
+    visibleParticipants.forEach((player) => {
       if (slots.length < match.occupiedPlayers) {
-        slots.push({ name: player.displayName, avatarUrl: player.avatarUrl, role: "confirmed" });
+        slots.push({ name: player.displayName, avatarUrl: player.avatarUrl, role: "confirmed", participant: player.participantId ? player : undefined });
       }
     });
     while (slots.length < match.occupiedPlayers) slots.push({ name: "Jugador confirmado", avatarUrl: null, role: "confirmed" });
     while (slots.length < match.maxPlayers) slots.push({ name: `Cupo ${slots.length + 1}`, avatarUrl: null, role: "vacant" });
     return slots;
-  }, [match]);
+  }, [match, organizerRoster]);
+
+  const finances = useMemo(() => {
+    if (!match?.managedByCurrentUser) return null;
+    const confirmed = organizerRoster.filter((participant) => participant.status === "JOINED");
+    const paidOnline = confirmed.filter((participant) => participant.paymentStatus === "PAID");
+    const paidDirect = confirmed.filter((participant) => participant.paymentStatus === "PAID_DIRECT");
+    const pending = confirmed.filter((participant) =>
+      !["PAID", "PAID_DIRECT", "NOT_REQUIRED"].includes(participant.paymentStatus),
+    );
+    const onlineMinor = paidOnline.reduce((total, participant) => total + participant.paidMinor, 0);
+    const directMinor = paidDirect.reduce((total, participant) => total + participant.paidMinor, 0);
+    const expectedMinor = match.priceMinor * confirmed.length;
+    return {
+      confirmed,
+      paidOnline,
+      paidDirect,
+      pending,
+      onlineMinor,
+      directMinor,
+      collectedMinor: onlineMinor + directMinor,
+      expectedMinor,
+      pendingMinor: Math.max(0, expectedMinor - onlineMinor - directMinor),
+    };
+  }, [match, organizerRoster]);
 
   if (loading) return <main className="matchDetailPage"><p className="notice">Cargando partido…</p></main>;
   if (!match) {
@@ -220,7 +339,7 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
   const start = new Date(match.startsAt);
   const end = new Date(match.endsAt);
   const durationMinutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
-  const price = new Intl.NumberFormat("es-PE", { style: "currency", currency: match.currency, minimumFractionDigits: 0 }).format(match.priceMinor / 100);
+  const price = formatMoney(match.priceMinor, match.currency);
   const sportName = sportLabels[match.sportCode] || match.sportCode;
   const formatName = match.formatCode.replaceAll("_", " ").replace(match.sportCode, sportName);
   const knownIncludes = [match.surfaceName, ...(match.amenityNames ?? [])].filter((value): value is string => Boolean(value));
@@ -252,6 +371,30 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
             <article><CurrencyCircleDollar /><span><small>CUOTA POR JUGADOR</small><strong>{match.priceMinor > 0 ? price : "Gratis"}</strong><em>{match.priceMinor > 0 ? "Yape / Plin" : "Sin pago"}</em></span></article>
           </section>
 
+          {finances && (
+            <section className="organizerFinance" aria-labelledby="organizer-finance-title">
+              <header>
+                <div><p className="eyebrow">CONTROL DEL ORGANIZADOR</p><h2 id="organizer-finance-title">Pagos de la pichanga</h2></div>
+                <span>{finances.confirmed.length} cupos controlados</span>
+              </header>
+              {match.priceMinor > 0 ? (
+                <>
+                  <div className="organizerFinanceMetrics">
+                    <article><small>RECAUDADO</small><strong>{formatMoney(finances.collectedMinor, match.currency)}</strong><span>{finances.paidOnline.length + finances.paidDirect.length} pagaron</span></article>
+                    <article><small>POR LA WEB</small><strong>{formatMoney(finances.onlineMinor, match.currency)}</strong><span>{finances.paidOnline.length} pagos</span></article>
+                    <article><small>DIRECTO</small><strong>{formatMoney(finances.directMinor, match.currency)}</strong><span>{finances.paidDirect.length} pagos</span></article>
+                    <article className={finances.pending.length ? "pending" : "complete"}><small>POR COBRAR</small><strong>{formatMoney(finances.pendingMinor, match.currency)}</strong><span>{finances.pending.length} pendientes</span></article>
+                  </div>
+                  <div className="organizerFinanceExpected"><span><small>Deberías tener por los confirmados</small><strong>{formatMoney(finances.expectedMinor, match.currency)}</strong></span><div><i style={{ width: `${finances.expectedMinor ? Math.min(100, (finances.collectedMinor / finances.expectedMinor) * 100) : 100}%` }} /></div></div>
+                  <div className="organizerPaymentLists">
+                    <div><h3>Ya pagaron</h3>{[...finances.paidOnline, ...finances.paidDirect].map((participant) => <p key={participant.participantId}><span><strong>{participant.displayName}</strong><small>{participant.paymentStatus === "PAID" ? "Pago por la web" : "Pago directo"}</small></span><b>{formatMoney(participant.paidMinor, match.currency)}</b></p>)}{!finances.paidOnline.length && !finances.paidDirect.length && <p className="emptyFinanceRow">Todavía no hay pagos registrados.</p>}</div>
+                    <div><h3>Deben pagar</h3>{finances.pending.map((participant) => <p key={participant.participantId}><span><strong>{participant.displayName}</strong><small>{participant.source === "MANUAL" && participant.email ? participant.email : "Pago pendiente"}</small></span><b>{formatMoney(match.priceMinor, match.currency)}</b></p>)}{!finances.pending.length && <p className="emptyFinanceRow">Todos los confirmados están al día.</p>}</div>
+                  </div>
+                </>
+              ) : <p className="organizerFreeMatch"><CheckCircle weight="fill" /> Esta pichanga no tiene cuota; ningún participante tiene deuda.</p>}
+            </section>
+          )}
+
           <section className="matchTacticalBoard" aria-labelledby="match-board-title">
             <header><div><p className="eyebrow">EQUIPO</p><h2 id="match-board-title">Pizarra de convocados</h2></div><span><b>{match.occupiedPlayers}</b> listos</span></header>
             <div className="matchPlayerGrid">
@@ -266,6 +409,26 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
                   <span className="vacantNumber">+{index + 1}</span>
                   <strong>{player.name}</strong>
                   <small>Agregar persona</small>
+                </button>
+              ) : player.role === "confirmed" && player.participant && match.managedByCurrentUser ? (
+                <button
+                  aria-label={`Administrar a ${player.name}`}
+                  className="confirmed managedPlayerCard"
+                  key={`${player.participant.participantId}-${index}`}
+                  onClick={() => {
+                    setSelectedParticipant(player.participant ?? null);
+                    setConfirmingRemoval(false);
+                  }}
+                  type="button"
+                >
+                  <span className="playerPortrait" style={player.avatarUrl ? { backgroundImage: `url(${player.avatarUrl})` } : undefined}>{!player.avatarUrl && <b aria-hidden="true">{player.name.slice(0, 1).toUpperCase()}</b>}</span>
+                  <strong>{player.name}</strong>
+                  <span className="playerCardStatus">
+                    <small>Confirmado</small>
+                    <small className={["PAID", "PAID_DIRECT", "NOT_REQUIRED"].includes(player.participant.paymentStatus) ? "playerPaymentPaid" : "playerPaymentPending"}>
+                      {player.participant.paymentStatus === "PAID" ? "Pagado · web" : player.participant.paymentStatus === "PAID_DIRECT" ? "Pagado · directo" : player.participant.paymentStatus === "NOT_REQUIRED" ? "Sin cuota" : "Pago pendiente"}
+                    </small>
+                  </span>
                 </button>
               ) : (
                 <article className={player.role === "vacant" ? "vacant" : "confirmed"} key={`${player.role}-${index}`}>
@@ -345,6 +508,52 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
               <label className="manualPaymentCheck"><input checked={manualPaid} onChange={(event) => setManualPaid(event.target.checked)} type="checkbox" /><span><strong>Ya pagó directamente</strong><small>Marca esta opción si recibiste el Yape, Plin o pago fuera de la plataforma.</small></span></label>
               <div className="manualPlayerActions"><button className="secondary" onClick={() => setManualSlotOpen(false)} type="button">Cancelar</button><button className="primary borderless" disabled={busy} type="submit">{busy ? "Agregando…" : "Agregar al equipo"}</button></div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {selectedParticipant && (
+        <div className="matchDialogBackdrop" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) {
+            setSelectedParticipant(null);
+            setConfirmingRemoval(false);
+          }
+        }}>
+          <section aria-labelledby="participant-control-title" aria-modal="true" className="manualPlayerDialog participantControlDialog" role="dialog">
+            <header>
+              <span><UserCircle aria-hidden="true" size={24} /></span>
+              <div><p className="eyebrow">CONTROL DEL CUPO</p><h2 id="participant-control-title">{selectedParticipant.displayName}</h2></div>
+              <button aria-label="Cerrar control" onClick={() => { setSelectedParticipant(null); setConfirmingRemoval(false); }} type="button"><X /></button>
+            </header>
+
+            <div className="participantControlSummary">
+              <span className="playerPortrait" style={selectedParticipant.avatarUrl ? { backgroundImage: `url(${selectedParticipant.avatarUrl})` } : undefined}>{!selectedParticipant.avatarUrl && <b aria-hidden="true">{selectedParticipant.displayName.slice(0, 1).toUpperCase()}</b>}</span>
+              <div><strong>{selectedParticipant.source === "MANUAL" ? "Agregado por ti" : "Jugador con cuenta"}</strong><small>{selectedParticipant.email || "Sin dato de contacto"}</small></div>
+              <b className={["PAID", "PAID_DIRECT", "NOT_REQUIRED"].includes(selectedParticipant.paymentStatus) ? "paid" : "pending"}>
+                {selectedParticipant.paymentStatus === "PAID" ? "Pagado por web" : selectedParticipant.paymentStatus === "PAID_DIRECT" ? "Pagado directo" : selectedParticipant.paymentStatus === "NOT_REQUIRED" ? "Sin cuota" : "Pago pendiente"}
+              </b>
+            </div>
+
+            {selectedParticipant.source === "MANUAL" && match.priceMinor > 0 && (
+              <div className="participantPaymentControl">
+                <div><strong>Estado del pago</strong><small>Actualiza el registro cuando recibas el pago fuera de la plataforma.</small></div>
+                <div role="group" aria-label="Estado del pago directo">
+                  <button aria-pressed={!(["PAID", "PAID_DIRECT"].includes(selectedParticipant.paymentStatus))} disabled={busy} onClick={() => void updateManualPayment(false)} type="button">Pendiente</button>
+                  <button aria-pressed={selectedParticipant.paymentStatus === "PAID_DIRECT"} disabled={busy} onClick={() => void updateManualPayment(true)} type="button">Pagado directo</button>
+                </div>
+              </div>
+            )}
+
+            {selectedParticipant.paymentStatus === "PAID" ? (
+              <p className="protectedPaymentNote"><ShieldCheck weight="fill" /> El pago realizado por la web conserva su trazabilidad. No puede modificarse ni retirarse desde este control.</p>
+            ) : confirmingRemoval ? (
+              <div className="participantRemovalConfirm" role="alert">
+                <p><strong>¿Retirar a {selectedParticipant.displayName}?</strong><small>El cupo volverá a quedar disponible. Si había alguien en espera, ocupará este lugar.</small></p>
+                <div><button className="secondary" disabled={busy} onClick={() => setConfirmingRemoval(false)} type="button">Conservar</button><button className="danger" disabled={busy} onClick={() => void removeManagedParticipant()} type="button">{busy ? "Retirando…" : "Sí, retirar"}</button></div>
+              </div>
+            ) : (
+              <button className="participantRemoveButton" disabled={busy} onClick={() => setConfirmingRemoval(true)} type="button"><Trash aria-hidden="true" /> Retirar del partido</button>
+            )}
           </section>
         </div>
       )}

@@ -9027,6 +9027,34 @@ body:has(.scheduleModal) .appNavigation {
 .matchExperienceFacts small { color: var(--muted); font-size: 0.58rem; font-weight: 900; letter-spacing: 0.05em; }
 .matchExperienceFacts strong { overflow: hidden; font-size: 0.86rem; text-overflow: ellipsis; text-transform: capitalize; white-space: nowrap; }
 .matchExperienceFacts em { color: var(--lime); font-size: 0.64rem; font-style: normal; }
+.organizerFinance { display: grid; gap: 15px; padding: 18px; border: 1px solid rgba(31, 207, 218, 0.32); border-radius: 18px; background: linear-gradient(145deg, rgba(11, 54, 70, 0.9), rgba(5, 27, 40, 0.98)); box-shadow: var(--shadow); }
+.organizerFinance > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.organizerFinance > header h2, .organizerFinance > header p { margin: 0; }
+.organizerFinance > header h2 { margin-top: 3px; font-size: 1.12rem; }
+.organizerFinance > header > span { padding: 6px 9px; border-radius: 999px; background: rgba(31, 207, 218, 0.1); color: var(--cyan); font-size: 0.64rem; font-weight: 800; white-space: nowrap; }
+.organizerFinanceMetrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.organizerFinanceMetrics article { display: grid; min-width: 0; gap: 3px; padding: 12px; border: 1px solid rgba(146, 199, 217, 0.16); border-radius: 12px; background: rgba(3, 20, 33, 0.54); }
+.organizerFinanceMetrics small { color: var(--muted); font-size: 0.56rem; font-weight: 900; letter-spacing: 0.055em; }
+.organizerFinanceMetrics strong { overflow: hidden; color: var(--text); font-size: 1rem; text-overflow: ellipsis; white-space: nowrap; }
+.organizerFinanceMetrics span { color: var(--cyan); font-size: 0.62rem; }
+.organizerFinanceMetrics .pending strong, .organizerFinanceMetrics .pending span { color: #ffc66d; }
+.organizerFinanceMetrics .complete strong, .organizerFinanceMetrics .complete span { color: var(--lime); }
+.organizerFinanceExpected { display: grid; gap: 8px; }
+.organizerFinanceExpected > span { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
+.organizerFinanceExpected small { color: var(--muted); font-size: 0.68rem; }
+.organizerFinanceExpected strong { font-size: 0.9rem; }
+.organizerFinanceExpected > div { height: 7px; overflow: hidden; border-radius: 999px; background: rgba(146, 199, 217, 0.13); }
+.organizerFinanceExpected i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--cyan), var(--lime)); }
+.organizerPaymentLists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.organizerPaymentLists > div { min-width: 0; padding: 12px; border: 1px solid rgba(146, 199, 217, 0.14); border-radius: 13px; background: rgba(3, 20, 33, 0.38); }
+.organizerPaymentLists h3 { margin: 0 0 6px; font-size: 0.76rem; }
+.organizerPaymentLists p { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; padding: 8px 0; border-top: 1px solid rgba(146, 199, 217, 0.1); }
+.organizerPaymentLists p > span { display: grid; min-width: 0; gap: 2px; }
+.organizerPaymentLists p strong { overflow: hidden; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
+.organizerPaymentLists p small { overflow: hidden; color: var(--muted); font-size: 0.6rem; text-overflow: ellipsis; white-space: nowrap; }
+.organizerPaymentLists p > b { flex: 0 0 auto; color: var(--lime); font-size: 0.68rem; }
+.organizerPaymentLists .emptyFinanceRow { display: block; color: var(--muted); font-size: 0.66rem; line-height: 1.4; }
+.organizerFreeMatch { display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px; border-radius: 12px; background: rgba(200, 242, 56, 0.07); color: var(--lime); font-size: 0.72rem; }
 .matchTacticalBoard, .matchIncludes, .matchOrganizerCard, .matchShareCard, .matchExperienceBooking {
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -9049,11 +9077,14 @@ body:has(.scheduleModal) .appNavigation {
   background-size: 30px 30px;
 }
 .matchPlayerGrid article, .matchPlayerGrid > button { display: grid; min-width: 0; min-height: 118px; align-content: center; justify-items: center; gap: 5px; padding: 9px 6px; border-radius: 12px; text-align: center; }
-.matchPlayerGrid article.confirmed { border: 1px solid rgba(16, 198, 210, 0.35); background: rgba(3, 20, 33, 0.82); }
+.matchPlayerGrid article.confirmed, .matchPlayerGrid > button.confirmed { border: 1px solid rgba(16, 198, 210, 0.35); background: rgba(3, 20, 33, 0.82); color: var(--text); }
 .matchPlayerGrid article.vacant, .matchPlayerGrid > button.vacant { border: 1px dashed rgba(200, 242, 56, 0.48); background: rgba(200, 242, 56, 0.04); color: var(--lime); }
 .manualSlotButton { cursor: pointer; font: inherit; transition: border-color 150ms ease, background 150ms ease, transform 150ms ease; }
 .manualSlotButton:hover { border-color: var(--lime) !important; background: rgba(200, 242, 56, 0.1) !important; transform: translateY(-1px); }
 .manualSlotButton:focus-visible { outline: 3px solid rgba(31, 207, 218, 0.45); outline-offset: 2px; }
+.managedPlayerCard { cursor: pointer; font: inherit; transition: border-color 150ms ease, background 150ms ease, transform 150ms ease; }
+.managedPlayerCard:hover { border-color: var(--cyan) !important; background: rgba(6, 41, 57, 0.95) !important; transform: translateY(-1px); }
+.managedPlayerCard:focus-visible { outline: 3px solid rgba(31, 207, 218, 0.45); outline-offset: 2px; }
 .playerPortrait, .vacantNumber, .organizerPortrait { display: grid; place-items: center; border-radius: 50%; background-position: center; background-size: cover; }
 .playerPortrait, .vacantNumber { width: 42px; height: 42px; }
 .playerPortrait { border: 2px solid var(--cyan); color: var(--muted); }
@@ -9063,6 +9094,9 @@ body:has(.scheduleModal) .appNavigation {
 .matchPlayerGrid strong { width: 100%; overflow: hidden; color: inherit; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
 .matchPlayerGrid small { color: var(--muted); font-size: 0.58rem; }
 .matchPlayerGrid .vacant small { color: var(--lime); }
+.playerCardStatus { display: grid; gap: 2px; }
+.matchPlayerGrid small.playerPaymentPaid { color: #8fe65a; font-weight: 800; }
+.matchPlayerGrid small.playerPaymentPending { color: #ffc65c; font-weight: 800; }
 .matchBoardProgress { height: 6px; margin: 14px 0 6px !important; overflow: hidden; border-radius: 999px; background: rgba(146, 199, 217, 0.15); }
 .matchBoardProgress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--cyan), var(--lime)); }
 .matchTacticalBoard > small { color: var(--muted); font-size: 0.65rem; }
@@ -9083,6 +9117,32 @@ body:has(.scheduleModal) .appNavigation {
 .manualPaymentCheck small { color: var(--muted); font-size: 0.66rem; line-height: 1.4; }
 .manualPlayerActions { display: grid; grid-template-columns: minmax(100px, 0.7fr) minmax(150px, 1.3fr); gap: 9px; margin-top: 3px; }
 .manualPlayerActions button { min-height: 46px; font-size: 0.76rem; }
+.participantControlDialog { display: grid; gap: 16px; }
+.participantControlSummary { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 11px; padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: rgba(3, 20, 33, 0.55); }
+.participantControlSummary .playerPortrait { width: 48px; height: 48px; }
+.participantControlSummary > div { display: grid; min-width: 0; gap: 3px; }
+.participantControlSummary > div strong { overflow: hidden; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+.participantControlSummary > div small { overflow: hidden; color: var(--muted); font-size: 0.66rem; text-overflow: ellipsis; white-space: nowrap; }
+.participantControlSummary > b { padding: 6px 8px; border-radius: 999px; font-size: 0.62rem; white-space: nowrap; }
+.participantControlSummary > b.paid { background: rgba(143, 230, 90, 0.12); color: #8fe65a; }
+.participantControlSummary > b.pending { background: rgba(255, 198, 92, 0.12); color: #ffc65c; }
+.participantPaymentControl { display: grid; gap: 11px; }
+.participantPaymentControl > div:first-child { display: grid; gap: 3px; }
+.participantPaymentControl strong { font-size: 0.78rem; }
+.participantPaymentControl small { color: var(--muted); font-size: 0.67rem; line-height: 1.4; }
+.participantPaymentControl [role="group"] { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.participantPaymentControl button { min-height: 43px; border: 1px solid var(--line); border-radius: 11px; background: rgba(3, 20, 33, 0.62); color: var(--muted); font: inherit; font-size: 0.72rem; font-weight: 800; }
+.participantPaymentControl button[aria-pressed="true"] { border-color: var(--lime); background: rgba(200, 242, 56, 0.12); color: var(--lime); }
+.protectedPaymentNote { display: flex; align-items: flex-start; gap: 8px; margin: 0 !important; padding: 12px; border: 1px solid rgba(31, 207, 218, 0.2); border-radius: 12px; background: rgba(31, 207, 218, 0.07); }
+.protectedPaymentNote svg { flex: 0 0 auto; color: var(--cyan); }
+.participantRemoveButton { display: inline-flex; min-height: 43px; align-items: center; justify-content: center; gap: 7px; border: 1px solid rgba(255, 113, 120, 0.45); border-radius: 11px; background: rgba(255, 113, 120, 0.07); color: #ff8e94; font: inherit; font-size: 0.72rem; font-weight: 850; }
+.participantRemovalConfirm { display: grid; gap: 12px; padding: 13px; border: 1px solid rgba(255, 113, 120, 0.42); border-radius: 13px; background: rgba(255, 113, 120, 0.07); }
+.participantRemovalConfirm p { display: grid; gap: 4px; margin: 0; }
+.participantRemovalConfirm p strong { font-size: 0.78rem; }
+.participantRemovalConfirm p small { color: var(--muted); font-size: 0.66rem; line-height: 1.45; }
+.participantRemovalConfirm > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.participantRemovalConfirm button { min-height: 42px; font-size: 0.72rem; }
+.participantRemovalConfirm button.danger { border: 1px solid #ff7178; border-radius: 10px; background: #ff7178; color: #251015; font-weight: 900; }
 .matchIncludes { padding: 20px; }
 .matchIncludes > p, .matchIncludes h2 { margin: 0; }
 .matchIncludes h2 { margin: 4px 0 13px; font-size: 1.1rem; }
@@ -9116,6 +9176,8 @@ body:has(.scheduleModal) .appNavigation {
   .matchExperienceLayout { width: calc(100% - 20px); grid-template-columns: 1fr; gap: 14px; margin-top: 12px; }
   .matchExperienceFacts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .matchExperienceFacts article { min-height: 98px; padding: 12px; }
+  .organizerFinanceMetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .organizerPaymentLists { grid-template-columns: 1fr; }
   .matchTacticalBoard, .matchIncludes { padding: 14px; }
   .matchPlayerGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; padding: 9px; }
   .matchPlayerGrid article, .matchPlayerGrid > button { min-height: 106px; }
@@ -9129,6 +9191,10 @@ body:has(.scheduleModal) .appNavigation {
   .matchExperienceFacts article > svg { display: none; }
   .matchExperienceFacts strong { font-size: 0.8rem; }
   .matchPlayerGrid article, .matchPlayerGrid > button { min-height: 100px; padding-inline: 3px; }
+  .organizerFinance { padding: 14px; }
+  .organizerFinance > header { align-items: flex-start; flex-direction: column; }
+  .participantControlSummary { grid-template-columns: 44px minmax(0, 1fr); }
+  .participantControlSummary > b { grid-column: 1 / -1; justify-self: start; }
 }
 
 /* Flujo guiado para configurar sedes y canchas */

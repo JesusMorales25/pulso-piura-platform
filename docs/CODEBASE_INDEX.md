@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Generado: 2026-09-22 14:04:44 UTC
-- Huella del inventario: ef6f262c9443d3a4
+- Generado: 2026-09-22 18:07:58 UTC
+- Huella del inventario: f66b24525e9cbbee
 - Archivos indexados: 549
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
@@ -108,7 +108,7 @@
 - /api/v1 | backend/src/main/java/com/pulsopiura/platform/foundation/web/HealthController.java | GET /health
 - /api/v1/me | backend/src/main/java/com/pulsopiura/platform/identity/api/MeController.java | GET; GET /profile; PATCH /profile; GET /capability-requests; POST /capability-requests
 - /api/v1/platform | backend/src/main/java/com/pulsopiura/platform/identity/api/PlatformAdminController.java | GET /summary; GET /users; GET /capability-requests; POST /capability-requests/{requestId}/review; POST /capability-requests/{requestId}/revoke
-- /api/v1/matches | backend/src/main/java/com/pulsopiura/platform/matches/api/MatchController.java | GET; GET /{publicSlug:[a-z0-9-]+}; GET /mine; GET /{matchId:[0-9a-fA-F-]{36}}/participants; DELETE /{matchId:[0-9a-fA-F-]{36}}/participants/{userId:[0-9a-fA-F-]{36}}; POST /{matchId:[0-9a-fA-F-]{36}}/manual-participants; DELETE; GET /participations/me; POST /{publicSlug:[a-z0-9-]+}/check-in-pass; POST /{matchId:[0-9a-fA-F-]{36}}/check-in/preview; POST /{matchId:[0-9a-fA-F-]{36}}/check-in; GET /{publicSlug:[a-z0-9-]+}/participants/me; GET /join-orders/capabilities; GET /{publicSlug:[a-z0-9-]+}/join-orders/me; POST /{publicSlug:[a-z0-9-]+}/join-orders; POST /join-orders/{orderId:[0-9a-fA-F-]{36}}/simulate; POST; POST /{matchId:[0-9a-fA-F-]{36}}/publish; GET /{matchId:[0-9a-fA-F-]{36}}/invitations; POST /{matchId:[0-9a-fA-F-]{36}}/invitations; DELETE /{matchId:[0-9a-fA-F-]{36}}/invitations/{invitationId:[0-9a-fA-F-]{36}}; POST /invitations/{invitationId:[0-9a-fA-F-]{36}}/accept; POST /{publicSlug:[a-z0-9-]+}/participants/me; DELETE /{publicSlug:[a-z0-9-]+}/participants/me
+- /api/v1/matches | backend/src/main/java/com/pulsopiura/platform/matches/api/MatchController.java | GET; GET /{publicSlug:[a-z0-9-]+}; GET /mine; GET /{matchId:[0-9a-fA-F-]{36}}/participants; DELETE /{matchId:[0-9a-fA-F-]{36}}/participants/{userId:[0-9a-fA-F-]{36}}; POST /{matchId:[0-9a-fA-F-]{36}}/manual-participants; DELETE; PATCH; GET /participations/me; POST /{publicSlug:[a-z0-9-]+}/check-in-pass; POST /{matchId:[0-9a-fA-F-]{36}}/check-in/preview; POST /{matchId:[0-9a-fA-F-]{36}}/check-in; GET /{publicSlug:[a-z0-9-]+}/participants/me; GET /join-orders/capabilities; GET /{publicSlug:[a-z0-9-]+}/join-orders/me; POST /{publicSlug:[a-z0-9-]+}/join-orders; POST /join-orders/{orderId:[0-9a-fA-F-]{36}}/simulate; POST; POST /{matchId:[0-9a-fA-F-]{36}}/publish; GET /{matchId:[0-9a-fA-F-]{36}}/invitations; POST /{matchId:[0-9a-fA-F-]{36}}/invitations; DELETE /{matchId:[0-9a-fA-F-]{36}}/invitations/{invitationId:[0-9a-fA-F-]{36}}; POST /invitations/{invitationId:[0-9a-fA-F-]{36}}/accept; POST /{publicSlug:[a-z0-9-]+}/participants/me; DELETE /{publicSlug:[a-z0-9-]+}/participants/me
 - /api/v1/organizations | backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java | POST; GET; GET /{organizationId}; POST /{organizationId}/invitations; POST /invitations/{invitationId}/accept; GET /{organizationId}/members; DELETE /{organizationId}/members/{userId}
 - /api/v1/platform/organizations | backend/src/main/java/com/pulsopiura/platform/organizations/api/PlatformOrganizationAdminController.java | GET; POST /{organizationId}/owners; DELETE /{organizationId}/owners/{userId}
 - sin prefijo | backend/src/main/java/com/pulsopiura/platform/partners/api/PartnerBusinessController.java | GET /api/v1/businesses; GET /api/v1/businesses/{businessId}/image; GET /api/v1/platform/businesses; POST /api/v1/platform/businesses; PUT /api/v1/platform/businesses/{businessId}; PUT

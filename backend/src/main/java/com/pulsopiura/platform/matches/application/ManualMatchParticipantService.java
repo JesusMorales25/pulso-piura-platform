@@ -115,6 +115,30 @@ public class ManualMatchParticipantService {
                         });
     }
 
+    @Transactional
+    public ManualParticipantView updatePayment(
+            UUID actor, UUID matchId, UUID participantId, boolean paid) {
+        var match =
+                matches.findByIdForUpdate(matchId)
+                        .orElseThrow(() -> new NoSuchElementException("Partido no encontrado"));
+        requireOrganizer(match.organizerUserId(), actor);
+        var participant =
+                manualParticipants
+                        .findById(participantId)
+                        .filter(item -> item.matchId().equals(matchId))
+                        .orElseThrow(
+                                () -> new NoSuchElementException("Participante no encontrado"));
+        participant.updatePayment(paid, match.priceMinor(), clock.instant());
+        var saved = manualParticipants.save(participant);
+        events.publishEvent(
+                new MatchAuditEvent(
+                        actor,
+                        match.organizationId(),
+                        match.id(),
+                        "MATCH_MANUAL_PARTICIPANT_PAYMENT_UPDATED"));
+        return view(saved);
+    }
+
     private void requireOrganizer(UUID organizer, UUID actor) {
         if (!organizer.equals(actor))
             throw new AccessDeniedException(

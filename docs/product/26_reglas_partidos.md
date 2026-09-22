@@ -47,10 +47,13 @@ PUBLISHED/MINIMUM_REACHED/CONFIRMED → RESCHEDULED
 
 - el organizador puede ocupar un cupo con una persona que confirmó y pagó fuera de la plataforma;
 - el registro manual exige nombre y admite un teléfono privado opcional;
-- el organizador declara el pago como pendiente o pagado directamente; esta declaración no crea ni
-  suplanta una transacción del proveedor de pagos;
+- el organizador declara el pago como pendiente o pagado directamente y puede corregir ese estado
+  después; esta declaración queda auditada, no crea ni suplanta una transacción del proveedor de pagos;
 - el cupo manual cuenta para la capacidad máxima y se crea bajo bloqueo transaccional del partido;
-- solo quien creó el partido puede agregar o retirar estos registros;
+- solo quien creó el partido puede agregar, actualizar el pago o retirar estos registros;
+- al retirar un cupo se promueve a la primera persona en espera, si existe;
+- un pago confirmado por la web conserva su trazabilidad y no puede convertirse en pago directo ni
+  eliminarse desde este control operativo;
 - el nombre puede aparecer en la pizarra del partido, pero el teléfono nunca se publica;
 - las altas y bajas quedan auditadas;
 - un jugador con cuenta continúa usando la inscripción y el pago normales.

@@ -10,12 +10,12 @@ public final class ManualMatchParticipant {
     private final UUID matchId;
     private final String displayName;
     private final String phone;
-    private final boolean paid;
-    private final long paidMinor;
-    private final Instant paidAt;
+    private boolean paid;
+    private long paidMinor;
+    private Instant paidAt;
     private final UUID createdBy;
     private final Instant createdAt;
-    private final Instant updatedAt;
+    private Instant updatedAt;
     private final long version;
 
     private ManualMatchParticipant(
@@ -100,6 +100,15 @@ public final class ManualMatchParticipant {
                 createdAt,
                 updatedAt,
                 version);
+    }
+
+    public void updatePayment(boolean paid, long matchPriceMinor, Instant now) {
+        if (matchPriceMinor < 0)
+            throw new IllegalArgumentException("El pago no puede ser negativo");
+        this.paid = paid;
+        this.paidMinor = paid ? matchPriceMinor : 0;
+        this.paidAt = paid ? Objects.requireNonNull(now) : null;
+        this.updatedAt = Objects.requireNonNull(now);
     }
 
     private static String required(String value, String label, int max) {

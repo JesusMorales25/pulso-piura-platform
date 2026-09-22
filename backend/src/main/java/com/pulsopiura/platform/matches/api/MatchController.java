@@ -126,6 +126,20 @@ public class MatchController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping(
+            "/{matchId:[0-9a-fA-F-]{36}}/manual-participants/{participantId:[0-9a-fA-F-]{36}}/payment")
+    @PreAuthorize("isAuthenticated()")
+    ManualMatchParticipantService.ManualParticipantView updateManualParticipantPayment(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID matchId,
+            @PathVariable UUID participantId,
+            @Valid @RequestBody UpdateManualParticipantPaymentRequest request) {
+        var actor = users.provision(jwt).id();
+        requireOrganizer(jwt, actor);
+        return manualParticipants.updatePayment(
+                actor, matchId, participantId, request.paid().booleanValue());
+    }
+
     @GetMapping("/participations/me")
     @PreAuthorize("isAuthenticated()")
     List<MatchActivityQueryService.ActivityView> activity(@AuthenticationPrincipal Jwt jwt) {
@@ -305,6 +319,8 @@ public class MatchController {
             @NotBlank @Size(max = 120) String displayName,
             @Size(max = 30) String phone,
             boolean paid) {}
+
+    public record UpdateManualParticipantPaymentRequest(@NotNull Boolean paid) {}
 
     public record MatchCheckInRequest(@NotBlank @Size(max = 100) String payload) {}
 }

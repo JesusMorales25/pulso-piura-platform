@@ -101,4 +101,40 @@ class ManualMatchParticipantServiceTest {
                 .hasMessageContaining("no tiene cupos");
         verify(manualParticipants, never()).save(any());
     }
+
+    @Test
+    void organizerCanMarkAManualParticipantAsPaidLater() {
+        var participant =
+                ManualMatchParticipant.create(
+                        match.organizationId(),
+                        match.id(),
+                        "Luis Pérez",
+                        "987654321",
+                        false,
+                        match.priceMinor(),
+                        organizer,
+                        now.minusSeconds(60));
+        when(matches.findByIdForUpdate(match.id())).thenReturn(Optional.of(match));
+        when(manualParticipants.findById(participant.id())).thenReturn(Optional.of(participant));
+        when(manualParticipants.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = service.updatePayment(organizer, match.id(), participant.id(), true);
+
+        assertThat(result.paymentStatus()).isEqualTo("PAID_DIRECT");
+        assertThat(result.paidMinor()).isEqualTo(1200);
+        assertThat(result.paidAt()).isEqualTo(now);
+        verify(events).publishEvent(any(MatchAuditEvent.class));
+    }
+
+    @Test
+    void anotherUserCannotChangeAManualPayment() {
+        when(matches.findByIdForUpdate(match.id())).thenReturn(Optional.of(match));
+
+        assertThatThrownBy(
+                        () ->
+                                service.updatePayment(
+                                        UUID.randomUUID(), match.id(), UUID.randomUUID(), true))
+                .isInstanceOf(AccessDeniedException.class);
+        verifyNoInteractions(manualParticipants, events);
+    }
 }
