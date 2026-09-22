@@ -62,6 +62,7 @@ solamente la API y PostgreSQL; ya no intenta ejecutar Keycloak. Completa:
 | Variable | Valor |
 | --- | --- |
 | `OIDC_ISSUER_URI` | El mismo issuer de Auth0 usado en Vercel |
+| `OIDC_JWK_SET_URI` | `https://TU_DOMINIO_AUTH0/.well-known/jwks.json` |
 | `OIDC_AUDIENCE` | `https://api.pulsopiura.app` |
 | `OIDC_CLAIMS_NAMESPACE` | `https://pulsopiura.app` |
 | `PLATFORM_ADMIN_EMAIL` | Correo real y exclusivo del administrador |

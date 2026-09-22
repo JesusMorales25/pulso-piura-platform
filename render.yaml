@@ -31,6 +31,8 @@ services:
         value: auth0
       - key: OIDC_ISSUER_URI
         sync: false
+      - key: OIDC_JWK_SET_URI
+        sync: false
       - key: OIDC_AUDIENCE
         sync: false
       - key: OIDC_ROLES_CLAIM
