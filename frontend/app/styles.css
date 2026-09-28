@@ -790,6 +790,7 @@ button:disabled {
 }
 .exploreFilterRow {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 12px;
 }
@@ -821,6 +822,17 @@ button:disabled {
 }
 .exploreFilterRow select option {
   background: var(--navy);
+}
+.exploreFilterRow .venueAttributeFilter input {
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  accent-color: var(--lime);
+}
+.exploreFilterRow .venueAttributeFilter:has(input:checked) {
+  border-color: rgba(200, 242, 56, 0.55);
+  background: rgba(200, 242, 56, 0.1);
+  color: var(--lime);
 }
 .discoveryTabs {
   display: flex;

@@ -24,6 +24,11 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { ReservationCheckout } from "@/features/reservations/ReservationCheckout";
 import type { Reservation } from "@/features/reservations/types";
 import { filterSpacesBySport } from "@/lib/venue-selection";
+import {
+  districtOptions,
+  matchesVenueFilters,
+  type VenueFilters,
+} from "@/lib/venue-discovery";
 
 type CatalogItem = { code: string; name: string };
 type VenueCatalog = {
@@ -141,6 +146,11 @@ export function PublicVenueCatalog({
     preparingDirectBooking,
   );
   const [showFilters, setShowFilters] = useState(false);
+  const [venueFilters, setVenueFilters] = useState<VenueFilters>({
+    district: "",
+    covered: false,
+    led: false,
+  });
   const [showOtherSchedules, setShowOtherSchedules] = useState(false);
   const [discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>(
     embedded ? "venues" : "all",
@@ -742,6 +752,27 @@ export function PublicVenueCatalog({
       };
     });
   }, []);
+  const availableDistricts = useMemo(() => districtOptions(venues), [venues]);
+  const filteredVenues = useMemo(
+    () =>
+      venues.filter((venue) => {
+        const offer = venueOffers[venue.publicSlug];
+        return matchesVenueFilters(
+          offer ?? { venue, space: { indoor: false, amenityCodes: [] } },
+          venueFilters,
+        );
+      }),
+    [venueFilters, venueOffers, venues],
+  );
+  const listedVenues = offersLoading
+    ? filteredVenues
+    : filteredVenues.filter((venue) => venueOffers[venue.publicSlug]);
+  const attributeFiltersActive =
+    Boolean(venueFilters.district) || venueFilters.covered || venueFilters.led;
+
+  function clearVenueFilters() {
+    setVenueFilters({ district: "", covered: false, led: false });
+  }
 
   const CatalogRoot = embedded ? "section" : "main";
 
@@ -828,6 +859,52 @@ export function PublicVenueCatalog({
                 ))}
               </select>
             </label>
+            <label>
+              <MapPin aria-hidden="true" size={19} />
+              <span className="srOnly">Zona</span>
+              <select
+                aria-label="Zona"
+                value={venueFilters.district}
+                onChange={(event) =>
+                  setVenueFilters((current) => ({
+                    ...current,
+                    district: event.target.value,
+                  }))
+                }
+              >
+                {availableDistricts.map((option) => (
+                  <option key={option || "all-districts"} value={option}>
+                    {option || "Todas las zonas"}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="venueAttributeFilter">
+              <input
+                checked={venueFilters.covered}
+                onChange={(event) =>
+                  setVenueFilters((current) => ({
+                    ...current,
+                    covered: event.target.checked,
+                  }))
+                }
+                type="checkbox"
+              />
+              <span>Techada o cubierta</span>
+            </label>
+            <label className="venueAttributeFilter">
+              <input
+                checked={venueFilters.led}
+                onChange={(event) =>
+                  setVenueFilters((current) => ({
+                    ...current,
+                    led: event.target.checked,
+                  }))
+                }
+                type="checkbox"
+              />
+              <span>Iluminación LED</span>
+            </label>
           </div>
         )}
 
@@ -873,12 +950,9 @@ export function PublicVenueCatalog({
         </div>
       </section>
 
-      {discoveryMode !== "matches" && venues.length > 0 && (
+      {discoveryMode !== "matches" && listedVenues.length > 0 && (
         <div className="exploreFeaturedList" aria-label="Complejos disponibles">
-          {(offersLoading
-            ? venues
-            : venues.filter((venue) => venueOffers[venue.publicSlug])
-          ).map((venue, index) => {
+          {listedVenues.map((venue, index) => {
             const offer = venueOffers[venue.publicSlug];
             const quickSlots = offer?.availability.slots.slice(0, 2) ?? [];
             return (
@@ -1019,7 +1093,7 @@ export function PublicVenueCatalog({
             <h2>Opciones para jugar</h2>
           </div>
           {!loading && discoveryMode !== "matches" && (
-            <span className="countBadge">{venues.length}</span>
+            <span className="countBadge">{listedVenues.length}</span>
           )}
         </div>
         {error && (
@@ -1053,6 +1127,14 @@ export function PublicVenueCatalog({
             <div className="empty">
               <h3>Aún no hay opciones para esta búsqueda</h3>
               <p>Prueba otra fecha, deporte o distrito.</p>
+            </div>
+          ) : !offersLoading && listedVenues.length === 0 && attributeFiltersActive ? (
+            <div className="empty">
+              <h3>No encontramos canchas con esos filtros</h3>
+              <p>Prueba otra zona o quita algún atributo. Conservaremos la fecha y el deporte.</p>
+              <button className="secondary" onClick={clearVenueFilters} type="button">
+                Limpiar filtros
+              </button>
             </div>
           ) : null)}
 

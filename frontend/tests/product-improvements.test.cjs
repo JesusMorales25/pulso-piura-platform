@@ -102,3 +102,39 @@ test("reservation payment options use the persisted deposit amount", () => {
   assert.equal(options[1].plan, "FULL");
   assert.equal(options[1].amountMinor, 9000);
 });
+
+test("venue filters expose sorted unique districts with an empty all option", () => {
+  const { districtOptions } = load("lib/venue-discovery.ts");
+  const options = districtOptions([
+    { districtCode: "PIURA" },
+    { districtCode: "castilla" },
+    { districtCode: "PIURA" },
+  ]);
+
+  assert.equal(options.join("|"), "|castilla|PIURA");
+});
+
+test("venue filters match exact district, covered courts and merged LED amenities", () => {
+  const { matchesVenueFilters } = load("lib/venue-discovery.ts");
+  const base = {
+    venue: { districtCode: "Piura", amenityCodes: ["PARKING"] },
+    space: { indoor: true, amenityCodes: ["LED_LIGHTING"] },
+  };
+
+  assert.equal(matchesVenueFilters(base, { district: "piura", covered: true, led: true }), true);
+  assert.equal(matchesVenueFilters(base, { district: "piu", covered: false, led: false }), false);
+  assert.equal(
+    matchesVenueFilters(
+      { venue: { districtCode: "Piura", amenityCodes: ["LED_LIGHTING"] }, space: { indoor: false } },
+      { district: "", covered: false, led: true },
+    ),
+    true,
+  );
+  assert.equal(
+    matchesVenueFilters(
+      { venue: { districtCode: "Piura" }, space: { indoor: false } },
+      { district: "", covered: false, led: true },
+    ),
+    false,
+  );
+});
