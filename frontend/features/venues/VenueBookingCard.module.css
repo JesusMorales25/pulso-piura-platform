@@ -1,0 +1,58 @@
+.card {
+  background: linear-gradient(145deg, #062936, #041e2a);
+  border: 1px solid #08738a;
+  border-radius: 20px;
+  box-shadow: 0 18px 42px rgb(0 20 29 / 22%);
+  color: #f5fbfd;
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+  padding: 14px;
+}
+
+.header { align-items: start; display: grid; gap: 10px; grid-template-columns: 64px minmax(0, 1fr) auto; }
+.image { border-radius: 13px; height: 64px; object-fit: cover; width: 64px; }
+.identity { min-width: 0; }
+.identity h2 { color: #fff; font-size: 1rem; line-height: 1.15; margin: 2px 0 5px; }
+.identity p { align-items: center; color: #86b7c4; display: flex; font-size: .7rem; gap: 3px; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.chips span { align-items: center; background: #0a4351; border-radius: 999px; color: #bcebf0; display: inline-flex; font-size: .62rem; gap: 3px; padding: 4px 7px; }
+.price { align-items: flex-end; display: flex; flex-direction: column; min-width: 94px; }
+.price small { color: #80acb7; font-size: .58rem; }
+.price strong { color: #d5ff3f; font-size: .98rem; white-space: nowrap; }
+.price span { align-items: center; color: #eacb4d; display: flex; font-size: .66rem; gap: 3px; margin-top: 5px; }
+.links { display: flex; gap: 12px; }
+.links a { align-items: center; color: #8fe5ee; display: inline-flex; font-size: .7rem; gap: 4px; text-decoration: none; }
+.availability { border-top: 1px solid #0b5261; display: grid; gap: 8px; padding-top: 10px; }
+.availabilityHeading { align-items: center; display: flex; justify-content: space-between; }
+.availabilityHeading strong { font-size: .76rem; }
+.availabilityHeading small { color: #86b7c4; font-size: .65rem; }
+.slots { display: grid; gap: 7px; grid-template-columns: repeat(5, minmax(76px, 1fr)); overflow-x: auto; padding: 2px 1px 4px; scrollbar-width: thin; }
+.slots button { background: #041a24; border: 1px solid #0d4251; border-radius: 10px; color: #fff; display: grid; gap: 1px; min-height: 58px; padding: 7px 6px; text-align: center; }
+.slots button strong { font-size: .72rem; }
+.slots button small { color: #93c4ce; font-size: .56rem; }
+.slots button span { color: #bff12e; font-size: .62rem; }
+.slots button.selected { background: #133a2d; border-color: #c5f233; box-shadow: 0 0 0 2px rgb(197 242 51 / 18%); }
+.slots button.selected small { color: #d5ff3f; }
+.footer { align-items: center; border: 1px solid #0c8ca0; border-radius: 13px; display: grid; gap: 10px; grid-template-columns: minmax(150px, 1fr) auto; padding: 9px; }
+.selection { align-items: center; display: flex; gap: 7px; min-width: 0; }
+.selection > span { display: grid; min-width: 0; }
+.selection small { color: #8bb8c2; font-size: .58rem; }
+.selection strong { font-size: .68rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.actions button { background: #c9f43b; border: 0; border-radius: 9px; color: #05232c; font-size: .66rem; font-weight: 800; min-height: 34px; padding: 7px 10px; }
+.actions button:nth-child(2) { background: #29d3c2; }
+.actions button.secondary { background: transparent; border: 1px solid #2d8292; color: #b9eaf0; }
+
+@media (max-width: 620px) {
+  .card { border-radius: 16px; padding: 11px; }
+  .header { grid-template-columns: 52px minmax(0, 1fr); }
+  .image { height: 52px; width: 52px; }
+  .price { align-items: flex-start; grid-column: 2; }
+  .price small { display: none; }
+  .price strong { font-size: .86rem; }
+  .footer { grid-template-columns: 1fr; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .actions button.secondary { grid-column: 1 / -1; }
+  .slots { grid-template-columns: repeat(5, 82px); }
+}

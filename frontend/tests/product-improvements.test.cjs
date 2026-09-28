@@ -169,3 +169,17 @@ test("admin rating rejects partial or invalid values", () => {
   assert.throws(() => normalizeAdminRatingInput("5.1", "1"), /entre 0 y 5/i);
   assert.throws(() => normalizeAdminRatingInput("4.9", "-1"), /entero positivo/i);
 });
+
+test("booking card renders only supplied available slots as accessible buttons", () => {
+  const source = fs.readFileSync(
+    path.join(__dirname, "..", "features/venues/VenueBookingCard.tsx"),
+    "utf8",
+  );
+
+  assert.match(source, /slots\.slice\(0, 5\)/);
+  assert.match(source, /<button[\s\S]*?aria-pressed=/);
+  assert.match(source, /selected \? "Elegido" : "Disponible"/);
+  assert.match(source, /onReserve\("DEPOSIT"\)/);
+  assert.match(source, /onReserve\("FULL"\)/);
+  assert.doesNotMatch(source, /reserved|occupied/i);
+});

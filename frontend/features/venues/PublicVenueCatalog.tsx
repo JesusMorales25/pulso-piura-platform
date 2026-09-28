@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,16 +11,14 @@ import {
   MapPin,
   MagnifyingGlass,
   SoccerBall,
-  Star,
   UsersThree,
-  WhatsappLogo,
   X,
 } from "@phosphor-icons/react";
 import { CardSkeletons } from "@/features/feedback/CardSkeletons";
 import { apiRequest } from "@/lib/api";
-import { googleMapsUrl, whatsappUrl } from "@/lib/public-links";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { ReservationCheckout } from "@/features/reservations/ReservationCheckout";
+import { VenueBookingCard } from "@/features/venues/VenueBookingCard";
 import type { Reservation } from "@/features/reservations/types";
 import { filterSpacesBySport } from "@/lib/venue-selection";
 import {
@@ -44,6 +41,8 @@ type Venue = {
   latitude: number | null;
   longitude: number | null;
   amenityCodes: string[];
+  adminRating: number | null;
+  adminRatingCount: number | null;
 };
 type VenuePage = { items: Venue[]; page: number; size: number; total: number };
 type Space = {
@@ -142,6 +141,7 @@ export function PublicVenueCatalog({
     spaceName: "",
   });
   const [reservationBusy, setReservationBusy] = useState(false);
+  const [initialPaymentPlan, setInitialPaymentPlan] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const [preparingCheckout, setPreparingCheckout] = useState(
     preparingDirectBooking,
   );
@@ -656,13 +656,22 @@ export function PublicVenueCatalog({
     await createCheckout(selectedVenue, selectedSpace, availability, slots);
   }
 
-  async function reserveOffer(offer: VenueOffer) {
-    const { slot } = offer;
+  function selectOfferSlot(offer: VenueOffer, slot: Slot) {
     setSelectedVenue(offer.venue);
     setSpaces([offer.space]);
     setSelectedSpace(offer.space);
     setAvailability(offer.availability);
     setSelectedSlots([slot]);
+  }
+
+  async function reserveOffer(offer: VenueOffer, plan: "DEPOSIT" | "FULL") {
+    const slot =
+      selectedVenue?.publicSlug === offer.venue.publicSlug &&
+      selectedSpace?.id === offer.space.id
+        ? selectedSlots[0] ?? offer.slot
+        : offer.slot;
+    setInitialPaymentPlan(plan);
+    selectOfferSlot(offer, slot);
     await createCheckout(offer.venue, offer.space, offer.availability, [slot]);
   }
 
@@ -954,117 +963,33 @@ export function PublicVenueCatalog({
         <div className="exploreFeaturedList" aria-label="Complejos disponibles">
           {listedVenues.map((venue, index) => {
             const offer = venueOffers[venue.publicSlug];
-            const quickSlots = offer?.availability.slots.slice(0, 2) ?? [];
+            if (!offer) {
+              return (
+                <section className="exploreFeaturedSheet" id={venue.publicSlug} key={venue.publicSlug}>
+                  <p className="notice">{offersLoading ? "Consultando horarios…" : "La disponibilidad acaba de cambiar."}</p>
+                </section>
+              );
+            }
+            const amenityNames = Array.from(
+              new Set([...venue.amenityCodes, ...offer.space.amenityCodes]),
+            ).map((code) => names.get(code) ?? code);
+            const selectedStartsAt =
+              selectedVenue?.publicSlug === venue.publicSlug && selectedSpace?.id === offer.space.id
+                ? selectedSlots[0]?.startsAt
+                : undefined;
             return (
-              <section
-                className="exploreFeaturedSheet"
-                aria-label={`Disponibilidad de ${venue.name}`}
-                id={venue.publicSlug}
+              <VenueBookingCard
+                amenityNames={amenityNames}
+                busy={reservationBusy}
+                imageSrc={venueImages[index % venueImages.length]}
                 key={venue.publicSlug}
-              >
-                <div className="exploreSheetHandle" aria-hidden="true" />
-                <div className="exploreVenueIntro">
-                  <Image
-                    alt={`Cancha deportiva en ${venue.name}`}
-                    height={118}
-                    src={venueImages[index % venueImages.length]}
-                    width={132}
-                  />
-                  <div>
-                    <span className="exploreVenueKicker">
-                      COMPLEJO DISPONIBLE
-                    </span>
-                    <h2>{venue.name}</h2>
-                    <p>
-                      <Star aria-hidden="true" size={18} weight="fill" /> 4.6
-                      <small>· {venue.districtCode}</small>
-                    </p>
-                    <p className="exploreVenueAddress">
-                      <MapPin aria-hidden="true" size={14} weight="fill" />
-                      {venue.address}
-                    </p>
-                  </div>
-                  {offer && (
-                    <div
-                      aria-label={`Características de ${offer.space.name}`}
-                      className="venueAttributeChips"
-                    >
-                      <span>{names.get(offer.space.sportCode) ?? offer.space.sportCode}</span>
-                      <span>{offer.space.formatCode.replaceAll("_", " ")}</span>
-                      {offer.space.indoor && <span>Techada</span>}
-                      {Array.from(new Set([...venue.amenityCodes, ...offer.space.amenityCodes]))
-                        .slice(0, 4)
-                        .map((code) => <span key={code}>{names.get(code) ?? code}</span>)}
-                    </div>
-                  )}
-                  <div className="exploreVenueContactActions">
-                    {whatsappUrl(venue.publicPhone) && (
-                      <a href={whatsappUrl(venue.publicPhone) ?? undefined} rel="noreferrer" target="_blank">
-                        <WhatsappLogo aria-hidden="true" size={16} weight="fill" /> Escribir
-                      </a>
-                    )}
-                    <a
-                      href={googleMapsUrl({ latitude: venue.latitude, longitude: venue.longitude, address: `${venue.name}, ${venue.address}, Piura` })}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      <MapPin aria-hidden="true" size={16} weight="fill" /> Cómo llegar
-                    </a>
-                  </div>
-                </div>
-                <div className="exploreSheetAvailability">
-                  <h3>Próximos horarios disponibles</h3>
-                  {offer ? (
-                    <>
-                      <p className="exploreCourtName">
-                        Cancha: <strong>{offer.space.name}</strong>
-                      </p>
-                      <div className="exploreQuickSlots">
-                        {quickSlots.map((slot) => (
-                          <span key={slot.startsAt}>
-                            <strong>{time(slot.startsAt)}</strong>
-                            <small>
-                              {date === localDate() ? "Hoy" : "Disponible"}
-                            </small>
-                          </span>
-                        ))}
-                        <b>
-                          {money(offer.slot)}
-                          <small>por bloque</small>
-                        </b>
-                      </div>
-                      <div className="exploreFeaturedActions">
-                        <button
-                          className="exploreReservePrimary"
-                          disabled={reservationBusy}
-                          onClick={() => void reserveOffer(offer)}
-                          type="button"
-                        >
-                          Reservar {time(offer.slot.startsAt)}
-                        </button>
-                        <button
-                          aria-controls="venue-schedules"
-                          aria-expanded={
-                            showOtherSchedules &&
-                            selectedVenue?.publicSlug === venue.publicSlug
-                          }
-                          className="exploreOtherSchedules"
-                          onClick={() => showVenueSchedules(venue)}
-                          type="button"
-                        >
-                          Otros horarios
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <p className="notice">
-                      {offersLoading
-                        ? "Consultando horarios…"
-                        : "La disponibilidad acaba de cambiar."}
-                    </p>
-                  )}
-                </div>
-              </section>
+                offer={offer}
+                onOpenSchedules={() => showVenueSchedules(venue)}
+                onReserve={(plan) => void reserveOffer(offer, plan)}
+                onSelectSlot={(slot) => selectOfferSlot(offer, slot)}
+                selectedStartsAt={selectedStartsAt}
+                slots={offer.availability.slots}
+              />
             );
           })}
         </div>
@@ -1328,6 +1253,7 @@ export function PublicVenueCatalog({
               key={reservation.id}
               accessToken={accessToken}
               reservation={reservation}
+              initialPlan={initialPaymentPlan}
               venueName={bookingNames.venueName}
               spaceName={bookingNames.spaceName}
               onChange={setReservation}
