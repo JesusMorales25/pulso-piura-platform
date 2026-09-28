@@ -114,6 +114,23 @@
   margin-top: 3px;
   color: var(--white);
 }
+.facts .nextBadge {
+  width: max-content;
+  color: var(--lime);
+  font-size: 0.5rem;
+  font-style: normal;
+  font-weight: 900;
+}
+.facts .priceFact {
+  margin-block: -5px;
+  border: 1px solid rgba(200, 242, 56, 0.28);
+  border-radius: 8px;
+  background: rgba(200, 242, 56, 0.08);
+}
+.facts .priceFact span,
+.facts .priceFact svg {
+  color: var(--lime);
+}
 .footer {
   display: grid;
   grid-template-columns: 1.2fr 1fr;

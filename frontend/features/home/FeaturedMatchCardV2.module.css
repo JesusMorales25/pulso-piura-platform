@@ -40,6 +40,7 @@
 .facts span { display: grid; min-width: 0; gap: 3px; }
 .facts small, .organizer small, .price small { color: var(--muted); font-size: 0.57rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
 .facts strong { overflow: hidden; font-size: 0.9rem; text-overflow: ellipsis; text-transform: capitalize; white-space: nowrap; }
+.nextBadge { width: max-content; margin-top: 2px; padding: 3px 5px; border-radius: 999px; background: rgba(200, 242, 56, 0.12); color: var(--lime); font-size: 0.48rem; font-style: normal; font-weight: 900; letter-spacing: 0.02em; white-space: nowrap; }
 
 .organizer { display: flex; align-items: center; gap: 9px; padding: 11px 2px; }
 .organizer > span:last-child { display: grid; gap: 2px; }
@@ -63,7 +64,7 @@
 .players > small { margin-left: 12px; color: var(--lime); font-size: 0.61rem; font-weight: 800; }
 
 .footer { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 42px minmax(124px, auto); align-items: center; gap: 9px; padding-top: 12px; }
-.price { display: grid; min-width: 0; gap: 2px; }
+.price { display: grid; min-width: 0; gap: 2px; padding: 8px 10px; border: 1px solid rgba(200, 242, 56, 0.28); border-radius: 10px; background: rgba(200, 242, 56, 0.08); }
 .price strong { color: var(--lime); font-size: 1.25rem; white-space: nowrap; }
 .price strong em { color: var(--muted); font-size: 0.58rem; font-style: normal; font-weight: 500; }
 .share, .join, .joined { min-height: 42px; border: 0; border-radius: 11px; font-weight: 900; }

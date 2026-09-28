@@ -11,6 +11,7 @@ import {
   Volleyball,
 } from "@phosphor-icons/react";
 import { apiRequest } from "@/lib/api";
+import { sortUpcomingMatches } from "@/lib/match-discovery";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { FeaturedMatchCardV2 } from "./FeaturedMatchCardV2";
 import { NextMatchCard } from "./NextMatchCard";
@@ -42,7 +43,7 @@ export function MatchDiscoveryPanel() {
       { signal: controller.signal },
     )
       .then((result) => {
-        if (!controller.signal.aborted) setMatches(result);
+        if (!controller.signal.aborted) setMatches(sortUpcomingMatches(result, Date.now()));
       })
       .catch((reason) => {
         if (controller.signal.aborted) return;
@@ -118,6 +119,7 @@ export function MatchDiscoveryPanel() {
           match={featured}
           busy={false}
           participation={participation}
+          nextUpcoming
           onJoin={() => void join(featured.publicSlug)}
         />
       )}

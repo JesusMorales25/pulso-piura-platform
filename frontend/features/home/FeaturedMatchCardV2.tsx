@@ -31,12 +31,14 @@ export function FeaturedMatchCardV2({
   participation,
   onJoin,
   featured = true,
+  nextUpcoming = false,
 }: {
   match: MatchSummary;
   busy: boolean;
   participation: MatchParticipation | null;
   onJoin: () => void;
   featured?: boolean;
+  nextUpcoming?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const date = new Date(match.startsAt);
@@ -87,7 +89,7 @@ export function FeaturedMatchCardV2({
       <div className={styles.body}>
         <div className={styles.facts}>
           <div><CalendarBlank aria-hidden="true" /><span><small>FECHA</small><strong>{date.toLocaleDateString("es-PE", { weekday: "short", day: "numeric", month: "short", timeZone: "America/Lima" })}</strong></span></div>
-          <div><Clock aria-hidden="true" /><span><small>HORARIO</small><strong>{date.toLocaleTimeString("es-PE", { hour: "numeric", minute: "2-digit", timeZone: "America/Lima" })}</strong></span></div>
+          <div><Clock aria-hidden="true" /><span><small>HORARIO</small><strong>{date.toLocaleTimeString("es-PE", { hour: "numeric", minute: "2-digit", timeZone: "America/Lima" })}</strong>{nextUpcoming && <em className={styles.nextBadge}>Próximo por horario</em>}</span></div>
           <div><UsersThree aria-hidden="true" /><span><small>VACANTES</small><strong>{match.availablePlayers} cupos</strong></span></div>
         </div>
 

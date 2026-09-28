@@ -75,3 +75,18 @@ test("organizer row is protected from participant management actions", () => {
   assert.equal(isProtectedOrganizerRow({ source: "ORGANIZER" }), true);
   assert.equal(isProtectedOrganizerRow({ source: "ACCOUNT" }), false);
 });
+
+test("upcoming matches are copied, past entries excluded and future entries sorted", () => {
+  const { sortUpcomingMatches } = load("lib/match-discovery.ts");
+  const input = [
+    { id: "late", startsAt: "2026-09-29T02:00:00Z" },
+    { id: "past", startsAt: "2026-09-27T18:00:00Z" },
+    { id: "next", startsAt: "2026-09-28T01:00:00Z" },
+  ];
+
+  const result = sortUpcomingMatches(input, Date.parse("2026-09-27T20:00:00Z"));
+
+  assert.deepEqual(result.map((match) => match.id), ["next", "late"]);
+  assert.deepEqual(input.map((match) => match.id), ["late", "past", "next"]);
+  assert.equal(result.filter((_, index) => index === 0).length, 1);
+});

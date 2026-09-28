@@ -24,11 +24,13 @@ export function FeaturedMatchCard({
   busy,
   participation,
   onJoin,
+  nextUpcoming = false,
 }: {
   match: MatchSummary;
   busy: boolean;
   participation: MatchParticipation | null;
   onJoin: () => void;
+  nextUpcoming?: boolean;
 }) {
   const sports: Record<
     string,
@@ -113,6 +115,7 @@ export function FeaturedMatchCard({
                   minute: "2-digit",
                 }).format(date)}
               </small>
+              {nextUpcoming && <em className={styles.nextBadge}>Próximo por horario</em>}
             </span>
           </div>
           <div>
@@ -122,11 +125,11 @@ export function FeaturedMatchCard({
               <small>cupos</small>
             </span>
           </div>
-          <div>
+          <div className={styles.priceFact}>
             <CurrencyCircleDollar aria-hidden="true" />
             <span>
               {price}
-              <small>por persona</small>
+              <small>Cuota por jugador · / persona</small>
             </span>
           </div>
         </div>
