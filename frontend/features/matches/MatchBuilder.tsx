@@ -20,6 +20,7 @@ import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { useAuth } from "@/features/auth/AuthProvider";
 import type { Reservation, ReservationPage } from "@/features/reservations/types";
 import { apiRequest } from "@/lib/api";
+import { defaultMatchDraft } from "./draft";
 import type { MatchSummary } from "./types";
 
 type Visibility = "PUBLIC" | "PRIVATE";
@@ -75,7 +76,9 @@ export function MatchBuilder() {
   const [price, setPrice] = useState("15");
   const [minPlayers, setMinPlayers] = useState("8");
   const [maxPlayers, setMaxPlayers] = useState("10");
-  const [organizerCounts, setOrganizerCounts] = useState(false);
+  const [organizerCounts, setOrganizerCounts] = useState(
+    () => defaultMatchDraft().organizerCounts,
+  );
   const [cancellationPolicy, setCancellationPolicy] = useState(
     "El pago confirma el cupo. No hay devoluciones por retiro del participante.",
   );
