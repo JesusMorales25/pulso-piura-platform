@@ -361,6 +361,9 @@ typescript	matches	function	MatchDetail	frontend/features/matches/MatchDetail.ts
 typescript	matches	function	MatchInvitationAcceptance	frontend/features/matches/MatchInvitationAcceptance.tsx
 typescript	matches	function	MatchOrganizerDashboard	frontend/features/matches/MatchOrganizerDashboard.tsx
 typescript	matches	function	MatchQrPass	frontend/features/matches/MatchQrPass.tsx
+typescript	matches	type	MatchPaymentMethod	frontend/features/matches/mobile-checkout.ts
+typescript	matches	function	mobileCheckoutStatus	frontend/features/matches/mobile-checkout.ts
+typescript	matches	function	MobileMatchCheckout	frontend/features/matches/MobileMatchCheckout.tsx
 typescript	matches	function	MyMatchParticipations	frontend/features/matches/MyMatchParticipations.tsx
 typescript	matches	type	MatchFinanceSummary	frontend/features/matches/presentation.ts
 typescript	matches	function	summarizeMatchFinances	frontend/features/matches/presentation.ts
@@ -421,6 +424,7 @@ typescript	lib	type	VenueOfferSummary	frontend/lib/venue-discovery.ts
 typescript	lib	type	VenueFilters	frontend/lib/venue-discovery.ts
 typescript	lib	function	districtOptions	frontend/lib/venue-discovery.ts
 typescript	lib	function	matchesVenueFilters	frontend/lib/venue-discovery.ts
+typescript	lib	function	venueAttributeLabel	frontend/lib/venue-presentation.ts
 typescript	lib	type	AdminRatingInput	frontend/lib/venue-rating.ts
 typescript	lib	function	normalizeAdminRatingInput	frontend/lib/venue-rating.ts
 typescript	lib	function	filterSpacesBySport	frontend/lib/venue-selection.ts

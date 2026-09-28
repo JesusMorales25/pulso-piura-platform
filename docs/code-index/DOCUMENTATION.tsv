@@ -2,8 +2,8 @@ area	title	path
 root-or-support	Contexto obligatorio para desarrollo asistido	AGENTS.md
 infrastructure	Publicar Pulso Piura en Oracle con Coolify	deploy/coolify/README.md
 infrastructure	Demostración con Auth0, Render y Vercel	deploy/render-vercel/README.md
-root-or-support	QA visual — reservas de cancha	design-qa.md
 root-or-support	Pulso Piura — contexto de diseño	DESIGN.md
+root-or-support	QA visual — observaciones de interfaz móvil	design-qa.md
 architecture-decision	ADR-001: monolito modular para el backend	docs/adr/ADR-001-monolito-modular.md
 architecture-decision	ADR-002: Keycloak para identidad y Spring Security para autorización	docs/adr/ADR-002-identidad-y-autorizacion.md
 architecture-decision	ADR-003: web responsive mobile-first	docs/adr/ADR-003-web-mobile-first.md

@@ -2,6 +2,7 @@
 
 import { forwardRef } from "react";
 import { ArrowRight, Clock, MapPin, Star, X } from "@phosphor-icons/react";
+import { venueAttributeLabel } from "@/lib/venue-presentation";
 import styles from "./VenueScheduleDialog.module.css";
 
 type Venue = {
@@ -146,11 +147,11 @@ export const VenueScheduleDialog = forwardRef<HTMLDivElement, Props>(
                   <section className={styles.slotSection}>
                     <div className={styles.facts}>
                       <span>{selectedSpace.indoor ? "Cancha techada" : "Cancha al aire libre"}</span>
-                      <span>{selectedSpace.formatCode.replaceAll("_", " ")}</span>
+                      <span>{venueAttributeLabel(selectedSpace.formatCode, names)}</span>
                       {selectedSpace.surfaceType && (
-                        <span>{names.get(selectedSpace.surfaceType) ?? selectedSpace.surfaceType}</span>
+                        <span>{venueAttributeLabel(selectedSpace.surfaceType, names)}</span>
                       )}
-                      {detailAmenities.map((code) => <span key={code}>{names.get(code) ?? code}</span>)}
+                      {detailAmenities.map((code) => <span key={code}>{venueAttributeLabel(code, names)}</span>)}
                     </div>
                     <div className={styles.slotHeading}>
                       <div><small>TURNOS DISPONIBLES</small><h3>{selectedSpace.name}</h3></div>

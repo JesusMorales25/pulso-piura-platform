@@ -115,11 +115,14 @@
   color: var(--white);
 }
 .facts .nextBadge {
-  width: max-content;
+  width: fit-content;
+  max-width: 100%;
   color: var(--lime);
   font-size: 0.5rem;
   font-style: normal;
   font-weight: 900;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 .facts .priceFact {
   margin-block: -5px;

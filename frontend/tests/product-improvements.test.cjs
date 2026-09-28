@@ -203,3 +203,33 @@ test("availability conflict removes stale selected slots without exposing unavai
   assert.equal(result[0].startsAt, "2026-09-28T20:00:00Z");
   assert.equal(Object.hasOwn(result[0], "status"), false);
 });
+
+test("mobile checkout explains each missing requirement before payment", () => {
+  const { mobileCheckoutStatus } = load("features/matches/mobile-checkout.ts");
+
+  const missingBoth = mobileCheckoutStatus(null, false);
+  assert.equal(missingBoth.ready, false);
+  assert.equal(missingBoth.message, "Elige Yape o Plin y acepta la cuota y la política.");
+
+  const missingAcceptance = mobileCheckoutStatus("YAPE", false);
+  assert.equal(missingAcceptance.ready, false);
+  assert.equal(missingAcceptance.message, "Acepta la cuota y la política para continuar.");
+
+  const missingMethod = mobileCheckoutStatus(null, true);
+  assert.equal(missingMethod.ready, false);
+  assert.equal(missingMethod.message, "Elige Yape o Plin para continuar.");
+
+  const ready = mobileCheckoutStatus("PLIN", true);
+  assert.equal(ready.ready, true);
+  assert.equal(ready.message, "Listo para reservar tu cupo.");
+});
+
+test("venue attributes remain readable when the catalog has no label", () => {
+  const { venueAttributeLabel } = load("lib/venue-presentation.ts");
+  const names = new Map([["LED_LIGHTING", "Iluminación LED"]]);
+
+  assert.equal(venueAttributeLabel("LED_LIGHTING", names), "Iluminación LED");
+  assert.equal(venueAttributeLabel("NATURAL_GRASS", names), "Césped natural");
+  assert.equal(venueAttributeLabel("LOCKER_ROOMS", names), "Vestuarios");
+  assert.equal(venueAttributeLabel("CUSTOM_AMENITY", names), "Custom amenity");
+});

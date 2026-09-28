@@ -23,6 +23,8 @@ import {
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
+import { MobileMatchCheckout } from "./MobileMatchCheckout";
+import type { MatchPaymentMethod } from "./mobile-checkout";
 import { isProtectedOrganizerRow, summarizeMatchFinances } from "./presentation";
 import type { MatchJoinOrder, MatchParticipantAdmin, MatchParticipation, MatchSummary } from "./types";
 
@@ -57,8 +59,9 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [method, setMethod] = useState<"YAPE" | "PLIN">("YAPE");
+  const [method, setMethod] = useState<MatchPaymentMethod | null>(null);
   const [accepted, setAccepted] = useState(false);
+  const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false);
   const [order, setOrder] = useState<MatchJoinOrder | null>(null);
   const [manualSlotOpen, setManualSlotOpen] = useState(false);
   const [manualPaid, setManualPaid] = useState(false);
@@ -120,7 +123,7 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
       await login(false, `/partidos/${publicSlug}`);
       return;
     }
-    if (!accepted) return;
+    if (!accepted || !method) return;
     setBusy(true);
     setError("");
     try {
@@ -155,6 +158,7 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
         setParticipation(updatedParticipation);
         setNotice("Tu pago de prueba y tu cupo quedaron confirmados.");
       }
+      setMobileCheckoutOpen(false);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No pudimos confirmar el pago.");
     } finally {
@@ -348,6 +352,14 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
     organizerRow?.paymentStatus === "PAID" ||
     organizerRow?.paymentStatus === "NOT_REQUIRED" ||
     order?.status === "PAID";
+  const mobileRequiresCheckout =
+    match.priceMinor > 0 &&
+    (isPlayingOrganizer ? !organizerQuotaPaid : match.availablePlayers > 0);
+  const mobileActionLabel = isPlayingOrganizer
+    ? "Pagar mi cuota"
+    : match.availablePlayers === 0
+      ? "Unirme a la espera"
+      : "Reservar mi cupo";
   const sportName = sportLabels[match.sportCode] || match.sportCode;
   const formatName = match.formatCode.replaceAll("_", " ").replace(match.sportCode, sportName);
   const knownIncludes = [match.surfaceName, ...(match.amenityNames ?? [])].filter((value): value is string => Boolean(value));
@@ -513,8 +525,37 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
       </div>
 
       {participation?.status !== "JOINED" && participation?.status !== "WAITLISTED" && !(isPlayingOrganizer && (organizerQuotaPaid || match.priceMinor === 0)) && (
-        <div className="mobileMatchAction matchExperienceMobileAction"><span><small>Total por cupo</small><strong>{match.priceMinor > 0 ? price : "Gratis"}</strong></span><button aria-busy={busy} disabled={busy || (isPlayingOrganizer ? match.priceMinor > 0 && !accepted : match.availablePlayers > 0 && match.priceMinor > 0 && !accepted)} onClick={() => void (isPlayingOrganizer ? payAndJoin() : match.availablePlayers === 0 || match.priceMinor === 0 ? updateParticipation("POST") : payAndJoin())} type="button">{busy ? "Confirmando…" : isPlayingOrganizer ? "Pagar mi cuota" : match.availablePlayers === 0 ? "Unirme a la espera" : "Reservar mi cupo"}</button></div>
+        <div className="mobileMatchAction matchExperienceMobileAction">
+          <span><small>Total por cupo</small><strong>{match.priceMinor > 0 ? price : "Gratis"}</strong></span>
+          <button
+            aria-busy={busy}
+            disabled={busy}
+            onClick={() => {
+              if (mobileRequiresCheckout) {
+                setMobileCheckoutOpen(true);
+                return;
+              }
+              void updateParticipation("POST");
+            }}
+            type="button"
+          >
+            {busy ? "Confirmando…" : mobileActionLabel}
+          </button>
+        </div>
       )}
+
+      <MobileMatchCheckout
+        accepted={accepted}
+        actionLabel={mobileActionLabel}
+        busy={busy}
+        method={method}
+        onAcceptedChange={setAccepted}
+        onClose={() => setMobileCheckoutOpen(false)}
+        onMethodChange={setMethod}
+        onSubmit={() => void payAndJoin()}
+        open={mobileCheckoutOpen && mobileRequiresCheckout}
+        price={price}
+      />
 
       {manualSlotOpen && (
         <div className="matchDialogBackdrop" onMouseDown={(event) => {

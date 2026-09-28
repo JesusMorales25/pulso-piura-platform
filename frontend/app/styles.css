@@ -3368,6 +3368,9 @@ body:has(.prototypeHome) .topbar {
 .mobileMatchAction {
   display: none;
 }
+.mobileCheckoutBackdrop {
+  display: none;
+}
 .mobileReservationAction {
   display: none;
 }
@@ -5067,6 +5070,72 @@ body:has(.prototypeHome) .topbar {
 }
 
 @media (max-width: 760px) {
+  .ownerReservationsPage {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    padding-inline: 14px;
+  }
+  .ownerReservationsPage .sectionHeading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .ownerReservationsPage .sectionHeading .pill {
+    max-width: 100%;
+  }
+  .ownerReservationsPage .reservationMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .ownerReservationsPage .reservationMetrics > div {
+    min-width: 0;
+    padding: 13px;
+  }
+  .ownerReservationsPage .reservationMetrics dt,
+  .ownerReservationsPage .reservationMetrics dd {
+    overflow-wrap: anywhere;
+  }
+  .ownerReservationsPage .reservationMetrics dt {
+    font-size: 0.72rem;
+  }
+  .ownerReservationsPage .reservationMetrics dd {
+    font-size: 1rem;
+  }
+  .ownerReservationsPage .reservationDashboardCard {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 11px;
+    min-width: 0;
+    padding: 16px;
+  }
+  .ownerReservationsPage .reservationDashboardCard > * {
+    min-width: 0;
+  }
+  .ownerReservationsPage .reservationDashboardCard p {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+  .ownerReservationsPage .reservationSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 2px 0;
+  }
+  .ownerReservationsPage .reservationSummary div {
+    min-width: 0;
+    padding: 10px;
+  }
+  .ownerReservationsPage .reservationSummary div:last-child {
+    grid-column: 1 / -1;
+  }
+  .ownerReservationsPage .reservationSummary dd {
+    overflow-wrap: anywhere;
+  }
+  .ownerReservationsPage .reservationDashboardCard > button,
+  .ownerReservationsPage .reservationDashboardCard > div:last-child button {
+    width: 100%;
+    justify-content: center;
+  }
   .mobileMatchAction {
     position: fixed;
     z-index: 38;
@@ -5102,6 +5171,125 @@ body:has(.prototypeHome) .topbar {
     background: var(--cyan);
     color: #00151f;
     font-weight: 900;
+  }
+  .mobileCheckoutBackdrop {
+    position: fixed;
+    z-index: 70;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 18px 12px calc(16px + env(safe-area-inset-bottom));
+    background: rgba(0, 8, 16, 0.76);
+    backdrop-filter: blur(8px);
+  }
+  .mobileCheckoutSheet {
+    display: grid;
+    width: min(100%, 480px);
+    gap: 13px;
+    padding: 18px;
+    border: 1px solid rgba(159, 177, 191, 0.24);
+    border-radius: 18px;
+    background: var(--panel);
+    box-shadow: 0 24px 70px rgba(0, 5, 12, 0.58);
+  }
+  .mobileCheckoutSheet > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .mobileCheckoutSheet > header small {
+    color: var(--cyan);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+  }
+  .mobileCheckoutSheet > header h2 {
+    margin: 3px 0 0;
+    color: var(--white);
+    font-size: 1.25rem;
+  }
+  .mobileCheckoutSheet > header button {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--panel-raised);
+    color: var(--white);
+  }
+  .mobileCheckoutPrice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .mobileCheckoutPrice strong {
+    color: var(--white);
+    font-size: 1.4rem;
+  }
+  .mobileCheckoutMethods {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .mobileCheckoutMethods legend {
+    grid-column: 1 / -1;
+    margin-bottom: 8px;
+    color: var(--white);
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+  .mobileCheckoutMethods button {
+    min-height: 46px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #061a21;
+    color: var(--white);
+    font-weight: 900;
+  }
+  .mobileCheckoutMethods button.selected {
+    border-color: var(--cyan);
+    background: rgba(16, 198, 210, 0.16);
+    color: var(--cyan);
+  }
+  .mobileCheckoutAcceptance {
+    margin: 0;
+  }
+  .mobileCheckoutHint,
+  .mobileCheckoutReady {
+    display: flex;
+    min-height: 20px;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 0.72rem;
+  }
+  .mobileCheckoutHint {
+    color: var(--muted);
+  }
+  .mobileCheckoutReady {
+    color: var(--lime);
+  }
+  .mobileCheckoutSubmit {
+    min-height: 50px;
+    border: 0;
+    border-radius: 11px;
+    background: var(--lime);
+    color: #122000;
+    font-weight: 900;
+  }
+  .mobileCheckoutSubmit:disabled {
+    opacity: 0.48;
   }
   .mobileReservationAction {
     position: fixed;

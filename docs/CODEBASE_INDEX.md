@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: 7409e0024650231e
-- Archivos indexados: 572
+- Huella del inventario: d8a43bf6497314a9
+- Archivos indexados: 575
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -80,7 +80,7 @@
 - auth (2): AuthButton.tsx, AuthProvider.tsx
 - feedback (1): CardSkeletons.tsx
 - home (12): FeaturedMatchCard.module.css, FeaturedMatchCard.tsx, FeaturedMatchCardV2.module.css, FeaturedMatchCardV2.tsx, HomeDashboard.tsx, HomeModeSwitch.tsx, HomeVenuePreview.tsx, MatchDiscoveryPanel.tsx, NextMatchCard.module.css, NextMatchCard.tsx, ThirdTimeSection.tsx, VenueAgendaPanel.tsx
-- matches (13): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, draft.ts, MatchBuilder.tsx, MatchCatalog.tsx, MatchCheckInScanner.tsx, MatchDetail.tsx, MatchInvitationAcceptance.tsx, MatchOrganizerDashboard.tsx, MatchQrPass.tsx, MyMatchParticipations.tsx, presentation.ts, types.ts
+- matches (15): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, draft.ts, MatchBuilder.tsx, MatchCatalog.tsx, MatchCheckInScanner.tsx, MatchDetail.tsx, MatchInvitationAcceptance.tsx, MatchOrganizerDashboard.tsx, MatchQrPass.tsx, mobile-checkout.ts, MobileMatchCheckout.tsx, MyMatchParticipations.tsx, presentation.ts, types.ts
 - navigation (1): AppNavigation.tsx
 - organizations (3): InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx
 - reservations (9): MyReservations.tsx, OrganizationReservations.tsx, payment-options.ts, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationQrPass.tsx, types.ts, VenueOwnerReservationsDashboard.tsx
