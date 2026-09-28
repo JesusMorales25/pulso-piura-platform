@@ -30,6 +30,7 @@
 .footer > span { display: grid; }
 .footer small, .footer em { color: #6b7e84; font-size: .68rem; font-style: normal; }
 .footer button { align-items: center; background: #c8f13d; border: 0; border-radius: 11px; color: #123018; display: inline-flex; font-weight: 800; gap: 7px; min-height: 44px; padding: 10px 16px; }
+.dialog button:focus-visible { outline: 3px solid #078c82; outline-offset: 3px; }
 
 @media (max-width: 620px) {
   .backdrop { padding: 0; }

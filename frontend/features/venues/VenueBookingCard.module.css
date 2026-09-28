@@ -40,9 +40,10 @@
 .selection small { color: #8bb8c2; font-size: .58rem; }
 .selection strong { font-size: .68rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
-.actions button { background: #c9f43b; border: 0; border-radius: 9px; color: #05232c; font-size: .66rem; font-weight: 800; min-height: 34px; padding: 7px 10px; }
+.actions button { background: #c9f43b; border: 0; border-radius: 9px; color: #05232c; font-size: .66rem; font-weight: 800; min-height: 44px; padding: 7px 10px; }
 .actions button:nth-child(2) { background: #29d3c2; }
 .actions button.secondary { background: transparent; border: 1px solid #2d8292; color: #b9eaf0; }
+.card :is(button, a):focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
 @media (max-width: 620px) {
   .card { border-radius: 16px; padding: 11px; }

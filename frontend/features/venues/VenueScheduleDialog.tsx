@@ -86,7 +86,7 @@ export const VenueScheduleDialog = forwardRef<HTMLDivElement, Props>(
     const detailAmenities = selectedSpace
       ? Array.from(new Set([...venue.amenityCodes, ...selectedSpace.amenityCodes]))
       : venue.amenityCodes;
-    const rating = venue.adminRating === null
+    const rating = venue.adminRating === null || venue.adminRating === undefined
       ? "Sin calificación"
       : `${venue.adminRating.toFixed(1)} (${venue.adminRatingCount ?? 0})`;
 
@@ -106,7 +106,7 @@ export const VenueScheduleDialog = forwardRef<HTMLDivElement, Props>(
               <p className={styles.eyebrow}>DETALLE Y TURNOS DISPONIBLES</p>
               <h2 id="schedule-modal-title">{venue.name}</h2>
               <p><MapPin aria-hidden="true" size={15} /> {venue.address} · {venue.districtCode}</p>
-              <span title={venue.adminRating === null ? undefined : "Calificación informada por el complejo"}>
+              <span title={venue.adminRating === null || venue.adminRating === undefined ? undefined : "Calificación informada por el complejo"}>
                 <Star aria-hidden="true" size={15} weight="fill" /> {rating}
               </span>
             </div>

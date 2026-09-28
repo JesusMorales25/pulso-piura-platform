@@ -1,51 +1,33 @@
-# Design QA — tarjeta de partido destacado y detalle
+# QA visual — reservas de cancha
 
-## Evidencia
+Fecha: 2026-09-28
+Referencia: `.verification/reference-reservation-card.png`
 
-- Fuente visual principal: `D:\pulso-piura-proyecto\pulso-piura-platform\docs\qa\featured-match-reference.png`.
-- Fuentes complementarias: capturas del usuario con equipo confirmado, precio y acciones.
-- Captura de implementación: `D:\pulso-piura-proyecto\pulso-piura-platform\docs\qa\featured-match-mobile.png`.
-- Ruta revisada: `http://localhost:3000/?mode=matches`.
-- Viewports interactivos: 393 × 852 px y 320 × 700 px.
-- Captura persistida: 500 × 1100 px, escala 1. Chrome headless aplica 500 px como ancho mínimo efectivo.
-- Estado: partido público con un jugador inscrito, nueve vacantes y cuota de S/ 15.
+## Resultado
 
-## Comparación de vista completa
+La implementación conserva la jerarquía clave de la referencia: identidad del complejo, ubicación, atributos, tarifa destacada, calificación, cinco turnos disponibles, selección visible y bloque final de acciones. En móvil se reorganiza en una sola columna y mantiene los turnos en una franja desplazable para no comprimir su lectura.
 
-- La tarjeta mantiene el fondo azul oscuro, borde cian, imagen deportiva nocturna y jerarquía tipográfica de la referencia.
-- Fecha, hora y vacantes aparecen en una franja de tres columnas legible.
-- La navegación inferior se mantiene visible y la tarjeta no la invade.
-- En 393 px y 320 px no se observó desbordamiento del componente ni pérdida de controles.
+| Ancho | Desbordamiento horizontal del documento | Turno seleccionado | Acciones de pago | Diálogo |
+|---|---:|---|---|---|
+| 320 px | No (`310 / 310`) | Visible, `aria-pressed=true` y “Elegido” | 20 % y completo, 44 px de alto | Abre y cierra con Escape |
+| 393 px | No (`383 / 383`) | Visible, `aria-pressed=true` y “Elegido” | 20 % y completo, 44 px de alto | Abre y cierra con botón/Escape |
+| 768 px | No (`758 / 758`) | Visible en la franja de cinco turnos | Acciones alineadas en el resumen | Detalle completo, sin datos privados |
 
-## Comparación de regiones
+## Hallazgos y correcciones
 
-| Superficie | Resultado |
-|---|---|
-| Tipografía | Título dominante, rótulos compactos en mayúsculas y cifras con peso alto. No hay cortes del título ni de los datos principales. |
-| Espaciado | El contenido conserva un ritmo compacto; imagen, métricas, organizador, equipo y acciones forman grupos claramente separados. |
-| Color | Se conservaron azul noche, cian para información y verde lima para cupos, precio y acción principal. El contraste es suficiente. |
-| Imagen | Se reutiliza el activo deportivo nocturno del producto con recorte focal hacia los jugadores. |
-| Equipo confirmado | Incluye ocupación real, barra de progreso, avatares públicos, contador y cupos disponibles. |
-| Precio y acciones | Precio, copia del enlace y botón para unirse comparten una misma franja. El botón de copia cambia a estado confirmado. |
-| Detalle | El banner se redujo de 350 a 320 px en escritorio y de 270 a 238 px en móvil; el cierre pasó de 42 a 36 px. |
+- P0: ninguno.
+- P1: ninguno.
+- P2 resuelto: se priorizaron los chips de iluminación LED y estacionamiento para que no desaparezcan en pantallas estrechas.
+- P2 resuelto: los botones de reserva se elevaron a un mínimo táctil de 44 px y se añadió foco visible.
+- P2 resuelto: los nombres de cancha y los turnos disponibles se mantienen legibles sin scroll horizontal del documento.
+- P3: la navegación inferior fija puede superponerse visualmente en una captura de página completa; durante el uso normal permanece fija y el contenido conserva espacio de desplazamiento inferior.
 
-## Interacciones verificadas
+## Accesibilidad y estado
 
-- Carga del partido real desde la API.
-- Acceso al detalle mediante “Unirme” o el estado de inscripción.
-- Copia del enlace mediante teclado y cambio visible a “Enlace copiado”.
-- Render responsive a 393 × 852 px y 320 × 700 px.
-- Consola revisada; la advertencia LCP se corrigió cargando la imagen destacada con prioridad. La extensión del navegador añadía un atributo al `body`; el layout tolera esa modificación sin mostrar un falso error de hidratación.
-
-## Historial de ajustes
-
-1. La tarjeta anterior usaba una columna lateral de fecha y no agrupaba las acciones como la nueva referencia.
-2. Se reemplazó por una cabecera fotográfica, métricas horizontales, organizador, equipo confirmado y pie de conversión.
-3. La primera revisión detectó carga no prioritaria de la imagen principal; se añadió `priority`.
-4. La revisión posterior no mostró problemas P0, P1 o P2.
-
-## Hallazgos
-
-No quedan diferencias P0, P1 o P2. La implementación incorpora contenido funcional adicional solicitado sin romper la jerarquía visual de la referencia.
+- Los horarios son botones reales con `aria-pressed`.
+- La calificación configurada declara `Calificación informada por el complejo`; si falta, muestra `Sin calificación`.
+- El diálogo usa `role="dialog"`, `aria-modal`, título asociado, cierre explícito y cierre con Escape.
+- La consola no presentó errores de ejecución durante el flujo validado.
+- La vista pública contiene exclusivamente turnos disponibles; no expone estados ni datos del titular de reservas existentes.
 
 final result: passed

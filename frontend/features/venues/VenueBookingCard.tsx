@@ -81,7 +81,7 @@ export function VenueBookingCard({
     visibleSlots.find((slot) => slot.startsAt === selectedStartsAt) ?? visibleSlots[0];
   const { venue, space } = offer;
   const ratingLabel =
-    venue.adminRating === null
+    venue.adminRating === null || venue.adminRating === undefined
       ? "Sin calificación"
       : `${venue.adminRating.toFixed(1)} (${venue.adminRatingCount ?? 0})`;
   const mapsHref = googleMapsUrl({
@@ -90,6 +90,11 @@ export function VenueBookingCard({
     address: `${venue.name}, ${venue.address}, Piura`,
   });
   const whatsappHref = whatsappUrl(venue.publicPhone);
+  const priorityAmenities = [...amenityNames].sort((left, right) => {
+    const priority = (value: string) =>
+      /led|iluminaci[oó]n|estacionamiento/i.test(value) ? 0 : 1;
+    return priority(left) - priority(right);
+  });
 
   return (
     <article className={styles.card} aria-label={`Disponibilidad de ${venue.name}`}>
@@ -98,6 +103,7 @@ export function VenueBookingCard({
           alt={`Cancha deportiva en ${venue.name}`}
           className={styles.image}
           height={64}
+          loading="eager"
           src={imageSrc}
           width={64}
         />
@@ -107,13 +113,13 @@ export function VenueBookingCard({
           <div className={styles.chips}>
             <span><SoccerBall aria-hidden="true" size={13} /> {space.formatCode.replaceAll("_", " ")}</span>
             {space.indoor && <span>Techada</span>}
-            {amenityNames.slice(0, 2).map((name) => <span key={name}>{name}</span>)}
+            {priorityAmenities.slice(0, 3).map((name) => <span key={name}>{name}</span>)}
           </div>
         </div>
         <div className={styles.price}>
           <small>Tarifa por hora</small>
           <strong>Desde {selectedSlot ? money(selectedSlot) : "—"}</strong>
-          <span title={venue.adminRating === null ? undefined : "Calificación informada por el complejo"}>
+          <span title={venue.adminRating === null || venue.adminRating === undefined ? undefined : "Calificación informada por el complejo"}>
             <Star aria-hidden="true" size={14} weight="fill" /> {ratingLabel}
           </span>
         </div>
