@@ -70,12 +70,14 @@ public class MatchJoinPaymentService {
         var match = requirePublishedForUpdate(publicSlug, actor);
         var now = clock.instant();
         requireCanBuy(match, actor, now);
+        var playingOrganizer = isPlayingOrganizer(match, actor);
         var existingPaid =
                 orders.findFirstByMatchIdAndPayerUserIdAndStatusOrderByCreatedAtDesc(
                         match.id(), actor, "PAID");
         if (existingPaid.isPresent()) return view(existingPaid.get());
         var currentParticipation = participants.findByMatchAndUser(match.id(), actor);
-        if (currentParticipation.isPresent()
+        if (!playingOrganizer
+                && currentParticipation.isPresent()
                 && currentParticipation.get().status() != MatchParticipantStatus.WITHDRAWN) {
             throw new ReservationConflictException("Ya tienes un cupo registrado en este partido");
         }
@@ -93,10 +95,12 @@ public class MatchJoinPaymentService {
                     order.expire(now);
                     orders.saveAndFlush(order);
                 });
-        var occupied = occupied(match);
-        var held = orders.countByMatchIdAndStatusAndExpiresAtAfter(match.id(), "PENDING", now);
-        if (occupied + held >= match.maxPlayers())
-            throw new ReservationConflictException("El partido ya no tiene cupos disponibles");
+        if (!playingOrganizer) {
+            var occupied = occupied(match);
+            var held = orders.countByMatchIdAndStatusAndExpiresAtAfter(match.id(), "PENDING", now);
+            if (occupied + held >= match.maxPlayers())
+                throw new ReservationConflictException("El partido ya no tiene cupos disponibles");
+        }
         var expiresAt = now.plus(HOLD_DURATION);
         if (expiresAt.isAfter(match.startsAt())) expiresAt = match.startsAt();
         return view(
@@ -130,7 +134,9 @@ public class MatchJoinPaymentService {
                     "Sin acceso a la orden");
         var now = clock.instant();
         if ("PAID".equals(order.status())) {
-            participation.confirmPaidJoin(match, actor, now);
+            if (!isPlayingOrganizer(match, actor)) {
+                participation.confirmPaidJoin(match, actor, now);
+            }
             return view(order);
         }
         if (!"PENDING".equals(order.status()) || !now.isBefore(order.expiresAt())) {
@@ -140,7 +146,9 @@ public class MatchJoinPaymentService {
                     "La retención del cupo venció. Vuelve a intentarlo.");
         }
         requireCanBuy(match, actor, now);
-        participation.confirmPaidJoin(match, actor, now);
+        if (!isPlayingOrganizer(match, actor)) {
+            participation.confirmPaidJoin(match, actor, now);
+        }
         order.markPaid(provider.simulateConfirmedPayment(order.id()), now);
         return view(orders.saveAndFlush(order));
     }
@@ -174,8 +182,12 @@ public class MatchJoinPaymentService {
             throw new IllegalStateException("El partido ya inició");
         if (match.priceMinor() <= 0)
             throw new IllegalStateException("Este partido no requiere pago");
-        if (match.organizerCounts() && match.organizerUserId().equals(actor))
-            throw new IllegalStateException("El organizador ya ocupa un cupo");
+        if (match.organizerUserId().equals(actor) && !match.organizerCounts())
+            throw new IllegalStateException("El organizador no participa en este partido");
+    }
+
+    private boolean isPlayingOrganizer(SportsMatch match, UUID actor) {
+        return match.organizerCounts() && match.organizerUserId().equals(actor);
     }
 
     private long occupied(SportsMatch match) {

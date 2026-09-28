@@ -158,4 +158,120 @@ class MatchJoinPaymentServiceTest {
         verify(orders, never()).saveAndFlush(any());
         verifyNoInteractions(participation);
     }
+
+    @Test
+    void playingOrganizerCanCreateOrderWhenMatchIsFull() {
+        match = matchWithOrganizer(actor, true);
+        when(matches.findPublishedBySlugForUpdate("partido-prueba"))
+                .thenReturn(Optional.of(match));
+        var result =
+                service.start(
+                        actor, "partido-prueba", MatchPaymentMethod.YAPE, "organizer-payment");
+
+        assertThat(result.status()).isEqualTo("PENDING");
+        verify(orders).saveAndFlush(argThat(order -> order.payerUserId().equals(actor)));
+        verify(participants, never()).countByMatchAndStatus(any(), any());
+        verify(orders, never()).countByMatchIdAndStatusAndExpiresAtAfter(any(), any(), any());
+    }
+
+    @Test
+    void playingOrganizerPaymentDoesNotCreateAnotherParticipation() {
+        match = matchWithOrganizer(actor, true);
+        var order = pendingOrder(match, actor, "organizer-confirmation");
+        when(orders.matchIdForOrder(order.id())).thenReturn(Optional.of(match.id()));
+        when(matches.findByIdForUpdate(match.id())).thenReturn(Optional.of(match));
+        when(orders.findByIdForUpdate(order.id())).thenReturn(Optional.of(order));
+        when(provider.simulateConfirmedPayment(order.id())).thenReturn("SIM-ORGANIZER");
+
+        var result = service.simulate(actor, order.id());
+
+        assertThat(result.status()).isEqualTo("PAID");
+        verify(participation, never()).confirmPaidJoin(any(), any(), any());
+    }
+
+    @Test
+    void nonPlayingOrganizerCannotCreateOwnOrder() {
+        match = matchWithOrganizer(actor, false);
+        when(matches.findPublishedBySlugForUpdate("partido-prueba"))
+                .thenReturn(Optional.of(match));
+
+        assertThatThrownBy(
+                        () ->
+                                service.start(
+                                        actor,
+                                        "partido-prueba",
+                                        MatchPaymentMethod.PLIN,
+                                        "non-player-organizer"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("no participa");
+    }
+
+    @Test
+    void paidOrganizerOrderIsIdempotent() {
+        match = matchWithOrganizer(actor, true);
+        var order = pendingOrder(match, actor, "paid-organizer");
+        order.markPaid("SIM-PAID-ORGANIZER", now.minusSeconds(5));
+        when(orders.matchIdForOrder(order.id())).thenReturn(Optional.of(match.id()));
+        when(matches.findByIdForUpdate(match.id())).thenReturn(Optional.of(match));
+        when(orders.findByIdForUpdate(order.id())).thenReturn(Optional.of(order));
+
+        var result = service.simulate(actor, order.id());
+
+        assertThat(result.status()).isEqualTo("PAID");
+        verifyNoInteractions(participation);
+        verify(provider, never()).simulateConfirmedPayment(any());
+    }
+
+    @Test
+    void anotherActorCannotSimulateOrganizerOrder() {
+        match = matchWithOrganizer(actor, true);
+        var order = pendingOrder(match, actor, "private-organizer-order");
+        var anotherActor = UUID.randomUUID();
+        when(orders.matchIdForOrder(order.id())).thenReturn(Optional.of(match.id()));
+        when(matches.findByIdForUpdate(match.id())).thenReturn(Optional.of(match));
+        when(orders.findByIdForUpdate(order.id())).thenReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.simulate(anotherActor, order.id()))
+                .isInstanceOf(org.springframework.security.access.AccessDeniedException.class);
+        verifyNoInteractions(participation);
+    }
+
+    private MatchJoinOrderEntity pendingOrder(SportsMatch target, UUID payer, String key) {
+        return MatchJoinOrderEntity.pending(
+                target.organizationId(),
+                target.id(),
+                payer,
+                1500,
+                MatchPaymentMethod.YAPE,
+                key,
+                now.plusSeconds(300),
+                now.minusSeconds(5));
+    }
+
+    private SportsMatch matchWithOrganizer(UUID organizerId, boolean organizerCounts) {
+        return SportsMatch.restore(
+                UUID.randomUUID(),
+                "partido-prueba",
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                organizerId,
+                "Partido prueba",
+                "FOOTBALL",
+                "FOOTBALL_7",
+                SkillLevel.INTERMEDIATE,
+                2,
+                10,
+                organizerCounts,
+                1500,
+                MatchVisibility.PUBLIC,
+                "Sin devoluciones",
+                now.plusSeconds(7200),
+                now.plusSeconds(10800),
+                MatchStatus.PUBLISHED,
+                now.minusSeconds(60),
+                now.minusSeconds(120),
+                now.minusSeconds(60),
+                0);
+    }
 }
