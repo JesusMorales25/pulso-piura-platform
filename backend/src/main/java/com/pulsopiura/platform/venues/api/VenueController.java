@@ -37,6 +37,8 @@ public class VenueController {
                         request.latitude(),
                         request.longitude(),
                         request.publicPhone(),
+                        request.adminRating(),
+                        request.adminRatingCount(),
                         request.amenityCodes());
         return ResponseEntity.status(HttpStatus.CREATED).body(venue);
     }
@@ -62,6 +64,8 @@ public class VenueController {
                 request.latitude(),
                 request.longitude(),
                 request.publicPhone(),
+                request.adminRating(),
+                request.adminRatingCount(),
                 request.amenityCodes(),
                 request.version());
     }
@@ -119,6 +123,8 @@ public class VenueController {
             @DecimalMin("-90") @DecimalMax("90") BigDecimal latitude,
             @DecimalMin("-180") @DecimalMax("180") BigDecimal longitude,
             @Size(max = 30) String publicPhone,
+            @DecimalMin("0.0") @DecimalMax("5.0") BigDecimal adminRating,
+            @PositiveOrZero Integer adminRatingCount,
             Set<@NotBlank @Size(max = 40) String> amenityCodes) {}
 
     public record UpdateVenueRequest(
@@ -128,6 +134,8 @@ public class VenueController {
             @DecimalMin("-90") @DecimalMax("90") BigDecimal latitude,
             @DecimalMin("-180") @DecimalMax("180") BigDecimal longitude,
             @Size(max = 30) String publicPhone,
+            @DecimalMin("0.0") @DecimalMax("5.0") BigDecimal adminRating,
+            @PositiveOrZero Integer adminRatingCount,
             Set<@NotBlank @Size(max = 40) String> amenityCodes,
             @PositiveOrZero long version) {}
 

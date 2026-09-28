@@ -19,6 +19,8 @@ public final class PublicVenueViews {
             BigDecimal latitude,
             BigDecimal longitude,
             String publicPhone,
+            BigDecimal adminRating,
+            Integer adminRatingCount,
             Set<String> amenityCodes) {}
 
     public record Space(

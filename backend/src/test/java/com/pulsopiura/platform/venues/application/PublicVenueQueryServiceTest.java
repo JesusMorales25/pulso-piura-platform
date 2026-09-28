@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.pulsopiura.platform.organizations.application.OrganizationSettingsQuery;
 import com.pulsopiura.platform.venues.domain.VenueStatus;
 import com.pulsopiura.platform.venues.infrastructure.persistence.*;
+import java.math.BigDecimal;
 import java.time.*;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -292,7 +293,39 @@ class PublicVenueQueryServiceTest {
         var result = service.getVenue(venue.publicSlug());
 
         assertThat(result.publicSlug()).isEqualTo(venue.publicSlug());
+        assertThat(result.adminRating()).isNull();
+        assertThat(result.adminRatingCount()).isNull();
         verify(venues).findByPublicSlugAndStatus(venue.publicSlug(), VenueStatus.PUBLISHED);
+    }
+
+    @Test
+    void exposesConfiguredAdminRatingInPublicVenue() {
+        var organizationId = UUID.randomUUID();
+        var actorId = UUID.randomUUID();
+        var now = Instant.parse("2026-09-04T12:00:00Z");
+        var venue =
+                VenueEntity.create(
+                        organizationId,
+                        actorId,
+                        "Complejo Norte",
+                        "complejo-norte",
+                        "Piura",
+                        "PIURA",
+                        null,
+                        null,
+                        null,
+                        new BigDecimal("4.9"),
+                        142,
+                        now);
+        venue.publish(now);
+        when(venues.findByPublicSlugAndStatus(venue.publicSlug(), VenueStatus.PUBLISHED))
+                .thenReturn(Optional.of(venue));
+        when(amenities.venueAmenities(organizationId, venue.id())).thenReturn(java.util.Set.of());
+
+        var result = service.getVenue(venue.publicSlug());
+
+        assertThat(result.adminRating()).isEqualByComparingTo("4.9");
+        assertThat(result.adminRatingCount()).isEqualTo(142);
     }
 
     private VenueEntity publishedVenue(UUID organizationId, UUID actorId, Instant now) {

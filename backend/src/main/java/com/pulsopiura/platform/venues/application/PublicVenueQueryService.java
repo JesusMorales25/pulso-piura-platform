@@ -262,6 +262,8 @@ public class PublicVenueQueryService
                 venue.latitude(),
                 venue.longitude(),
                 venue.publicPhone(),
+                venue.adminRating(),
+                venue.adminRatingCount(),
                 amenities.venueAmenities(venue.organizationId(), venue.id()));
     }
 

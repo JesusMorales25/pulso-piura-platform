@@ -60,6 +60,8 @@ public class VenueService {
             BigDecimal latitude,
             BigDecimal longitude,
             String publicPhone,
+            BigDecimal adminRating,
+            Integer adminRatingCount,
             Collection<String> amenityCodes) {
         authorization.require(actorId, organizationId, OrganizationPermission.MANAGE_ORGANIZATION);
         var selectedAmenities = catalogs.requireVenueAmenities(amenityCodes);
@@ -74,6 +76,8 @@ public class VenueService {
                         latitude,
                         longitude,
                         publicPhone,
+                        adminRating,
+                        adminRatingCount,
                         clock.instant());
         var saved = venues.save(entity);
         amenities.replaceVenueAmenities(organizationId, saved.id(), selectedAmenities);
@@ -100,6 +104,8 @@ public class VenueService {
             BigDecimal latitude,
             BigDecimal longitude,
             String publicPhone,
+            BigDecimal adminRating,
+            Integer adminRatingCount,
             Collection<String> amenityCodes,
             long version) {
         authorization.require(actorId, organizationId, OrganizationPermission.MANAGE_ORGANIZATION);
@@ -112,6 +118,8 @@ public class VenueService {
                 latitude,
                 longitude,
                 publicPhone,
+                adminRating,
+                adminRatingCount,
                 version,
                 clock.instant());
         var saved = venues.saveAndFlush(venue);
@@ -275,6 +283,8 @@ public class VenueService {
                 venue.latitude(),
                 venue.longitude(),
                 venue.publicPhone(),
+                venue.adminRating(),
+                venue.adminRatingCount(),
                 amenities.venueAmenities(venue.organizationId(), venue.id()),
                 venue.status().name(),
                 venue.version());
