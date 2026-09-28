@@ -37,3 +37,4 @@ docs/adr/*
 !docs/product/
 docs/product/*
 !docs/product/35_plan_evolucion_revision_cliente.md
+.worktrees/
