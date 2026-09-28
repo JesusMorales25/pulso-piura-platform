@@ -31,6 +31,12 @@ docs/
 docs/*
 !docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md
 !docs/VSCODE_PORT_SHARE.md
+!docs/code-index/
+docs/code-index/*
+!docs/code-index/README.md
+!docs/code-index/FILES.tsv
+!docs/code-index/SYMBOLS.tsv
+!docs/code-index/DOCUMENTATION.tsv
 !docs/adr/
 docs/adr/*
 !docs/adr/ADR-006-proveedor-oidc-configurable.md

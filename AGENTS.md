@@ -2,11 +2,22 @@
 
 ## Índice operativo
 
-Antes de hacer búsquedas amplias, leer `docs/CODEBASE_INDEX.md` y usar su tabla de enrutamiento
-para limitar la exploración al módulo afectado. Regenerarlo con
+Antes de explorar el repositorio, leer únicamente `docs/CODEBASE_INDEX.md`. Después consultar con
+`rg` los catálogos de `docs/code-index/` y abrir solo los archivos devueltos para el área afectada.
+No hacer listados recursivos ni leer el catálogo completo salvo que la tarea abarque todo el sistema.
+
+Consultas recomendadas:
+
+```powershell
+rg -i "termino|simbolo" docs/code-index/SYMBOLS.tsv
+rg -i "termino|ruta" docs/code-index/FILES.tsv
+rg -i "termino" docs/code-index/DOCUMENTATION.tsv
+```
+
+Regenerar todos los índices con
 `powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1` después de cambiar
-rutas, módulos, controladores, migraciones o scripts. El índice acelera la navegación, pero no
-reemplaza los documentos obligatorios ni los ADR aplicables.
+rutas, módulos, símbolos públicos, controladores, migraciones, documentos o scripts. El índice
+acelera la navegación, pero no reemplaza los documentos obligatorios ni los ADR aplicables.
 
 Antes de modificar código, leer `docs/product/AGENTS.template.md`, `docs/product/01_vision_y_alcance.md`, `docs/product/20_modulos_springboot.md`, `docs/product/22_plan_implementacion.md` y los ADR aplicables.
 

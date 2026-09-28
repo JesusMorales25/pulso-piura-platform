@@ -3,9 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Generado: 2026-09-28 11:22:25 UTC
-- Huella del inventario: d9e6488c1645400c
-- Archivos indexados: 593
+- Huella del inventario: 7409e0024650231e
+- Archivos indexados: 572
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -15,6 +14,14 @@
 3. Usar rg solo dentro del alcance relacionado con la tarea.
 4. Leer los documentos obligatorios y ADR aplicables; este indice no los reemplaza.
 5. Regenerarlo tras cambiar rutas, modulos, controladores, migraciones o scripts.
+
+## Busqueda de bajo consumo
+
+- `docs/code-index/FILES.tsv`: inventario completo por area, extension, tamano y ruta.
+- `docs/code-index/SYMBOLS.tsv`: clases Java y exports TypeScript/TSX con su archivo.
+- `docs/code-index/DOCUMENTATION.tsv`: documentos y su titulo principal.
+- Consultar con `rg -i "termino" docs/code-index` y abrir solo los resultados necesarios.
+- Evitar `rg --files` o lecturas recursivas al iniciar una tarea; usar primero estos catalogos.
 
 ## Arquitectura estable
 

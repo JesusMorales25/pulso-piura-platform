@@ -1,0 +1,74 @@
+area	title	path
+root-or-support	Contexto obligatorio para desarrollo asistido	AGENTS.md
+infrastructure	Publicar Pulso Piura en Oracle con Coolify	deploy/coolify/README.md
+infrastructure	Demostración con Auth0, Render y Vercel	deploy/render-vercel/README.md
+root-or-support	QA visual — reservas de cancha	design-qa.md
+root-or-support	Pulso Piura — contexto de diseño	DESIGN.md
+architecture-decision	ADR-001: monolito modular para el backend	docs/adr/ADR-001-monolito-modular.md
+architecture-decision	ADR-002: Keycloak para identidad y Spring Security para autorización	docs/adr/ADR-002-identidad-y-autorizacion.md
+architecture-decision	ADR-003: web responsive mobile-first	docs/adr/ADR-003-web-mobile-first.md
+architecture-decision	ADR-004: diferir la validación externa sin inventar evidencia	docs/adr/ADR-004-validacion-diferida.md
+architecture-decision	ADR-005: integración de pagos desacoplada	docs/adr/ADR-005-pagos-desacoplados.md
+architecture-decision	ADR-006: Proveedor OIDC configurable	docs/adr/ADR-006-proveedor-oidc-configurable.md
+documentation	Análisis de requerimientos importados	docs/ANALISIS_REQUERIMIENTOS_IMPORTADOS.md
+documentation	Revisión de arquitectura, seguridad y estrategia de entrega	docs/ARQUITECTURA_SEGURIDAD_REVIEW.md
+documentation	Configuraciones local y de producción	docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md
+documentation	Principios profesionales de ingeniería	docs/ENGINEERING_PRINCIPLES.md
+documentation	Roadmap de experiencia web — Pulso Piura	docs/FRONTEND_ROADMAP.md
+documentation	Configuración local de identidad	docs/IDENTITY_LOCAL_SETUP.md
+documentation	Iteración 3 — Sedes, canchas y disponibilidad	docs/ITERATION_3_VENUES_PLAN.md
+documentation	Iteración 4 — Reservas simples y prevención de conflictos	docs/ITERATION_4_RESERVATIONS_PLAN.md
+documentation	Iteración 5 — Partidos abiertos	docs/ITERATION_5_MATCHES_PLAN.md
+documentation	Siguiente incremento recomendado	docs/NEXT_INCREMENT.md
+documentation	Publicación de Pulso Piura en Oracle Cloud Free Tier	docs/PRODUCCION_ORACLE_FREE_TIER.md
+product-doc	0. Contexto maestro y reglas para desarrollo asistido por IA	docs/product/00_contexto_maestro_desarrollo_ia.md
+product-doc	1. Visión, problema y alcance	docs/product/01_vision_y_alcance.md
+product-doc	2. Actores y procesos	docs/product/02_actores_y_procesos.md
+product-doc	3. Requisitos del producto	docs/product/03_requisitos_producto.md
+product-doc	4. Arquitectura de solución	docs/product/04_arquitectura.md
+product-doc	5. Modelo de datos conceptual	docs/product/05_modelo_datos.md
+product-doc	6. Seguridad y privacidad	docs/product/06_seguridad_y_privacidad.md
+product-doc	7. MVP y roadmap	docs/product/07_mvp_y_roadmap.md
+product-doc	8. Validación de requisitos adicionales	docs/product/08_validacion_requisitos.md
+product-doc	9. Registro de decisiones	docs/product/09_registro_decisiones.md
+product-doc	10. Autenticación y autorización	docs/product/10_autenticacion_autorizacion.md
+product-doc	11. Matriz de roles y permisos	docs/product/11_matriz_roles_permisos.md
+product-doc	12. Modelo de amenazas	docs/product/12_modelo_amenazas.md
+product-doc	13. Contrato inicial de API	docs/product/13_contrato_api.md
+product-doc	14. Estrategia de calidad y pruebas	docs/product/14_calidad_pruebas.md
+product-doc	15. Despliegue, observabilidad y continuidad	docs/product/15_operacion_despliegue.md
+product-doc	16. Inicio de sesión y registro con Google	docs/product/16_inicio_sesion_google.md
+product-doc	17. Plantilla para solicitar módulos a una IA	docs/product/17_plantilla_tarea_ia.md
+product-doc	18. Modelo físico inicial de datos	docs/product/18_modelo_datos_fisico.md
+product-doc	19. Épicas e historias del MVP	docs/product/19_epicas_historias_mvp.md
+product-doc	20. Diseño modular de Spring Boot	docs/product/20_modulos_springboot.md
+product-doc	21. Diagramas de secuencia	docs/product/21_diagramas_secuencia.md
+product-doc	22. Plan de implementación	docs/product/22_plan_implementacion.md
+product-doc	23. Arquitectura de información y navegación	docs/product/23_arquitectura_informacion.md
+product-doc	24. Flujos UX por actor	docs/product/24_flujos_ux.md
+product-doc	25. Reglas de reservas, cancelaciones y devoluciones	docs/product/25_reglas_reservas.md
+product-doc	26. Reglas de partidos, cupos y reputación	docs/product/26_reglas_partidos.md
+product-doc	27. Panel de complejos deportivos	docs/product/27_panel_complejos.md
+product-doc	28. Panel de torneos	docs/product/28_panel_torneos.md
+product-doc	29. Catálogo de eventos y notificaciones	docs/product/29_eventos_notificaciones.md
+product-doc	30. Especificación de auditoría	docs/product/30_especificacion_auditoria.md
+product-doc	31. Backlog listo para Iteración 0	docs/product/31_backlog_iteracion_0.md
+product-doc	32. Pagos de reservas con Yape y Plin	docs/product/32_pagos_yape_plin.md
+product-doc	33. Evaluación y selección del proveedor de pagos	docs/product/33_seleccion_proveedor_pagos.md
+product-doc	34. Identidad visual y sistema de diseño	docs/product/34_identidad_visual_sistema_diseno.md
+product-doc	Plan de evolución a partir de la revisión del cliente	docs/product/35_plan_evolucion_revision_cliente.md
+product-doc	35. Wireframes y alcance del prototipo	docs/product/35_wireframes_prototipo.md
+product-doc	36. Checklist maestro del proyecto	docs/product/36_checklist_maestro.md
+product-doc	37. Plan de pruebas de usabilidad del prototipo	docs/product/37_pruebas_usabilidad_prototipo.md
+product-doc	AGENTS.md — Reglas obligatorias del proyecto	docs/product/AGENTS.template.md
+product-doc	Plataforma deportiva Piura — Documentación del producto	docs/product/README.md
+documentation	Reservas y pagos de prueba — 7 de septiembre de 2026	docs/RESERVATIONS_PAYMENTS.md
+documentation	Revisión de seguridad OWASP — 12 de septiembre de 2026	docs/REVISION_SEGURIDAD_OWASP_2026-09-12.md
+documentation	Canchas, disponibilidad y reserva móvil Implementation Plan	docs/superpowers/plans/2026-09-27-canchas-reserva-mobile-plan.md
+documentation	Organizador, cupos y pagos de pichanga Implementation Plan	docs/superpowers/plans/2026-09-27-organizador-cupos-pagos-plan.md
+documentation	Mejoras de partidos, reservas y experiencia movil	docs/superpowers/specs/2026-09-27-mejoras-partidos-reservas-mobile-design.md
+documentation	Compartir Pulso Piura desde VS Code	docs/VSCODE_PORT_SHARE.md
+root-or-support	This is NOT the Next.js you know	frontend/AGENTS.md
+root-or-support	CLAUDE	frontend/CLAUDE.md
+root-or-support	Pulso Piura	README.md
+root-or-support	Pulso Piura — contrato de experiencia	UX-CONTRACT.md
