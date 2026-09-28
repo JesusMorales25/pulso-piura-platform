@@ -58,8 +58,25 @@ class CreateReservationServiceTest {
         assertThat(result.replayed()).isFalse();
         assertThat(result.reservation().status()).isEqualTo("HOLD");
         assertThat(result.reservation().totalMinor()).isEqualTo(9000);
-        assertThat(result.reservation().depositMinor()).isEqualTo(2250);
+        assertThat(result.reservation().depositMinor()).isEqualTo(1800);
         assertThat(result.reservation().expiresAt()).isEqualTo(NOW.plusSeconds(600));
+    }
+
+    @Test
+    void roundsTwentyPercentDepositUpToTheNextCent() {
+        when(reservations.findByCustomerAndIdempotencyKey(customerId, "request-odd"))
+                .thenReturn(Optional.empty());
+        when(venueSlots.requireBookableSlot(spaceId, startsAt, endsAt))
+                .thenReturn(
+                        new VenueSlotQuoteQuery.SlotQuote(
+                                organizationId, spaceId, startsAt, endsAt, 9001, "PEN"));
+        when(transaction.create(any(), eq(customerId), isNull(), eq(NOW)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result =
+                service.create(customerId, spaceId, startsAt, endsAt, "request-odd", null);
+
+        assertThat(result.reservation().depositMinor()).isEqualTo(1801);
     }
 
     @Test

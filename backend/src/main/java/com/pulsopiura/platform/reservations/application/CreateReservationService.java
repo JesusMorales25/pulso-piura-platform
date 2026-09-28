@@ -69,8 +69,7 @@ public class CreateReservationService {
                         customerUserId,
                         range,
                         ReservationMoney.pen(quote.priceMinor()),
-                        ReservationMoney.pen(
-                                quote.priceMinor() / 4 + (quote.priceMinor() % 4 == 0 ? 0 : 1)),
+                        ReservationMoney.pen(depositMinor(quote.priceMinor())),
                         now.plus(properties.holdDuration()).isBefore(startsAt)
                                 ? now.plus(properties.holdDuration())
                                 : startsAt,
@@ -97,6 +96,10 @@ public class CreateReservationService {
                     "Idempotency-Key ya fue utilizada con otra solicitud");
         }
         return new CreationResult(ReservationView.from(reservation), true);
+    }
+
+    private long depositMinor(long totalMinor) {
+        return (totalMinor + 4) / 5;
     }
 
     public record CreationResult(ReservationView reservation, boolean replayed) {}

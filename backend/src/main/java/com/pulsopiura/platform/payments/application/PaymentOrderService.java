@@ -68,11 +68,16 @@ public class PaymentOrderService {
             if (!"PENDING_PAYMENT".equals(locked.status()))
                 throw new ReservationConflictException(
                         "El horario venció. No se ha procesado el pago.");
-            amount =
-                    plan == PaymentPlan.DEPOSIT
-                            ? reservation.totalMinor() / 4
-                                    + (reservation.totalMinor() % 4 == 0 ? 0 : 1)
-                            : reservation.totalMinor();
+            if (plan == PaymentPlan.DEPOSIT) {
+                if (reservation.depositMinor() <= 0
+                        || reservation.depositMinor() > reservation.totalMinor()) {
+                    throw new ReservationConflictException(
+                            "El adelanto configurado para la reserva es inválido");
+                }
+                amount = reservation.depositMinor();
+            } else {
+                amount = reservation.totalMinor();
+            }
         }
         var now = Instant.now();
         var order =

@@ -23,6 +23,10 @@ class PaymentOrderServiceTest {
     private final UUID actor = UUID.randomUUID(), reservationId = UUID.randomUUID();
 
     private ReservationView view(String status, long total) {
+        return view(status, total, (total + 4) / 5);
+    }
+
+    private ReservationView view(String status, long total, long deposit) {
         return new ReservationView(
                 reservationId,
                 UUID.randomUUID(),
@@ -30,7 +34,7 @@ class PaymentOrderServiceTest {
                 Instant.now().plusSeconds(90000),
                 status,
                 total,
-                (total + 3) / 4,
+                deposit,
                 "PEN",
                 Instant.now().plusSeconds(600),
                 0,
@@ -42,8 +46,13 @@ class PaymentOrderServiceTest {
     }
 
     private void enable(String status, long total) {
+        enable(status, total, (total + 4) / 5);
+    }
+
+    private void enable(String status, long total, long deposit) {
         when(provider.simulationEnabled()).thenReturn(true);
-        when(reservations.lockCustomer(actor, reservationId)).thenReturn(view(status, total));
+        when(reservations.lockCustomer(actor, reservationId))
+                .thenReturn(view(status, total, deposit));
         when(orders.saveAndFlush(any())).thenAnswer(call -> call.getArgument(0));
     }
 
@@ -81,10 +90,10 @@ class PaymentOrderServiceTest {
     }
 
     @Test
-    void depositIsRoundedUpToCentAndCalculatedOnServer() {
-        enable("HOLD", 9001);
+    void depositUsesPersistedAmountForHistoricalReservations() {
+        enable("HOLD", 9001, 2250);
         when(transitions.startPayment(actor, reservationId, "deposit"))
-                .thenReturn(view("PENDING_PAYMENT", 9001));
+                .thenReturn(view("PENDING_PAYMENT", 9001, 2250));
         var result =
                 service.create(
                         actor,
@@ -93,7 +102,7 @@ class PaymentOrderServiceTest {
                         PaymentPlan.DEPOSIT,
                         "deposit-key-123",
                         "deposit");
-        assertThat(result.amountMinor()).isEqualTo(2251);
+        assertThat(result.amountMinor()).isEqualTo(2250);
         assertThat(result.status()).isEqualTo("PENDING");
         verify(provider, never()).simulateConfirmedPayment(any());
     }

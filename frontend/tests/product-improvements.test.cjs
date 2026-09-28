@@ -90,3 +90,15 @@ test("upcoming matches are copied, past entries excluded and future entries sort
   assert.deepEqual(input.map((match) => match.id), ["late", "past", "next"]);
   assert.equal(result.filter((_, index) => index === 0).length, 1);
 });
+
+test("reservation payment options use the persisted deposit amount", () => {
+  const { reservationPaymentOptions } = load("features/reservations/payment-options.ts");
+
+  const options = reservationPaymentOptions({ totalMinor: 9000, depositMinor: 2250 });
+
+  assert.equal(options.length, 2);
+  assert.equal(options[0].plan, "DEPOSIT");
+  assert.equal(options[0].amountMinor, 2250);
+  assert.equal(options[1].plan, "FULL");
+  assert.equal(options[1].amountMinor, 9000);
+});

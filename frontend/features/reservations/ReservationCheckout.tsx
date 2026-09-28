@@ -11,6 +11,10 @@ import {
   reservationTime,
 } from "./presentation";
 import { ReservationQrPass } from "./ReservationQrPass";
+import {
+  reservationPaymentOptions,
+  type ReservationPaymentPlan,
+} from "./payment-options";
 type PaymentOrder = {
   id: string;
   status: string;
@@ -25,6 +29,7 @@ type Props = {
   venueName: string;
   spaceName: string;
   onChange: (reservation: Reservation) => void;
+  initialPlan?: ReservationPaymentPlan;
 };
 export function ReservationCheckout({
   accessToken,
@@ -32,6 +37,7 @@ export function ReservationCheckout({
   venueName,
   spaceName,
   onChange,
+  initialPlan = "DEPOSIT",
 }: Props) {
   const [now, setNow] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
@@ -39,7 +45,7 @@ export function ReservationCheckout({
   const revision = useRef(0);
   const [error, setError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"YAPE" | "PLIN">("YAPE");
-  const [plan, setPlan] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
+  const [plan, setPlan] = useState<ReservationPaymentPlan>(initialPlan);
   const [accepted, setAccepted] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [simulation, setSimulation] = useState<boolean | null>(null);
@@ -122,13 +128,13 @@ export function ReservationCheckout({
       order.status === "PENDING" &&
       (balancePayment ? order.plan === "BALANCE" : order.plan !== "BALANCE"),
   );
+  const paymentOptions = reservationPaymentOptions(reservation);
   const amount =
     pending?.amountMinor ??
     (balancePayment
       ? reservation.totalMinor - paid
-      : plan === "DEPOSIT"
-        ? Math.ceil(reservation.totalMinor / 4)
-        : reservation.totalMinor);
+      : paymentOptions.find((option) => option.plan === plan)?.amountMinor ??
+        reservation.totalMinor);
   const selectedMethod = pending?.method ?? paymentMethod;
   const selectedPlan = pending?.plan ?? plan;
   const checkoutReady = simulation === true && ordersLoaded;
@@ -310,23 +316,23 @@ export function ReservationCheckout({
               role="group"
               aria-label="Importe a pagar"
             >
-              {(["DEPOSIT", "FULL"] as const).map((value) => (
+              {paymentOptions.map((option) => (
                 <button
                   type="button"
-                  key={value}
+                  key={option.plan}
                   className={
-                    selectedPlan === value
+                    selectedPlan === option.plan
                       ? "paymentMethod active"
                       : "paymentMethod"
                   }
-                  aria-pressed={selectedPlan === value}
+                  aria-pressed={selectedPlan === option.plan}
                   disabled={busy || !!pending}
                   onClick={() => {
-                    setPlan(value);
+                    setPlan(option.plan);
                     requestKey.current = crypto.randomUUID();
                   }}
                 >
-                  {value === "DEPOSIT" ? "Adelanto 25%" : "Pago completo"}
+                  {option.label}
                 </button>
               ))}
             </div>
