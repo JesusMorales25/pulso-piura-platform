@@ -1,5 +1,8 @@
 package com.pulsopiura.platform.matches.application;
 
+import com.pulsopiura.platform.matches.domain.SportsMatch;
+import com.pulsopiura.platform.matches.infrastructure.persistence.MatchJoinOrderEntity;
+import com.pulsopiura.platform.matches.infrastructure.persistence.MatchJoinOrderRepository;
 import java.time.Instant;
 import java.util.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,10 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class MatchOrganizerQueryService {
     private final MatchStore matches;
     private final JdbcTemplate jdbc;
+    private final MatchJoinOrderRepository orders;
 
-    public MatchOrganizerQueryService(MatchStore matches, JdbcTemplate jdbc) {
+    public MatchOrganizerQueryService(
+            MatchStore matches, JdbcTemplate jdbc, MatchJoinOrderRepository orders) {
         this.matches = matches;
         this.jdbc = jdbc;
+        this.orders = orders;
     }
 
     @Transactional(readOnly = true)
@@ -98,10 +104,75 @@ public class MatchOrganizerQueryService {
                                         timestamp(rs, "created_at"),
                                         null),
                         matchId);
-        var result = new ArrayList<ParticipantView>(registered.size() + manual.size());
-        result.addAll(registered);
+        var registeredWithoutOrganizer =
+                match.organizerCounts()
+                        ? registered.stream()
+                                .filter(row -> !match.organizerUserId().equals(row.userId()))
+                                .toList()
+                        : registered;
+        var result =
+                new ArrayList<ParticipantView>(
+                        registeredWithoutOrganizer.size()
+                                + manual.size()
+                                + (match.organizerCounts() ? 1 : 0));
+        if (match.organizerCounts()) result.add(organizerParticipant(match));
+        result.addAll(registeredWithoutOrganizer);
         result.addAll(manual);
         return List.copyOf(result);
+    }
+
+    private ParticipantView organizerParticipant(SportsMatch match) {
+        var identity =
+                jdbc.query(
+                                """
+                        select coalesce(case when profile.visibility <> 'PRIVATE'
+                                             then nullif(profile.preferred_display_name, '') end,
+                                        u.display_name) display_name,
+                               u.email,
+                               case when profile.visibility <> 'PRIVATE'
+                                    then coalesce(profile.avatar_url, u.avatar_url) end avatar_url
+                        from app.users u
+                        left join app.player_profiles profile on profile.user_id = u.id
+                        where u.id = ?
+                        """,
+                                (rs, row) ->
+                                        new OrganizerIdentity(
+                                                rs.getString("display_name"),
+                                                rs.getString("email"),
+                                                rs.getString("avatar_url")),
+                                match.organizerUserId())
+                        .stream()
+                        .findFirst()
+                        .orElse(new OrganizerIdentity("Organizador", null, null));
+        var order = match.priceMinor() == 0 ? Optional.<MatchJoinOrderEntity>empty() : latestOrder(match);
+        var paymentStatus =
+                match.priceMinor() == 0
+                        ? "NOT_REQUIRED"
+                        : order.map(MatchJoinOrderEntity::status).orElse("UNPAID");
+        var paid = order.filter(candidate -> "PAID".equals(candidate.status()));
+        return new ParticipantView(
+                match.organizerUserId(),
+                match.organizerUserId(),
+                "ORGANIZER",
+                identity.displayName(),
+                identity.email(),
+                identity.avatarUrl(),
+                "JOINED",
+                paymentStatus,
+                paid.map(MatchJoinOrderEntity::amountMinor).orElse(0L),
+                order.map(candidate -> candidate.method().name()).orElse(null),
+                paid.map(MatchJoinOrderEntity::paidAt).orElse(null),
+                match.createdAt(),
+                null);
+    }
+
+    private Optional<MatchJoinOrderEntity> latestOrder(SportsMatch match) {
+        var paid =
+                orders.findFirstByMatchIdAndPayerUserIdAndStatusOrderByCreatedAtDesc(
+                        match.id(), match.organizerUserId(), "PAID");
+        if (paid.isPresent()) return paid;
+        return orders.findFirstByMatchIdAndPayerUserIdAndStatusOrderByCreatedAtDesc(
+                match.id(), match.organizerUserId(), "PENDING");
     }
 
     public record ParticipantView(
@@ -118,6 +189,8 @@ public class MatchOrganizerQueryService {
             Instant paidAt,
             Instant joinedAt,
             Instant checkedInAt) {}
+
+    public record OrganizerIdentity(String displayName, String email, String avatarUrl) {}
 
     private static Instant timestamp(java.sql.ResultSet result, String column)
             throws java.sql.SQLException {

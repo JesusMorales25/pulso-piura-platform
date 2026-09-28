@@ -59,9 +59,10 @@ export type MatchJoinOrder = {
 };
 
 export type MatchParticipantAdmin = {
+  /** Stable row key for rendering; authorization continues to use the authenticated actor. */
   participantId: string;
   userId: string | null;
-  source: "ACCOUNT" | "MANUAL";
+  source: "ACCOUNT" | "MANUAL" | "ORGANIZER";
   displayName: string;
   email: string | null;
   avatarUrl: string | null;
