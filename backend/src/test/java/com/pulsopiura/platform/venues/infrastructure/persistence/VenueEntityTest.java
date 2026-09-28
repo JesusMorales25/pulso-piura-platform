@@ -83,6 +83,65 @@ class VenueEntityTest {
                 .hasMessageContaining("otro usuario");
     }
 
+    @Test
+    void acceptsValidAdminRating() {
+        var venue = venueWithRating(new BigDecimal("4.9"), 142);
+
+        assertThat(venue.adminRating()).isEqualByComparingTo("4.9");
+        assertThat(venue.adminRatingCount()).isEqualTo(142);
+    }
+
+    @Test
+    void rejectsRatingBelowZero() {
+        assertThatThrownBy(() -> venueWithRating(new BigDecimal("-0.1"), 1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("calificación");
+    }
+
+    @Test
+    void rejectsRatingAboveFive() {
+        assertThatThrownBy(() -> venueWithRating(new BigDecimal("5.1"), 1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("calificación");
+    }
+
+    @Test
+    void rejectsNegativeRatingCount() {
+        assertThatThrownBy(() -> venueWithRating(new BigDecimal("4.5"), -1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("valoraciones");
+    }
+
+    @Test
+    void rejectsPartiallyConfiguredRating() {
+        assertThatThrownBy(() -> venueWithRating(new BigDecimal("4.5"), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("juntas");
+        assertThatThrownBy(() -> venueWithRating(null, 10))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("juntas");
+    }
+
+    @Test
+    void updatesRatingWithOptimisticVersion() {
+        var venue = venue();
+
+        venue.update(
+                venue.name(),
+                venue.address(),
+                venue.districtCode(),
+                venue.latitude(),
+                venue.longitude(),
+                venue.publicPhone(),
+                new BigDecimal("4.7"),
+                58,
+                venue.version(),
+                NOW.plusSeconds(60));
+
+        assertThat(venue.adminRating()).isEqualByComparingTo("4.7");
+        assertThat(venue.adminRatingCount()).isEqualTo(58);
+    }
+
     private VenueEntity venue() {
         return VenueEntity.create(
                 UUID.randomUUID(),
@@ -94,6 +153,22 @@ class VenueEntityTest {
                 null,
                 null,
                 null,
+                NOW);
+    }
+
+    private VenueEntity venueWithRating(BigDecimal rating, Integer count) {
+        return VenueEntity.create(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "Sede Centro",
+                "sede-centro",
+                "Av. Grau 100",
+                "PIURA",
+                null,
+                null,
+                null,
+                rating,
+                count,
                 NOW);
     }
 }

@@ -38,6 +38,12 @@ public class VenueEntity {
     @Column(name = "public_phone", length = 30)
     private String publicPhone;
 
+    @Column(name = "admin_rating", precision = 2, scale = 1)
+    private BigDecimal adminRating;
+
+    @Column(name = "admin_rating_count")
+    private Integer adminRatingCount;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private VenueStatus status;
@@ -66,7 +72,36 @@ public class VenueEntity {
             BigDecimal longitude,
             String publicPhone,
             Instant now) {
+        return create(
+                organizationId,
+                actorId,
+                name,
+                slug,
+                address,
+                districtCode,
+                latitude,
+                longitude,
+                publicPhone,
+                null,
+                null,
+                now);
+    }
+
+    public static VenueEntity create(
+            UUID organizationId,
+            UUID actorId,
+            String name,
+            String slug,
+            String address,
+            String districtCode,
+            BigDecimal latitude,
+            BigDecimal longitude,
+            String publicPhone,
+            BigDecimal adminRating,
+            Integer adminRatingCount,
+            Instant now) {
         validateCoordinates(latitude, longitude);
+        validateAdminRating(adminRating, adminRatingCount);
         var venue = new VenueEntity();
         venue.id = UUID.randomUUID();
         venue.organizationId = organizationId;
@@ -79,6 +114,8 @@ public class VenueEntity {
         venue.latitude = latitude;
         venue.longitude = longitude;
         venue.publicPhone = optional(publicPhone, 30);
+        venue.adminRating = adminRating;
+        venue.adminRatingCount = adminRatingCount;
         venue.status = VenueStatus.DRAFT;
         venue.createdAt = now;
         venue.updatedAt = now;
@@ -102,15 +139,42 @@ public class VenueEntity {
             String publicPhone,
             long expectedVersion,
             Instant now) {
+        update(
+                name,
+                address,
+                districtCode,
+                latitude,
+                longitude,
+                publicPhone,
+                adminRating,
+                adminRatingCount,
+                expectedVersion,
+                now);
+    }
+
+    public void update(
+            String name,
+            String address,
+            String districtCode,
+            BigDecimal latitude,
+            BigDecimal longitude,
+            String publicPhone,
+            BigDecimal adminRating,
+            Integer adminRatingCount,
+            long expectedVersion,
+            Instant now) {
         requireVersion(expectedVersion);
         requireConfigurable();
         validateCoordinates(latitude, longitude);
+        validateAdminRating(adminRating, adminRatingCount);
         this.name = required(name, "El nombre", 160);
         this.address = required(address, "La dirección", 240);
         this.districtCode = required(districtCode, "El distrito", 60);
         this.latitude = latitude;
         this.longitude = longitude;
         this.publicPhone = optional(publicPhone, 30);
+        this.adminRating = adminRating;
+        this.adminRatingCount = adminRatingCount;
         this.updatedAt = now;
     }
 
@@ -153,6 +217,21 @@ public class VenueEntity {
                 && (longitude.compareTo(BigDecimal.valueOf(-180)) < 0
                         || longitude.compareTo(BigDecimal.valueOf(180)) > 0)) {
             throw new IllegalArgumentException("Longitud fuera de rango");
+        }
+    }
+
+    private static void validateAdminRating(BigDecimal rating, Integer count) {
+        if ((rating == null) != (count == null)) {
+            throw new IllegalArgumentException(
+                    "La calificación y la cantidad de valoraciones deben enviarse juntas");
+        }
+        if (rating != null
+                && (rating.compareTo(BigDecimal.ZERO) < 0
+                        || rating.compareTo(BigDecimal.valueOf(5)) > 0)) {
+            throw new IllegalArgumentException("La calificación debe estar entre 0 y 5");
+        }
+        if (count != null && count < 0) {
+            throw new IllegalArgumentException("La cantidad de valoraciones no puede ser negativa");
         }
     }
 
@@ -211,6 +290,14 @@ public class VenueEntity {
 
     public String publicPhone() {
         return publicPhone;
+    }
+
+    public BigDecimal adminRating() {
+        return adminRating;
+    }
+
+    public Integer adminRatingCount() {
+        return adminRatingCount;
     }
 
     public VenueStatus status() {
