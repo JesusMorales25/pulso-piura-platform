@@ -4,21 +4,19 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowRight,
   CalendarBlank,
-  Clock,
   FadersHorizontal,
   MapPin,
   MagnifyingGlass,
   SoccerBall,
   UsersThree,
-  X,
 } from "@phosphor-icons/react";
 import { CardSkeletons } from "@/features/feedback/CardSkeletons";
-import { apiRequest } from "@/lib/api";
+import { ApiError, apiRequest } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { ReservationCheckout } from "@/features/reservations/ReservationCheckout";
 import { VenueBookingCard } from "@/features/venues/VenueBookingCard";
+import { VenueScheduleDialog } from "@/features/venues/VenueScheduleDialog";
 import type { Reservation } from "@/features/reservations/types";
 import { filterSpacesBySport } from "@/lib/venue-selection";
 import {
@@ -26,6 +24,7 @@ import {
   matchesVenueFilters,
   type VenueFilters,
 } from "@/lib/venue-discovery";
+import { reconcileSelectedSlots } from "@/lib/venue-availability";
 
 type CatalogItem = { code: string; name: string };
 type VenueCatalog = {
@@ -639,6 +638,23 @@ export function PublicVenueCatalog({
       router.push(`/actividad?${activityQuery}`);
     } catch (reason) {
       setPreparingCheckout(false);
+      if (reason instanceof ApiError && reason.status === 409) {
+        try {
+          const freshAvailability = await apiRequest<Availability>(
+            `/spaces/${space.id}/bookable-slots?date=${availabilityForBooking.date}`,
+          );
+          setAvailability(freshAvailability);
+          setSelectedSlots((current) =>
+            reconcileSelectedSlots(current, freshAvailability),
+          );
+        } catch {
+          setAvailability(null);
+          setSelectedSlots([]);
+        }
+        setShowOtherSchedules(true);
+        setError("El horario acaba de reservarse. Elige otro disponible.");
+        return;
+      }
       setError(
         reason instanceof Error
           ? reason.message
@@ -705,33 +721,6 @@ export function PublicVenueCatalog({
     return () => window.clearTimeout(timer);
   }, [reservationId]);
 
-  const money = (slot: Slot) =>
-    new Intl.NumberFormat("es-PE", {
-      style: "currency",
-      currency: slot.currency,
-    }).format(slot.priceMinor / 100);
-  const formatMinor = (amountMinor: number) =>
-    new Intl.NumberFormat("es-PE", {
-      style: "currency",
-      currency: "PEN",
-    }).format(amountMinor / 100);
-  const time = (value: string) =>
-    new Intl.DateTimeFormat("es-PE", {
-      hour: "numeric",
-      minute: "2-digit",
-      timeZone: "America/Lima",
-    }).format(new Date(value));
-  const selectedTotal = selectedSlots.reduce(
-    (total, slot) => total + slot.priceMinor,
-    0,
-  );
-  const selectedDuration = selectedSlots.reduce(
-    (total, slot) =>
-      total +
-      (new Date(slot.endsAt).getTime() - new Date(slot.startsAt).getTime()) /
-        60000,
-    0,
-  );
   const reservationDates = useMemo(() => {
     const start = new Date(`${localDate()}T12:00:00`);
     return Array.from({ length: 6 }, (_, index) => {
@@ -1064,183 +1053,23 @@ export function PublicVenueCatalog({
           ) : null)}
 
         {selectedVenue && showOtherSchedules && (
-          <div
-            className="scheduleModalBackdrop"
-            onMouseDown={(event) => {
-              if (event.currentTarget === event.target) closeVenueSchedules();
-            }}
-          >
-            <div
-              aria-labelledby="schedule-modal-title"
-              aria-modal="true"
-              className="scheduleModal"
-              id="venue-schedules"
-              ref={schedulesDialogRef}
-              role="dialog"
-              tabIndex={-1}
-            >
-              <header className="scheduleModalHeader">
-                <div>
-                  <p className="eyebrow">{selectedVenue.name}</p>
-                  <h2 id="schedule-modal-title">Elige cancha y horario</h2>
-                  <p>
-                    {new Intl.DateTimeFormat("es-PE", {
-                      dateStyle: "full",
-                      timeZone: "America/Lima",
-                    }).format(new Date(`${date}T12:00:00-05:00`))}
-                  </p>
-                </div>
-                <button
-                  aria-label="Cerrar horarios"
-                  className="scheduleModalClose"
-                  onClick={closeVenueSchedules}
-                  type="button"
-                >
-                  <X aria-hidden="true" size={22} weight="bold" />
-                </button>
-              </header>
-
-              <div className="scheduleModalBody">
-                {error && (
-                  <p className="inlineAlert errorNotice" role="alert">
-                    {error}
-                  </p>
-                )}
-                {detailLoading && !selectedSpace ? (
-                  <div className="scheduleLoading" role="status">
-                    <span />
-                    Consultando canchas y horarios…
-                  </div>
-                ) : spaces.length === 0 ? (
-                  <p className="empty compactEmpty">
-                    Este complejo no tiene canchas publicadas para reservar.
-                  </p>
-                ) : (
-                  <>
-                    <div
-                      className="scheduleCourtChoices"
-                      role="group"
-                      aria-label="Seleccionar cancha"
-                    >
-                      {spaces.map((space) => (
-                        <button
-                          aria-pressed={selectedSpace?.id === space.id}
-                          className={
-                            selectedSpace?.id === space.id ? "selected" : ""
-                          }
-                          key={space.id}
-                          onClick={() => void openSpace(space)}
-                          type="button"
-                        >
-                          <strong>{space.name}</strong>
-                          <span>
-                            {names.get(space.sportCode) ?? space.sportCode} ·{" "}
-                            {space.formatCode}
-                          </span>
-                          {space.amenityCodes.length > 0 && (
-                            <small>
-                              {space.amenityCodes
-                                .slice(0, 3)
-                                .map((code) => names.get(code) ?? code)
-                                .join(" · ")}
-                            </small>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-
-                    {selectedSpace && (
-                      <section className="scheduleSlotSection">
-                        <div className="scheduleSlotHeading">
-                          <div>
-                            <p className="eyebrow">HORARIOS DISPONIBLES</p>
-                            <h3>{selectedSpace.name}</h3>
-                          </div>
-                          <small>Selecciona bloques consecutivos</small>
-                        </div>
-                        {detailLoading ? (
-                          <div className="scheduleLoading" role="status">
-                            <span />
-                            Actualizando horarios…
-                          </div>
-                        ) : availability?.slots.length ? (
-                          <div
-                            className="scheduleSlotGrid"
-                            role="group"
-                            aria-label={`Horarios de ${selectedSpace.name}`}
-                          >
-                            {availability.slots.map((slot) => {
-                              const selected = selectedSlots.some(
-                                (item) => item.startsAt === slot.startsAt,
-                              );
-                              return (
-                                <button
-                                  aria-pressed={selected}
-                                  className={selected ? "selected" : ""}
-                                  disabled={reservationBusy}
-                                  key={`${slot.startsAt}-${slot.endsAt}`}
-                                  onClick={() => toggleSlot(slot)}
-                                  type="button"
-                                >
-                                  <Clock aria-hidden="true" size={18} />
-                                  <strong>
-                                    {time(slot.startsAt)} – {time(slot.endsAt)}
-                                  </strong>
-                                  <span>{money(slot)}</span>
-                                  <small>
-                                    {selected ? "Elegido" : "Disponible"}
-                                  </small>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="scheduleNoSlots" role="status">
-                            No quedan horarios disponibles para esta cancha en
-                            la fecha seleccionada. Puedes elegir otra cancha.
-                          </p>
-                        )}
-                      </section>
-                    )}
-                  </>
-                )}
-              </div>
-
-              <footer className="scheduleModalFooter" role="status">
-                <span>
-                  <small>
-                    {selectedSlots.length > 0
-                      ? "Tu selección"
-                      : "Selecciona un horario para reservar"}
-                  </small>
-                  {selectedSlots.length > 0 ? (
-                    <>
-                      <strong>
-                        {time(selectedSlots[0].startsAt)} –{" "}
-                        {time(selectedSlots.at(-1)!.endsAt)}
-                      </strong>
-                      <em>
-                        {selectedDuration} min · {formatMinor(selectedTotal)}
-                      </em>
-                    </>
-                  ) : (
-                    <em>Puedes elegir una o varias horas consecutivas.</em>
-                  )}
-                </span>
-                <button
-                  className="primary"
-                  disabled={reservationBusy || selectedSlots.length === 0}
-                  onClick={() => void beginCheckout()}
-                  type="button"
-                >
-                  {reservationBusy
-                    ? "Bloqueando horario…"
-                    : "Reservar e ir al pago"}
-                  <ArrowRight aria-hidden="true" size={19} />
-                </button>
-              </footer>
-            </div>
-          </div>
+          <VenueScheduleDialog
+            busy={reservationBusy}
+            date={date}
+            error={error}
+            loading={detailLoading}
+            names={names}
+            onClose={closeVenueSchedules}
+            onReserve={() => void beginCheckout()}
+            onSelectSpace={(space) => void openSpace(space)}
+            onToggleSlot={toggleSlot}
+            ref={schedulesDialogRef}
+            selectedSlots={selectedSlots}
+            selectedSpace={selectedSpace}
+            slots={availability?.slots ?? []}
+            spaces={spaces}
+            venue={selectedVenue}
+          />
         )}
 
         {reservation && accessToken && selectedVenue && (

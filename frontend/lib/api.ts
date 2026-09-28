@@ -81,7 +81,10 @@ export async function apiRequest<T>(
   if (response.status === 403) throw new Error("Tu cuenta no tiene acceso.");
   if (!response.ok) {
     const problem = await response.json().catch(() => null);
-    throw new Error(problem?.detail ?? "No se pudo completar la operación.");
+    throw new ApiError(
+      problem?.detail ?? "No se pudo completar la operación.",
+      response.status,
+    );
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;

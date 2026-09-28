@@ -44,6 +44,14 @@ public class BookableAvailabilityService {
                         .filter(
                                 slot ->
                                         blocking.stream()
+                                                .filter(
+                                                        reservation ->
+                                                                reservation.status().blocksTime()
+                                                                        && (reservation.expiresAt()
+                                                                                        == null
+                                                                                || reservation
+                                                                                        .expiresAt()
+                                                                                        .isAfter(now)))
                                                 .noneMatch(
                                                         reservation ->
                                                                 reservation

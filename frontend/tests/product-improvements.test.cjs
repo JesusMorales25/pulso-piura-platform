@@ -183,3 +183,23 @@ test("booking card renders only supplied available slots as accessible buttons",
   assert.match(source, /onReserve\("FULL"\)/);
   assert.doesNotMatch(source, /reserved|occupied/i);
 });
+
+test("availability conflict removes stale selected slots without exposing unavailable states", () => {
+  const { reconcileSelectedSlots } = load("lib/venue-availability.ts");
+  const selected = [
+    { startsAt: "2026-09-28T19:00:00Z", endsAt: "2026-09-28T20:00:00Z" },
+    { startsAt: "2026-09-28T20:00:00Z", endsAt: "2026-09-28T21:00:00Z" },
+  ];
+  const fresh = {
+    slots: [
+      { startsAt: "2026-09-28T20:00:00Z", endsAt: "2026-09-28T21:00:00Z" },
+      { startsAt: "2026-09-28T21:00:00Z", endsAt: "2026-09-28T22:00:00Z" },
+    ],
+  };
+
+  const result = reconcileSelectedSlots(selected, fresh);
+
+  assert.equal(result.length, 1);
+  assert.equal(result[0].startsAt, "2026-09-28T20:00:00Z");
+  assert.equal(Object.hasOwn(result[0], "status"), false);
+});

@@ -59,6 +59,55 @@ class BookableAvailabilityServiceTest {
         assertThat(service.availability(space, date).slots()).containsExactly(future);
     }
 
+    @Test
+    void hidesConfirmedAndLiveHoldSlotsWhileExpiredHoldIsBookableAgain() {
+        var venues = mock(VenueAvailabilityQuery.class);
+        var reservations = mock(ReservationStore.class);
+        var space = UUID.randomUUID();
+        var date = LocalDate.of(2026, 9, 6);
+        var confirmedSlot = slot("2026-09-06T14:00:00Z", "2026-09-06T15:00:00Z");
+        var liveHoldSlot = slot("2026-09-06T15:00:00Z", "2026-09-06T16:00:00Z");
+        var expiredHoldSlot = slot("2026-09-06T16:00:00Z", "2026-09-06T17:00:00Z");
+        when(venues.availability(space, date))
+                .thenReturn(
+                        new PublicVenueViews.Availability(
+                                space,
+                                "America/Lima",
+                                date.toString(),
+                                List.of(confirmedSlot, liveHoldSlot, expiredHoldSlot)));
+        when(reservations.findBlocking(
+                        space, confirmedSlot.startsAt(), expiredHoldSlot.endsAt(), NOW))
+                .thenReturn(
+                        List.of(
+                                reservation(
+                                        space,
+                                        confirmedSlot.startsAt(),
+                                        confirmedSlot.endsAt(),
+                                        ReservationStatus.CONFIRMED,
+                                        null),
+                                reservation(
+                                        space,
+                                        liveHoldSlot.startsAt(),
+                                        liveHoldSlot.endsAt(),
+                                        ReservationStatus.HOLD,
+                                        NOW.plusSeconds(600)),
+                                reservation(
+                                        space,
+                                        expiredHoldSlot.startsAt(),
+                                        expiredHoldSlot.endsAt(),
+                                        ReservationStatus.HOLD,
+                                        NOW.minusSeconds(1))));
+        var service =
+                new BookableAvailabilityService(
+                        venues, reservations, Clock.fixed(NOW, ZoneOffset.UTC));
+
+        var result = service.availability(space, date);
+
+        assertThat(result.slots()).containsExactly(expiredHoldSlot);
+        verify(reservations)
+                .findBlocking(space, confirmedSlot.startsAt(), expiredHoldSlot.endsAt(), NOW);
+    }
+
     private PublicVenueViews.Slot slot(String startsAt, String endsAt) {
         return new PublicVenueViews.Slot(
                 Instant.parse(startsAt), Instant.parse(endsAt), 9000, "PEN");
@@ -76,5 +125,28 @@ class BookableAvailabilityServiceTest {
                 new ReservationIdempotencyKey(UUID.randomUUID().toString()),
                 ReservationRequestFingerprint.calculate(space, startsAt, endsAt),
                 NOW);
+    }
+
+    private Reservation reservation(
+            UUID space,
+            Instant startsAt,
+            Instant endsAt,
+            ReservationStatus status,
+            Instant expiresAt) {
+        return Reservation.restore(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                space,
+                UUID.randomUUID(),
+                new ReservationTimeRange(startsAt, endsAt),
+                status,
+                ReservationMoney.pen(9000),
+                ReservationMoney.pen(1800),
+                expiresAt,
+                new ReservationIdempotencyKey(UUID.randomUUID().toString()),
+                ReservationRequestFingerprint.calculate(space, startsAt, endsAt),
+                NOW.minusSeconds(600),
+                NOW,
+                1);
     }
 }
