@@ -23,6 +23,7 @@ import {
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
+import { isProtectedOrganizerRow, summarizeMatchFinances } from "./presentation";
 import type { MatchJoinOrder, MatchParticipantAdmin, MatchParticipation, MatchSummary } from "./types";
 
 const skillLabels: Record<string, string> = {
@@ -137,13 +138,23 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
         headers: { "Idempotency-Key": pending.id },
       });
       setOrder(paid);
-      const [updatedMatch, updatedParticipation] = await Promise.all([
-        apiRequest<MatchSummary>(`/matches/${publicSlug}`, accessToken),
-        apiRequest<MatchParticipation>(`/matches/${publicSlug}/participants/me`, accessToken),
-      ]);
-      setMatch(updatedMatch);
-      setParticipation(updatedParticipation);
-      setNotice("Tu pago de prueba y tu cupo quedaron confirmados.");
+      if (match?.managedByCurrentUser && match.organizerCounts) {
+        const [updatedMatch, updatedRoster] = await Promise.all([
+          apiRequest<MatchSummary>(`/matches/${publicSlug}`, accessToken),
+          apiRequest<MatchParticipantAdmin[]>(`/matches/${match.id}/participants`, accessToken),
+        ]);
+        setMatch(updatedMatch);
+        setOrganizerRoster(updatedRoster);
+        setNotice("Tu cuota como organizador quedó pagada.");
+      } else {
+        const [updatedMatch, updatedParticipation] = await Promise.all([
+          apiRequest<MatchSummary>(`/matches/${publicSlug}`, accessToken),
+          apiRequest<MatchParticipation>(`/matches/${publicSlug}/participants/me`, accessToken),
+        ]);
+        setMatch(updatedMatch);
+        setParticipation(updatedParticipation);
+        setNotice("Tu pago de prueba y tu cupo quedaron confirmados.");
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No pudimos confirmar el pago.");
     } finally {
@@ -260,6 +271,7 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
 
   async function removeManagedParticipant() {
     if (!accessToken || !match || !selectedParticipant) return;
+    if (isProtectedOrganizerRow(selectedParticipant)) return;
     if (selectedParticipant.source === "ACCOUNT" && !selectedParticipant.userId) return;
     setBusy(true);
     setError("");
@@ -283,7 +295,7 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
   const playerSlots = useMemo(() => {
     if (!match) return [];
     const slots: Array<{ name: string; avatarUrl: string | null; role: "organizer" | "confirmed" | "vacant"; participant?: MatchParticipantAdmin }> = [];
-    if (match.organizerCounts) {
+    if (match.organizerCounts && !match.managedByCurrentUser) {
       slots.push({ name: match.organizerDisplayName || "Organizador", avatarUrl: match.organizerAvatarUrl, role: "organizer" });
     }
     const visibleParticipants = match.managedByCurrentUser
@@ -291,7 +303,12 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
       : (match.participantPreview ?? []).map((player) => ({ ...player, participantId: "", userId: null, source: "ACCOUNT" as const, email: null, status: "JOINED" as const, paymentStatus: "NOT_REQUIRED" as const, paidMinor: 0, paymentMethod: null, paidAt: null, joinedAt: null, checkedInAt: null }));
     visibleParticipants.forEach((player) => {
       if (slots.length < match.occupiedPlayers) {
-        slots.push({ name: player.displayName, avatarUrl: player.avatarUrl, role: "confirmed", participant: player.participantId ? player : undefined });
+        slots.push({
+          name: player.displayName,
+          avatarUrl: player.avatarUrl,
+          role: player.source === "ORGANIZER" ? "organizer" : "confirmed",
+          participant: player.participantId ? player : undefined,
+        });
       }
     });
     while (slots.length < match.occupiedPlayers) slots.push({ name: "Jugador confirmado", avatarUrl: null, role: "confirmed" });
@@ -301,27 +318,13 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
 
   const finances = useMemo(() => {
     if (!match?.managedByCurrentUser) return null;
-    const confirmed = organizerRoster.filter((participant) => participant.status === "JOINED");
-    const paidOnline = confirmed.filter((participant) => participant.paymentStatus === "PAID");
-    const paidDirect = confirmed.filter((participant) => participant.paymentStatus === "PAID_DIRECT");
-    const pending = confirmed.filter((participant) =>
-      !["PAID", "PAID_DIRECT", "NOT_REQUIRED"].includes(participant.paymentStatus),
-    );
-    const onlineMinor = paidOnline.reduce((total, participant) => total + participant.paidMinor, 0);
-    const directMinor = paidDirect.reduce((total, participant) => total + participant.paidMinor, 0);
-    const expectedMinor = match.priceMinor * confirmed.length;
-    return {
-      confirmed,
-      paidOnline,
-      paidDirect,
-      pending,
-      onlineMinor,
-      directMinor,
-      collectedMinor: onlineMinor + directMinor,
-      expectedMinor,
-      pendingMinor: Math.max(0, expectedMinor - onlineMinor - directMinor),
-    };
+    return summarizeMatchFinances(organizerRoster, match.priceMinor);
   }, [match, organizerRoster]);
+
+  const organizerRow = useMemo(
+    () => organizerRoster.find(isProtectedOrganizerRow) ?? null,
+    [organizerRoster],
+  );
 
   if (loading) return <main className="matchDetailPage"><p className="notice">Cargando partido…</p></main>;
   if (!match) {
@@ -340,6 +343,11 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
   const end = new Date(match.endsAt);
   const durationMinutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
   const price = formatMoney(match.priceMinor, match.currency);
+  const isPlayingOrganizer = match.managedByCurrentUser && match.organizerCounts;
+  const organizerQuotaPaid =
+    organizerRow?.paymentStatus === "PAID" ||
+    organizerRow?.paymentStatus === "NOT_REQUIRED" ||
+    order?.status === "PAID";
   const sportName = sportLabels[match.sportCode] || match.sportCode;
   const formatName = match.formatCode.replaceAll("_", " ").replace(match.sportCode, sportName);
   const knownIncludes = [match.surfaceName, ...(match.amenityNames ?? [])].filter((value): value is string => Boolean(value));
@@ -377,6 +385,12 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
                 <div><p className="eyebrow">CONTROL DEL ORGANIZADOR</p><h2 id="organizer-finance-title">Pagos de la pichanga</h2></div>
                 <span>{finances.confirmed.length} cupos controlados</span>
               </header>
+              {organizerRow && match.priceMinor > 0 && (
+                <p className={`organizerOwnPaymentStatus ${organizerQuotaPaid ? "paid" : "pending"}`}>
+                  <ShieldCheck weight="fill" />
+                  {organizerQuotaPaid ? "Tu cuota está pagada" : "Tu cuota está pendiente"}
+                </p>
+              )}
               {match.priceMinor > 0 ? (
                 <>
                   <div className="organizerFinanceMetrics">
@@ -467,7 +481,18 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
 
         <aside className="matchExperienceBooking">
           <div className="detailPrice"><span>Total por cupo</span><strong>{match.priceMinor > 0 ? price : "Gratis"}</strong></div>
-          {participation?.status === "JOINED" ? (
+          {isPlayingOrganizer ? (
+            match.priceMinor === 0 || organizerQuotaPaid ? (
+              <div className="joinSuccess" role="status"><CheckCircle size={22} weight="fill" /> {match.priceMinor === 0 ? "Tu cupo de organizador no requiere pago" : "Tu cuota está pagada"}</div>
+            ) : (
+              <div className="matchCheckout organizerOwnCheckout">
+                <p><span>Paga tu propia cuota</span><small>Tu cupo ya está incluido en el equipo</small></p>
+                <div className="paymentMethods" role="group" aria-label="Método de pago">{(["YAPE", "PLIN"] as const).map((item) => <button aria-pressed={method === item} className={method === item ? "selected" : ""} key={item} onClick={() => setMethod(item)} type="button">{item === "YAPE" ? "Yape" : "Plin"}</button>)}</div>
+                <label className="checkoutAcceptance"><input checked={accepted} onChange={(event) => setAccepted(event.target.checked)} type="checkbox" /><span>Acepto la cuota y la política del evento.</span></label>
+                <button className="joinMatchButton" aria-busy={busy} disabled={busy || !accepted} onClick={() => void payAndJoin()} type="button"><CurrencyCircleDollar size={22} /><span>{busy ? "Confirmando…" : "Pagar mi cuota"}</span></button>
+              </div>
+            )
+          ) : participation?.status === "JOINED" ? (
             <><div className="joinSuccess" role="status"><CheckCircle size={22} weight="fill" /> Tu cupo está confirmado</div><button className="secondary" aria-busy={busy} disabled={busy} onClick={() => void updateParticipation("DELETE")} type="button"><XCircle size={20} /> Retirarme</button></>
           ) : participation?.status === "WAITLISTED" ? (
             <><div className="joinSuccess" role="status"><Clock size={22} /> Lista de espera · puesto {participation.waitlistPosition}</div><button className="secondary" aria-busy={busy} disabled={busy} onClick={() => void updateParticipation("DELETE")} type="button"><XCircle size={20} /> Salir de la espera</button></>
@@ -487,8 +512,8 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
         </aside>
       </div>
 
-      {participation?.status !== "JOINED" && participation?.status !== "WAITLISTED" && (
-        <div className="mobileMatchAction matchExperienceMobileAction"><span><small>Total por cupo</small><strong>{match.priceMinor > 0 ? price : "Gratis"}</strong></span><button aria-busy={busy} disabled={busy || (match.availablePlayers > 0 && match.priceMinor > 0 && !accepted)} onClick={() => void (match.availablePlayers === 0 || match.priceMinor === 0 ? updateParticipation("POST") : payAndJoin())} type="button">{busy ? "Confirmando…" : match.availablePlayers === 0 ? "Unirme a la espera" : "Reservar mi cupo"}</button></div>
+      {participation?.status !== "JOINED" && participation?.status !== "WAITLISTED" && !(isPlayingOrganizer && (organizerQuotaPaid || match.priceMinor === 0)) && (
+        <div className="mobileMatchAction matchExperienceMobileAction"><span><small>Total por cupo</small><strong>{match.priceMinor > 0 ? price : "Gratis"}</strong></span><button aria-busy={busy} disabled={busy || (isPlayingOrganizer ? match.priceMinor > 0 && !accepted : match.availablePlayers > 0 && match.priceMinor > 0 && !accepted)} onClick={() => void (isPlayingOrganizer ? payAndJoin() : match.availablePlayers === 0 || match.priceMinor === 0 ? updateParticipation("POST") : payAndJoin())} type="button">{busy ? "Confirmando…" : isPlayingOrganizer ? "Pagar mi cuota" : match.availablePlayers === 0 ? "Unirme a la espera" : "Reservar mi cupo"}</button></div>
       )}
 
       {manualSlotOpen && (

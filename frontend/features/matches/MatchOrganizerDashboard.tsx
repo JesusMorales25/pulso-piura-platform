@@ -19,6 +19,7 @@ import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
+import { isProtectedOrganizerRow, summarizeMatchFinances } from "./presentation";
 import type {
   MatchInvitation,
   MatchParticipantAdmin,
@@ -88,15 +89,25 @@ export function MatchOrganizerDashboard() {
   }, [accessToken, capabilities.canCreateMatches, capabilitiesLoading]);
 
   const totals = useMemo(() => Object.values(people).flat(), [people]);
-  const paid = totals
-    .filter((participant) => participant.paymentStatus === "PAID" || participant.paymentStatus === "PAID_DIRECT")
-    .reduce((sum, participant) => sum + participant.paidMinor, 0);
-  const paidCount = totals.filter(
-    (participant) => participant.paymentStatus === "PAID" || participant.paymentStatus === "PAID_DIRECT",
-  ).length;
+  const financeByMatch = useMemo(
+    () => Object.fromEntries(matches.map((match) => [
+      match.id,
+      summarizeMatchFinances(people[match.id] ?? [], match.priceMinor),
+    ])),
+    [matches, people],
+  );
+  const paid = Object.values(financeByMatch).reduce(
+    (sum, finance) => sum + finance.collectedMinor,
+    0,
+  );
+  const paidCount = Object.values(financeByMatch).reduce(
+    (sum, finance) => sum + finance.paidOnline.length + finance.paidDirect.length,
+    0,
+  );
 
   async function removeParticipant(matchId: string, participant: MatchParticipantAdmin) {
     if (!accessToken) return;
+    if (isProtectedOrganizerRow(participant)) return;
     setRemoving(`${matchId}:${participant.participantId}`);
     setError("");
     try {
@@ -232,11 +243,9 @@ export function MatchOrganizerDashboard() {
       style: "currency",
       currency: match.currency,
     }).format(match.priceMinor / 100);
-    const joined = roster.filter((participant) => participant.status === "JOINED");
-    const paid = joined.filter((participant) => participant.paymentStatus === "PAID" || participant.paymentStatus === "PAID_DIRECT");
-    const pending = joined.filter(
-      (participant) => participant.paymentStatus !== "PAID" && participant.paymentStatus !== "PAID_DIRECT",
-    );
+    const finance = summarizeMatchFinances(roster, match.priceMinor);
+    const paid = [...finance.paidOnline, ...finance.paidDirect];
+    const pending = finance.pending;
     const lines = [
       `⚽ LA CHANCHA PICHANGUERA · PULSO PIURA`,
       `${match.title}`,
@@ -378,20 +387,14 @@ export function MatchOrganizerDashboard() {
           <section className="organizerMatchList">
             {matches.map((match) => {
               const roster = people[match.id] ?? [];
+              const finance = financeByMatch[match.id] ?? summarizeMatchFinances([], match.priceMinor);
               const matchInvitations = invitations[match.id] ?? [];
-              const joined = roster.filter(
-                (participant) => participant.status === "JOINED",
-              ).length;
+              const joined = finance.confirmed.length;
               const waitlisted = roster.filter(
                 (participant) => participant.status === "WAITLISTED",
               ).length;
-              const payments = roster.filter(
-                (participant) => participant.paymentStatus === "PAID" || participant.paymentStatus === "PAID_DIRECT",
-              );
-              const revenue = payments.reduce(
-                (sum, participant) => sum + participant.paidMinor,
-                0,
-              );
+              const payments = [...finance.paidOnline, ...finance.paidDirect];
+              const revenue = finance.collectedMinor;
               const occupancy = Math.min(
                 100,
                 Math.round((match.occupiedPlayers / match.maxPlayers) * 100),
@@ -552,7 +555,7 @@ export function MatchOrganizerDashboard() {
                           aria-label={`Foto de ${participant.displayName}`}
                           style={participant.avatarUrl ? { backgroundImage: `url(${participant.avatarUrl})` } : undefined}
                         >{!participant.avatarUrl && participant.displayName.slice(0, 1).toUpperCase()}</i>
-                        <span><strong>{participant.displayName}</strong><small>{participant.source === "MANUAL" ? participant.email || "Agregado por el organizador" : participant.email}</small><em>{participant.status === "JOINED" ? "Cupo confirmado" : "Lista de espera"}</em></span>
+                        <span><strong>{participant.displayName}</strong><small>{participant.source === "ORGANIZER" ? "Organizador participante" : participant.source === "MANUAL" ? participant.email || "Agregado por el organizador" : participant.email}</small><em>{participant.status === "JOINED" ? "Cupo confirmado" : "Lista de espera"}</em></span>
                       </span>
                       <span className={`participantPayment ${participant.paymentStatus === "PAID" || participant.paymentStatus === "PAID_DIRECT" ? "paid" : ""}`}>
                         <strong>{participant.paymentStatus === "PAID" || participant.paymentStatus === "PAID_DIRECT"
@@ -566,7 +569,7 @@ export function MatchOrganizerDashboard() {
                         <small>{participant.paidAt ? `${participant.paymentMethod} · ${new Date(participant.paidAt).toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" })}` : "Sin pago registrado"}</small>
                       </span>
                       <span className="participantJoined"><strong>{participant.checkedInAt ? "Presente" : "Pendiente"}</strong><small>{participant.checkedInAt ? new Date(participant.checkedInAt).toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" }) : "Sin validar"}</small></span>
-                      <span>{participant.paymentStatus === "PAID" && participant.source === "ACCOUNT" ? <small className="lockedParticipant"><ShieldCheck/> Pago protegido</small> : <button className="participantRemove" disabled={removing === `${match.id}:${participant.participantId}`} onClick={() => void removeParticipant(match.id, participant)} type="button"><UserMinus/>{removing === `${match.id}:${participant.participantId}` ? "Retirando…" : "Retirar"}</button>}</span>
+                      <span>{isProtectedOrganizerRow(participant) ? <small className="lockedParticipant"><ShieldCheck/> Organizador protegido</small> : participant.paymentStatus === "PAID" && participant.source === "ACCOUNT" ? <small className="lockedParticipant"><ShieldCheck/> Pago protegido</small> : <button className="participantRemove" disabled={removing === `${match.id}:${participant.participantId}`} onClick={() => void removeParticipant(match.id, participant)} type="button"><UserMinus/>{removing === `${match.id}:${participant.participantId}` ? "Retirando…" : "Retirar"}</button>}</span>
                     </div>
                   ))}
                   {!roster.length && (

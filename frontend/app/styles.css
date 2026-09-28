@@ -9032,6 +9032,10 @@ body:has(.scheduleModal) .appNavigation {
 .organizerFinance > header h2, .organizerFinance > header p { margin: 0; }
 .organizerFinance > header h2 { margin-top: 3px; font-size: 1.12rem; }
 .organizerFinance > header > span { padding: 6px 9px; border-radius: 999px; background: rgba(31, 207, 218, 0.1); color: var(--cyan); font-size: 0.64rem; font-weight: 800; white-space: nowrap; }
+.organizerOwnPaymentStatus { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 12px; border-radius: 11px; font-size: 0.72rem; font-weight: 850; }
+.organizerOwnPaymentStatus.pending { background: rgba(255, 198, 92, 0.1); color: #ffc65c; }
+.organizerOwnPaymentStatus.paid { background: rgba(143, 230, 90, 0.1); color: #8fe65a; }
+.organizerOwnCheckout { border-top: 1px solid rgba(146, 199, 217, 0.16); padding-top: 14px; }
 .organizerFinanceMetrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .organizerFinanceMetrics article { display: grid; min-width: 0; gap: 3px; padding: 12px; border: 1px solid rgba(146, 199, 217, 0.16); border-radius: 12px; background: rgba(3, 20, 33, 0.54); }
 .organizerFinanceMetrics small { color: var(--muted); font-size: 0.56rem; font-weight: 900; letter-spacing: 0.055em; }

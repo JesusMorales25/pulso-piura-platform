@@ -27,3 +27,51 @@ test("organizer participates by default in a new match draft", () => {
 
   assert.equal(defaultMatchDraft().organizerCounts, true);
 });
+
+test("financial summary includes organizer debt without duplicating rows", () => {
+  const { summarizeMatchFinances } = load("features/matches/presentation.ts");
+  const organizer = {
+    participantId: "organizer-1",
+    userId: "organizer-1",
+    source: "ORGANIZER",
+    status: "JOINED",
+    paymentStatus: "PENDING",
+    paidMinor: 0,
+  };
+  const roster = [
+    organizer,
+    { ...organizer },
+    { participantId: "player-1", source: "ACCOUNT", status: "JOINED", paymentStatus: "PAID", paidMinor: 1500 },
+    { participantId: "manual-1", source: "MANUAL", status: "JOINED", paymentStatus: "PAID_DIRECT", paidMinor: 1500 },
+    { participantId: "free-1", source: "ACCOUNT", status: "JOINED", paymentStatus: "NOT_REQUIRED", paidMinor: 0 },
+  ];
+
+  const summary = summarizeMatchFinances(roster, 1500);
+
+  assert.equal(summary.confirmed.length, 4);
+  assert.equal(summary.pending.length, 1);
+  assert.equal(summary.pending[0].source, "ORGANIZER");
+  assert.equal(summary.onlineMinor, 1500);
+  assert.equal(summary.directMinor, 1500);
+  assert.equal(summary.collectedMinor, 3000);
+  assert.equal(summary.expectedMinor, 4500);
+  assert.equal(summary.pendingMinor, 1500);
+});
+
+test("financial summary adds a confirmed organizer payment", () => {
+  const { summarizeMatchFinances } = load("features/matches/presentation.ts");
+  const summary = summarizeMatchFinances([
+    { participantId: "organizer-1", source: "ORGANIZER", status: "JOINED", paymentStatus: "PAID", paidMinor: 1500 },
+  ], 1500);
+
+  assert.equal(summary.paidOnline.length, 1);
+  assert.equal(summary.collectedMinor, 1500);
+  assert.equal(summary.pendingMinor, 0);
+});
+
+test("organizer row is protected from participant management actions", () => {
+  const { isProtectedOrganizerRow } = load("features/matches/presentation.ts");
+
+  assert.equal(isProtectedOrganizerRow({ source: "ORGANIZER" }), true);
+  assert.equal(isProtectedOrganizerRow({ source: "ACCOUNT" }), false);
+});
