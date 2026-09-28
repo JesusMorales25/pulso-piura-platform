@@ -138,3 +138,34 @@ test("venue filters match exact district, covered courts and merged LED amenitie
     false,
   );
 });
+
+test("admin rating accepts an empty pair", () => {
+  const { normalizeAdminRatingInput } = load("lib/venue-rating.ts");
+
+  const result = normalizeAdminRatingInput("", "");
+  assert.equal(result.adminRating, null);
+  assert.equal(result.adminRatingCount, null);
+});
+
+test("admin rating normalizes a configured value and count", () => {
+  const { normalizeAdminRatingInput } = load("lib/venue-rating.ts");
+
+  const configured = normalizeAdminRatingInput("4.9", "142");
+  assert.equal(configured.adminRating, 4.9);
+  assert.equal(configured.adminRatingCount, 142);
+  const minimum = normalizeAdminRatingInput("0.0", "0");
+  assert.equal(minimum.adminRating, 0);
+  assert.equal(minimum.adminRatingCount, 0);
+  const maximum = normalizeAdminRatingInput("5.0", "1");
+  assert.equal(maximum.adminRating, 5);
+  assert.equal(maximum.adminRatingCount, 1);
+});
+
+test("admin rating rejects partial or invalid values", () => {
+  const { normalizeAdminRatingInput } = load("lib/venue-rating.ts");
+
+  assert.throws(() => normalizeAdminRatingInput("4.9", ""), /juntas/i);
+  assert.throws(() => normalizeAdminRatingInput("", "142"), /juntas/i);
+  assert.throws(() => normalizeAdminRatingInput("5.1", "1"), /entre 0 y 5/i);
+  assert.throws(() => normalizeAdminRatingInput("4.9", "-1"), /entero positivo/i);
+});

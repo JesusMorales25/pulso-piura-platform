@@ -9415,3 +9415,34 @@ body:has(.scheduleModal) .appNavigation {
   }
   .venueAvailabilityStep .setupStepper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+.venueRatingFields {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0.9rem;
+}
+
+.venueRatingFields legend {
+  font-weight: 800;
+  padding: 0 0.35rem;
+}
+
+.venueRatingFields p {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.venueRatingFields > div {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 520px) {
+  .venueRatingFields > div {
+    grid-template-columns: 1fr;
+  }
+}

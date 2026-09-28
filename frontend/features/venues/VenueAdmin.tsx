@@ -6,6 +6,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { FriendlyLocationPicker } from "@/components/forms/FriendlyLocationPicker";
 import { AvailabilityAdmin } from "@/features/venues/AvailabilityAdmin";
 import { apiRequest } from "@/lib/api";
+import { normalizeAdminRatingInput } from "@/lib/venue-rating";
 
 type CatalogItem = { code: string; name: string };
 type SportFormat = CatalogItem & {
@@ -25,6 +26,8 @@ type Venue = {
   address: string;
   districtCode: string;
   publicPhone: string | null;
+  adminRating: number | null;
+  adminRatingCount: number | null;
   amenityCodes: string[];
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   version: number;
@@ -49,6 +52,8 @@ type VenueDraft = {
   address: string;
   districtCode: string;
   publicPhone: string;
+  adminRating: string;
+  adminRatingCount: string;
   latitude: string;
   longitude: string;
   amenityCodes: string[];
@@ -82,6 +87,8 @@ const emptyVenueDraft: VenueDraft = {
   address: "",
   districtCode: "",
   publicPhone: "",
+  adminRating: "",
+  adminRatingCount: "",
   latitude: "",
   longitude: "",
   amenityCodes: [],
@@ -234,6 +241,10 @@ export function VenueAdmin({
     setSubmitting(true);
     clearFeedback();
     try {
+      const rating = normalizeAdminRatingInput(
+        String(form.get("adminRating") ?? ""),
+        String(form.get("adminRatingCount") ?? ""),
+      );
       const payload = {
         name: form.get("name"),
         address: form.get("address"),
@@ -242,6 +253,7 @@ export function VenueAdmin({
         longitude: nullableNumber(form.get("longitude")),
         publicPhone: nullableText(form.get("publicPhone")),
         amenityCodes: form.getAll("amenityCodes"),
+        ...rating,
         ...(editingVenue ? { version: editingVenue.version } : {}),
       };
       const venue = await apiRequest<Venue>(
@@ -337,6 +349,8 @@ export function VenueAdmin({
       address: venue.address,
       districtCode: venue.districtCode,
       publicPhone: venue.publicPhone ?? "",
+      adminRating: venue.adminRating === null ? "" : String(venue.adminRating),
+      adminRatingCount: venue.adminRatingCount === null ? "" : String(venue.adminRatingCount),
       latitude: "",
       longitude: "",
       amenityCodes: venue.amenityCodes,
@@ -863,6 +877,39 @@ function VenueForm({
           value={value.publicPhone}
         />
       </label>
+      <fieldset className="venueRatingFields">
+        <legend>Calificación informada por el complejo</legend>
+        <p>Dato provisional configurable hasta activar valoraciones reales de usuarios.</p>
+        <div>
+          <label>
+            Calificación
+            <input
+              inputMode="decimal"
+              max={5}
+              min={0}
+              name="adminRating"
+              onChange={(event) => onChange({ ...value, adminRating: event.target.value })}
+              placeholder="4.9"
+              step={0.1}
+              type="number"
+              value={value.adminRating}
+            />
+          </label>
+          <label>
+            Cantidad de valoraciones
+            <input
+              inputMode="numeric"
+              min={0}
+              name="adminRatingCount"
+              onChange={(event) => onChange({ ...value, adminRatingCount: event.target.value })}
+              placeholder="142"
+              step={1}
+              type="number"
+              value={value.adminRatingCount}
+            />
+          </label>
+        </div>
+      </fieldset>
       <AmenityFields
         amenities={amenities}
         onChange={(amenityCodes) => onChange({ ...value, amenityCodes })}
