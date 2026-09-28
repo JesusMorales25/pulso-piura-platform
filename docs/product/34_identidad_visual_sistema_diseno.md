@@ -91,3 +91,16 @@ Los títulos se superponen en una celda de cuadrícula que reserva ambas medidas
 el título activo es accesible. Los filtros comparten los tokens --home-filter-width y
 --home-filter-height: 104 × 44 px en móvil y 112 × 46 px en escritorio.
 La selección modifica color y borde sin alterar peso, dimensiones ni posición.
+
+## Tarjeta móvil de reserva — 2026-09-28
+
+La tarjeta de cancha adopta una superficie nocturna compacta con identidad, ubicación, atributos,
+precio inicial, calificación administrada y hasta cinco turnos disponibles. El turno elegido usa
+lima, borde de alto contraste, `aria-pressed=true` y el texto `Elegido`; el color no es la única
+señal. El resumen ofrece `Reservar con 20 %`, `Pagar completo` y `Otros horarios` sin anidar
+controles interactivos.
+
+En pantallas estrechas se priorizan techado, iluminación LED y estacionamiento. Los turnos pueden
+desplazarse dentro de su propia franja, sin provocar scroll horizontal del documento. Los botones de
+pago tienen al menos 44 px de alto y todos los controles de tarjeta y diálogo exhiben foco visible.
+La composición fue comprobada en 320, 393 y 768 px.

@@ -95,3 +95,18 @@ que los demás jugadores y puede pagarla desde la publicación aun cuando ya no 
 estado se incluye una sola vez en participantes, pagos, recaudación y monto pendiente. La fila del
 organizador es informativa y protegida: no se puede retirar ni marcar como pago directo desde los
 controles destinados a terceros.
+
+## DEC-2026-09-28 — Descubrimiento y reserva móvil de canchas
+
+Estado: aceptada por el usuario en la conversación de implementación.
+
+El catálogo público presenta únicamente turnos reservables. Una reserva confirmada o un `HOLD`
+vigente retira la franja del contrato público; el detalle permanece disponible exclusivamente en
+`Mis reservas` para su titular y en la operación del complejo para personal autorizado. Ante un
+conflicto, la interfaz vuelve a consultar disponibilidad y elimina la selección obsoleta.
+
+Las reservas nuevas calculan y persisten un adelanto del 20 % del total, redondeado hacia arriba en
+unidades mínimas. Las reservas anteriores conservan el importe con el que fueron creadas. La
+calificación visible de la sede es, por ahora, un dato opcional administrado por el complejo y se
+identifica como tal; no representa reseñas verificadas. La experiencia continúa siendo web
+responsive mobile-first, sin aplicación nativa en esta etapa.

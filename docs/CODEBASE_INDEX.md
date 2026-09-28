@@ -3,9 +3,9 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Generado: 2026-09-22 18:07:58 UTC
-- Huella del inventario: f66b24525e9cbbee
-- Archivos indexados: 549
+- Generado: 2026-09-28 11:22:25 UTC
+- Huella del inventario: d9e6488c1645400c
+- Archivos indexados: 593
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -73,11 +73,11 @@
 - auth (2): AuthButton.tsx, AuthProvider.tsx
 - feedback (1): CardSkeletons.tsx
 - home (12): FeaturedMatchCard.module.css, FeaturedMatchCard.tsx, FeaturedMatchCardV2.module.css, FeaturedMatchCardV2.tsx, HomeDashboard.tsx, HomeModeSwitch.tsx, HomeVenuePreview.tsx, MatchDiscoveryPanel.tsx, NextMatchCard.module.css, NextMatchCard.tsx, ThirdTimeSection.tsx, VenueAgendaPanel.tsx
-- matches (11): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, MatchBuilder.tsx, MatchCatalog.tsx, MatchCheckInScanner.tsx, MatchDetail.tsx, MatchInvitationAcceptance.tsx, MatchOrganizerDashboard.tsx, MatchQrPass.tsx, MyMatchParticipations.tsx, types.ts
+- matches (13): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, draft.ts, MatchBuilder.tsx, MatchCatalog.tsx, MatchCheckInScanner.tsx, MatchDetail.tsx, MatchInvitationAcceptance.tsx, MatchOrganizerDashboard.tsx, MatchQrPass.tsx, MyMatchParticipations.tsx, presentation.ts, types.ts
 - navigation (1): AppNavigation.tsx
 - organizations (3): InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx
-- reservations (8): MyReservations.tsx, OrganizationReservations.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationQrPass.tsx, types.ts, VenueOwnerReservationsDashboard.tsx
-- venues (3): AvailabilityAdmin.tsx, PublicVenueCatalog.tsx, VenueAdmin.tsx
+- reservations (9): MyReservations.tsx, OrganizationReservations.tsx, payment-options.ts, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationQrPass.tsx, types.ts, VenueOwnerReservationsDashboard.tsx
+- venues (7): AvailabilityAdmin.tsx, PublicVenueCatalog.tsx, VenueAdmin.tsx, VenueBookingCard.module.css, VenueBookingCard.tsx, VenueScheduleDialog.module.css, VenueScheduleDialog.tsx
 
 ### Compartido
 
@@ -94,14 +94,14 @@
 - audit: 6 clases, 0 pruebas.
 - foundation: 5 clases, 2 pruebas.
 - identity: 13 clases, 3 pruebas.
-- matches: 42 clases, 9 pruebas.
+- matches: 42 clases, 10 pruebas.
 - organizations: 20 clases, 5 pruebas.
 - partners: 2 clases, 2 pruebas.
 - payments: 11 clases, 1 pruebas.
 - profiles: 6 clases, 0 pruebas.
 - reservations: 40 clases, 10 pruebas.
 - shared: 1 clases, 0 pruebas.
-- venues: 44 clases, 7 pruebas.
+- venues: 44 clases, 8 pruebas.
 
 ### Controladores y endpoints declarados
 
@@ -157,6 +157,7 @@
 - backend/src/main/resources/db/migration/V29__create_match_check_in_passes.sql
 - backend/src/main/resources/db/migration/V30__store_partner_business_images.sql
 - backend/src/main/resources/db/migration/V31__create_manual_match_participants.sql
+- backend/src/main/resources/db/migration/V32__add_admin_venue_rating.sql
 
 ## Operacion y validacion
 

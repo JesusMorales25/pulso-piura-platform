@@ -49,7 +49,7 @@ afectan la decisión en Piura: iluminación, sombra o techo, ventilación, grass
 | Invitaciones a una pichanga | Implementado con enlace ligado al correo | automatizar envío cuando exista proveedor de correo |
 | Compartir por WhatsApp | Implementado para invitaciones y publicaciones públicas | automatizar envío cuando exista proveedor de mensajería |
 | Reserva concurrente y bloqueo temporal | Implementado | mantener bloqueo exclusivo de 5 minutos |
-| Adelanto 25 % o pago completo | Implementado en simulación | conciliación real pendiente de proveedor |
+| Adelanto 20 % o pago completo | Implementado en simulación | conciliación real pendiente de proveedor |
 | Pase QR de reserva y lector del dueño | Implementado | conectar beneficios posteriores sin exponer datos en el QR |
 | Catálogo de aliados / Tercer Tiempo | Implementado desde BD | promociones, vigencia y canje con pase |
 | Panel móvil del dueño | Parcial | rejilla diaria y bloqueo rápido por teléfono |
@@ -216,3 +216,15 @@ Cada entrega debe incluir:
 La evolución conservará el proveedor de pagos desacoplado y el pase QR opaco. Estas restricciones
 permiten avanzar en simulación sin crear una falsa confirmación financiera ni exponer información
 personal.
+
+## Revisión cerrada — reservas y canchas 2026-09-28
+
+Estado: implementada y verificada.
+
+- Partidos futuros ordenados por proximidad, con señal para el siguiente y cuota resaltada.
+- Organizador participante contado una vez, obligado a pagar y reflejado en métricas financieras.
+- Filtros de zona, cancha techada e iluminación LED basados en datos publicados.
+- Tarjeta de reserva mobile-first con calificación administrada, cinco turnos y pagos de 20 % o 100 %.
+- Detalle de cancha con amenidades y selector que solo presenta disponibilidad real.
+- Validación visual aprobada en 320, 393 y 768 px; valoraciones reales de usuarios permanecen como
+  evolución futura.

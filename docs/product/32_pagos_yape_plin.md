@@ -129,3 +129,14 @@ Medir conversión por método, tiempo p50/p95, abandono, error, conciliación au
 Preguntar a los complejos: distribución actual entre Yape/Plin/efectivo, cuenta receptora, responsable de conciliación, adelanto, comprobantes dudosos, aceptación de comisiones, emisión tributaria y preferencia entre devolución, crédito o reprogramación.
 
 Antes del adapter definitivo se requiere contrato, sandbox, documentación, firma, estados, SLA, comisiones, liquidación, devoluciones, conciliación y responsabilidades tributarias.
+
+## Importe vigente para reservas — 2026-09-28
+
+Las reservas nuevas persisten `depositMinor` como el techo de 20 % del total en unidades mínimas.
+El plan `DEPOSIT` consume ese importe persistido y nunca vuelve a calcular un porcentaje en el
+frontend. El usuario puede escoger `Reservar con 20 %` o `Pagar completo`; el saldo posterior se
+mantiene como una operación separada. Los registros históricos no se recalculan.
+
+Cuando el organizador de una pichanga también juega, su cuota usa el mismo flujo de orden simulada
+Yape/Plin que los demás participantes. Pagarla no crea otro participante ni otro cupo, y su estado se
+incluye exactamente una vez en recaudación y monto pendiente.

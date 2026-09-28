@@ -104,3 +104,16 @@ Los porcentajes y ventanas no se fijarán hasta obtener evidencia y revisar cond
 4. ¿Quién puede aprobar excepciones?
 5. ¿Cómo gestionan lluvia, mantenimiento o cierre?
 6. ¿Qué prueba consideran suficiente para registrar un pago?
+
+## Actualización de disponibilidad pública — 2026-09-28
+
+- Las reservas nuevas persisten un adelanto equivalente al techo de 20 % del total en unidades
+  mínimas.
+- El endpoint público devuelve solo franjas futuras sin reserva bloqueante vigente y no expone
+  estados `reservado` u `ocupado`, identificadores de reserva ni datos del cliente.
+- Una reserva `CONFIRMED` y un `HOLD` o `PENDING_PAYMENT` no vencido bloquean la franja; un hold
+  vencido deja de bloquear y el turno vuelve a aparecer como disponible.
+- El titular consulta su historial en `Mis reservas`; el complejo consulta únicamente reservas de
+  su organización con autorización contextual.
+- Si otra operación toma el horario antes de crear el hold, la API responde conflicto. El cliente
+  limpia los turnos obsoletos, recarga disponibilidad y mantiene abierto el selector.
