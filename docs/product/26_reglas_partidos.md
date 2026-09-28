@@ -37,7 +37,12 @@ PUBLISHED/MINIMUM_REACHED/CONFIRMED → RESCHEDULED
 ## Cupos
 
 - una persona ocupa máximo un cupo activo por partido;
-- el capitán puede contar o no dentro del máximo según modalidad, definido explícitamente;
+- `Yo también juego` inicia activo, pero el organizador puede desactivarlo antes de publicar;
+- cuando participa, el organizador cuenta exactamente una vez dentro del máximo y su cupo no se
+  duplica al pagar;
+- el organizador participante asume la misma cuota individual, puede pagarla desde su publicación y
+  aparece en recaudación y deuda pendiente;
+- la fila financiera del organizador está protegida frente a retiro y declaración de pago directo;
 - alcanzar máximo impide confirmación adicional;
 - solicitudes simultáneas se resuelven transaccionalmente;
 - eliminar a un participante exige motivo y notificación;

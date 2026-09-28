@@ -23,6 +23,7 @@
 | DEC-017 | 2026-09-04 | El pase QR será opaco y no demostrará pago | Reduce exposición de datos y evita usar el comprobante como autoridad financiera | Aceptada |
 | DEC-018 | 2026-09-04 | CRM, marketing y comercios aliados requieren consentimiento y módulos separados | Protege privacidad, autorización multi-tenant y evolución independiente | Aceptada |
 | DEC-019 | 2026-09-21 | Proveedor OIDC configurable; Auth0 para la demostración y Keycloak como alternativa | Reduce memoria y operación sin incorporar contraseñas al producto | Aceptada |
+| DEC-020 | 2026-09-27 | El organizador participante ocupa un cupo y paga su propia cuota | Mantiene consistentes la capacidad, la recaudación y la deuda del partido | Aceptada |
 
 ## Decisiones pendientes
 
@@ -83,3 +84,14 @@ membresía contextual para administrar un complejo.
 Las pichangas admiten visibilidad `PUBLIC`, `LINK` y `PRIVATE`. Solo las públicas aparecen en Buscar
 partido; las de enlace no se indexan y las privadas requieren invitación o autorización explícita.
 El organizador puede invitar participantes y conserva la gestión de los partidos que creó.
+
+## DEC-2026-09-27 — Cupo y obligación financiera del organizador
+
+Estado: aceptada por el usuario en la conversación de implementación.
+
+`Yo también juego` inicia activo al crear una pichanga y puede desactivarse antes de publicarla. Si
+permanece activo, el organizador ocupa exactamente un cupo, genera una obligación por la misma cuota
+que los demás jugadores y puede pagarla desde la publicación aun cuando ya no queden vacantes. Su
+estado se incluye una sola vez en participantes, pagos, recaudación y monto pendiente. La fila del
+organizador es informativa y protegida: no se puede retirar ni marcar como pago directo desde los
+controles destinados a terceros.

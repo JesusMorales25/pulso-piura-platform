@@ -32,6 +32,8 @@ afectan la decisión en Piura: iluminación, sombra o techo, ventilación, grass
    vigente del proyecto.
 7. El lima se reserva para conversión, disponibilidad y confirmación; el cian identifica acciones
    secundarias, deportes y navegación.
+8. `Yo también juego` inicia activo. Si el organizador participa, ocupa un cupo, paga la cuota normal
+   y se incluye en todos los indicadores financieros sin crear una segunda participación.
 
 ## 3. Cobertura actual frente a la revisión
 
@@ -42,7 +44,7 @@ afectan la decisión en Piura: iluminación, sombra o techo, ventilación, grass
 | Evitar doble inscripción y resolver cupos simultáneos | Implementado | conservar pruebas de concurrencia |
 | Pago de inscripción Yape/Plin | Simulación implementada | integrar proveedor y webhooks cuando se contrate |
 | Lista de espera y retiro del jugador | Implementado | reforzar el CTA visible “Liberar mi cupo” y sus consecuencias |
-| Dashboard del organizador | Implementado | añadir invitaciones, deuda por jugador y reemplazos |
+| Dashboard del organizador | Implementado con invitaciones, deuda por jugador y cuota del organizador | completar avisos automáticos y reemplazos |
 | Visibilidad pública/enlace/privada | Implementado | ampliar pruebas de navegador con dos cuentas reales |
 | Invitaciones a una pichanga | Implementado con enlace ligado al correo | automatizar envío cuando exista proveedor de correo |
 | Compartir por WhatsApp | Implementado para invitaciones y publicaciones públicas | automatizar envío cuando exista proveedor de mensajería |
@@ -141,9 +143,9 @@ Objetivo: repartir el costo sin que el organizador concilie capturas.
 **Criterio de salida:** en simulación, los pagos concurrentes actualizan una sola obligación, nunca
 duplican el cupo y la suma conciliada coincide con el importe requerido.
 
-Estado: no iniciado como módulo de cuota individual. La infraestructura de pagos simulados e
-idempotencia existente sirve como base, pero todavía no representa obligaciones separadas por
-participante.
+Estado: parcial. La infraestructura de pagos simulados e idempotencia representa la obligación de
+jugadores registrados y del organizador participante, con métricas de pagado y pendiente sin duplicar
+cupos. Falta generalizar el enlace individual de cobro y la conciliación real mediante proveedor.
 
 ### Fase 4 — Operación express del complejo
 
