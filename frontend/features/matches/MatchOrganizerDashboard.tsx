@@ -27,7 +27,8 @@ import type {
 } from "./types";
 import { MatchCheckInScanner } from "./MatchCheckInScanner";
 
-export function MatchOrganizerDashboard() {
+export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedded?: boolean; onCreate?: () => void } = {}) {
+  const Root = embedded ? "div" : "main";
   const { accessToken, login } = useAuth();
   const { capabilities, loading: capabilitiesLoading } = useUserCapabilities();
   const [matches, setMatches] = useState<MatchSummary[]>([]);
@@ -326,17 +327,17 @@ export function MatchOrganizerDashboard() {
   }
 
   return (
-    <main className="section organizerDashboard">
+    <Root className={embedded ? "organizerDashboard" : "section organizerDashboard"}>
       <div className="dashboardHeading">
         <div>
           <p className="eyebrow">MI ORGANIZACIÓN</p>
-          <h1>Panel de partidos</h1>
+          {embedded ? <h2>Partidos creados por ti</h2> : <h1>Panel de partidos</h1>}
           <p className="pageLead">Controla cupos, participantes y pagos registrados.</p>
         </div>
-        <Link className="primary" href="/crear">
+        {onCreate ? <button className="primary" type="button" onClick={onCreate}><PlusCircle size={20} />Crear partido</button> : <Link className="primary" href="/crear">
           <PlusCircle size={20} />
           Crear partido
-        </Link>
+        </Link>}
       </div>
 
       {error && <p className="inlineAlert errorNotice">{error}</p>}
@@ -589,6 +590,6 @@ export function MatchOrganizerDashboard() {
         }}
         tone={error ? "error" : "success"}
       />
-    </main>
+    </Root>
   );
 }

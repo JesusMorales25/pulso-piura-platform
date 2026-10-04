@@ -85,3 +85,9 @@ Horario semanal: día, franja horaria, precio y duración en líneas separadas; 
 ### Pago fijo en Mis reservas
 - La lista selecciona inicialmente la primera reserva con pago disponible. Seleccionar para pagar cambia la reserva activa; solo su checkout muestra métodos, aceptación e importe en la barra fija móvil.
 - Las otras reservas conservan resumen y acciones de gestión, sin barras de pago duplicadas.
+
+### Crear y gestionar pichangas
+- Crear muestra un banner con fotografía y dos opciones: Partidos creados (consulta /matches/mine filtrada por el organizador autenticado) y Crear partido.
+- Formulario en FormSheet con dos pasos: datos/cupos/visibilidad/política y cancha/publicación. Se mantiene selección de reserva al final y validación de capacidad.
+- Vista previa se abre por botón en otro FormSheet y puede cerrarse sin perder el borrador. Borradores antiguos migran de cuatro a dos pasos con flowVersion=2.
+- Al publicar se vuelve al listado actualizado y se prepara un formulario nuevo. Cerrar sin publicar conserva el avance.

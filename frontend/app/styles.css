@@ -9898,6 +9898,19 @@ body:has(.resourceFormSheet[open]) { overflow: hidden; }
 .weeklyScheduleActions button { min-height: 38px; font-size: .72rem; padding: 8px 12px; }
 .homeModeSwitch.complexPanelSwitch button { min-width: 0; white-space: normal; }
 .topbar > :last-child { grid-column: 3; justify-self: end; }
+.matchCreationWorkspace { min-width: 0; }
+.matchCreateIntro { margin-top: 18px; display: grid; gap: 12px; }
+.matchCreateIntro h2, .matchCreateIntro p { margin: 0; }
+.compactMatchBuilder.section { padding: 0; width: 100%; min-width: 0; }
+.compactMatchBuilder .matchComposerHeading > div { display: none; }
+.compactMatchBuilder .matchStepTabs { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+.compactMatchBuilder .matchComposerShell { display: block; }
+.compactMatchBuilder .matchBuilderForm { margin: 14px 0 0; padding: 0; border: 0; box-shadow: none; }
+.compactMatchBuilder .matchFormSection { padding: 12px; min-width: 0; }
+.compactMatchBuilder .matchFormSectionTitle h2 { font-size: 1rem; }
+.compactMatchBuilder .matchFormSectionTitle p { font-size: .75rem; }
+.compactMatchBuilder .matchStepActions button { font-size: .78rem; min-height: 44px; }
+.resourceFormSheet .matchComposerPreview { position: static; width: 100%; min-width: 0; margin: 0; padding: 14px; }
 .mobileReservationAction { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); align-items: center; gap: 10px; padding: 12px; }
 .mobileReservationAction .reservationPolicy { grid-column: 1 / -1; margin: 0; align-items: start; font-size: .72rem; line-height: 1.45; }
 .mobileReservationAction > span { display: grid; gap: 3px; }

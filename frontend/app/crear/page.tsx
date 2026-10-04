@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ShieldCheck } from "@phosphor-icons/react";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
-import { MatchBuilder } from "@/features/matches/MatchBuilder";
+import { MatchCreationWorkspace } from "@/features/matches/MatchCreationWorkspace";
 
 export default function CreateMatchPage() {
   const { capabilities, loading } = useUserCapabilities();
@@ -33,5 +33,5 @@ export default function CreateMatchPage() {
     );
   }
 
-  return <MatchBuilder />;
+  return <MatchCreationWorkspace />;
 }

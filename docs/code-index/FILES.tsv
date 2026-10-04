@@ -349,7 +349,7 @@ documentation	md	17579	docs/ITERATION_3_VENUES_PLAN.md
 documentation	md	13709	docs/ITERATION_4_RESERVATIONS_PLAN.md
 documentation	md	3620	docs/ITERATION_5_MATCHES_PLAN.md
 documentation	md	4785	docs/NEXT_INCREMENT.md
-documentation	md	9047	docs/OBSERVATIONS_OCTOBER_2026.md
+documentation	md	9688	docs/OBSERVATIONS_OCTOBER_2026.md
 documentation	yaml	52597	docs/openapi-identity.yaml
 documentation	md	10606	docs/PRODUCCION_ORACLE_FREE_TIER.md
 product-doc	md	8704	docs/product/00_contexto_maestro_desarrollo_ia.md
@@ -409,7 +409,7 @@ frontend-route	tsx	327	frontend/app/admin/[orgId]/page.tsx
 frontend-route	tsx	248	frontend/app/auth/callback/loading.tsx
 frontend-route	tsx	1656	frontend/app/auth/callback/page.tsx
 frontend-route	tsx	584	frontend/app/canchas/page.tsx
-frontend-route	tsx	1143	frontend/app/crear/page.tsx
+frontend-route	tsx	1173	frontend/app/crear/page.tsx
 frontend-route	tsx	589	frontend/app/error.tsx
 frontend-route	tsx	476	frontend/app/invitaciones/[invitationId]/page.tsx
 frontend-route	tsx	1445	frontend/app/layout.tsx
@@ -428,7 +428,7 @@ frontend-route	tsx	5701	frontend/app/plataforma/organizaciones/page.tsx
 frontend-route	tsx	3829	frontend/app/plataforma/page.tsx
 frontend-route	tsx	6369	frontend/app/plataforma/solicitudes/page.tsx
 frontend-route	tsx	288	frontend/app/reservas-cancha/page.tsx
-frontend-route	css	241386	frontend/app/styles.css
+frontend-route	css	242382	frontend/app/styles.css
 frontend-route	tsx	982	frontend/app/tercer-tiempo/page.tsx
 root-or-support	md	11	frontend/CLAUDE.md
 root-or-support	tsx	1254	frontend/components/feedback/FloatingNotice.tsx
@@ -458,12 +458,13 @@ frontend-feature	tsx	7598	frontend/features/home/VenueAgendaPanel.tsx
 frontend-feature	tsx	3161	frontend/features/matches/DemoMatchBuilder.tsx
 frontend-feature	tsx	3305	frontend/features/matches/DemoMatchDetail.tsx
 frontend-feature	ts	109	frontend/features/matches/draft.ts
-frontend-feature	tsx	25640	frontend/features/matches/MatchBuilder.tsx
+frontend-feature	tsx	26387	frontend/features/matches/MatchBuilder.tsx
 frontend-feature	tsx	7136	frontend/features/matches/MatchCatalog.tsx
 frontend-feature	tsx	6301	frontend/features/matches/MatchCheckInScanner.tsx
+frontend-feature	tsx	2323	frontend/features/matches/MatchCreationWorkspace.tsx
 frontend-feature	tsx	36884	frontend/features/matches/MatchDetail.tsx
 frontend-feature	tsx	2431	frontend/features/matches/MatchInvitationAcceptance.tsx
-frontend-feature	tsx	24675	frontend/features/matches/MatchOrganizerDashboard.tsx
+frontend-feature	tsx	25007	frontend/features/matches/MatchOrganizerDashboard.tsx
 frontend-feature	tsx	3250	frontend/features/matches/MatchQrPass.tsx
 frontend-feature	ts	588	frontend/features/matches/mobile-checkout.ts
 frontend-feature	tsx	3122	frontend/features/matches/MobileMatchCheckout.tsx

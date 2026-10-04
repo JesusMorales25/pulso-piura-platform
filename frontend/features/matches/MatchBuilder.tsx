@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FormSheet } from "@/components/forms/FormSheet";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
@@ -24,10 +25,11 @@ import { defaultMatchDraft } from "./draft";
 import type { MatchSummary } from "./types";
 
 type Visibility = "PUBLIC" | "PRIVATE";
-type BuilderStep = 1 | 2 | 3 | 4;
+type BuilderStep = 1 | 2;
 
 type MatchDraft = {
   activeStep: BuilderStep;
+  flowVersion: number;
   selectedReservationId: string;
   title: string;
   visibility: Visibility;
@@ -58,7 +60,9 @@ function friendlyPublishError(reason: unknown) {
   return reason.message || fallback;
 }
 
-export function MatchBuilder() {
+export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {}) {
+  const Root = "div";
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { accessToken, login, user } = useAuth();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [created, setCreated] = useState<MatchSummary | null>(null);
@@ -103,7 +107,7 @@ export function MatchBuilder() {
           if (draft.organizerCounts !== undefined) setOrganizerCounts(draft.organizerCounts);
           if (draft.cancellationPolicy !== undefined) setCancellationPolicy(draft.cancellationPolicy);
           if ([1, 2, 3, 4].includes(Number(draft.activeStep))) {
-            setActiveStep(Number(draft.activeStep) as BuilderStep);
+            setActiveStep(draft.flowVersion === 2 ? (Number(draft.activeStep) === 2 ? 2 : 1) : (Number(draft.activeStep) === 4 ? 2 : 1));
           }
         }
       } catch {
@@ -119,6 +123,7 @@ export function MatchBuilder() {
     if (!draftReady || created) return;
     const draft: MatchDraft = {
       activeStep,
+      flowVersion: 2,
       selectedReservationId,
       title,
       visibility,
@@ -184,16 +189,16 @@ export function MatchBuilder() {
         return "Ingresa una cuota válida para el partido.";
       }
     }
-    if (step === 2) {
+    if (step === 1) {
       if (numericMinimum < 2) return "El mínimo debe ser de al menos 2 jugadores.";
       if (numericMaximum < numericMinimum) {
         return "Los cupos máximos deben ser iguales o mayores al mínimo de jugadores.";
       }
     }
-    if (step === 3 && cancellationPolicy.trim().length < 10) {
+    if (step === 1 && cancellationPolicy.trim().length < 10) {
       return "Describe brevemente la política de cancelación.";
     }
-    if (step === 4) {
+    if (step === 2) {
       if (!selectedReservationId) return "Selecciona una cancha confirmada para publicar.";
       if (selectedCapacity && numericMaximum > selectedCapacity) {
         return `Esta cancha admite como máximo ${selectedCapacity} jugadores.`;
@@ -214,10 +219,10 @@ export function MatchBuilder() {
       setNoticeTone("error");
       setNotice("");
       setActiveStep(target);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    document.querySelector(".compactMatchBuilder .matchStepTabs")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       return;
     }
-    const firstIncomplete = ([1, 2, 3, 4] as BuilderStep[]).find(
+    const firstIncomplete = ([1, 2] as BuilderStep[]).find(
       (step) => step < target && stepError(step),
     );
     setNoticeTone("error");
@@ -231,7 +236,7 @@ export function MatchBuilder() {
       setNotice(error);
       return;
     }
-    if (activeStep < 4) goToStep((activeStep + 1) as BuilderStep);
+    if (activeStep < 2) goToStep((activeStep + 1) as BuilderStep);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -240,7 +245,7 @@ export function MatchBuilder() {
       await login(false, "/crear");
       return;
     }
-    const firstInvalidStep = ([1, 2, 3, 4] as BuilderStep[]).find((step) => stepError(step));
+    const firstInvalidStep = ([1, 2] as BuilderStep[]).find((step) => stepError(step));
     if (firstInvalidStep) {
       setNoticeTone("error");
       setNotice(stepError(firstInvalidStep));
@@ -272,6 +277,7 @@ export function MatchBuilder() {
       );
       window.sessionStorage.removeItem(draftStorageKey);
       setCreated(published);
+      onPublished?.();
     } catch (reason) {
       const message = friendlyPublishError(reason);
       setNoticeTone("error");
@@ -300,29 +306,29 @@ export function MatchBuilder() {
 
   if (!accessToken) {
     return (
-      <main className="section accessDeniedPage">
+      <Root className="section accessDeniedPage">
         <h1>Organiza un partido</h1>
         <p className="pageLead">Inicia sesión para reservar una cancha y publicar el evento.</p>
         <button className="primary" onClick={() => void login(false, "/crear")} type="button">
           Iniciar sesión
         </button>
-      </main>
+      </Root>
     );
   }
 
   if (loading) {
     return (
-      <main className="section createMatchPage">
+      <Root className="section createMatchPage compactMatchBuilder">
         <div className="matchComposerSkeleton" aria-label="Preparando el formulario">
           <i /><i /><i />
         </div>
-      </main>
+      </Root>
     );
   }
 
   if (created) {
     return (
-      <main className="section createMatchPage">
+      <Root className="section createMatchPage compactMatchBuilder">
         <div className="createSuccess">
           <CheckCircle size={52} weight="fill" />
           <p className="eyebrow">CONVOCATORIA LISTA</p>
@@ -342,12 +348,12 @@ export function MatchBuilder() {
           </div>
         </div>
         <FloatingNotice message={notice} onDismiss={() => setNotice("")} tone={noticeTone} />
-      </main>
+      </Root>
     );
   }
 
   return (
-    <main className="section createMatchPage">
+    <Root className="section createMatchPage compactMatchBuilder">
       <header className="matchComposerHeading">
         <div>
           <p className="eyebrow">ARMAR NUEVA PICHANGA</p>
@@ -357,8 +363,8 @@ export function MatchBuilder() {
           </p>
         </div>
         <ol aria-label="Pasos de publicación" className="matchStepTabs">
-          {([1, 2, 3, 4] as BuilderStep[]).map((step) => {
-            const labels = ["Partido", "Cupos", "Publicar", "Cancha"];
+          {([1, 2] as BuilderStep[]).map((step) => {
+            const labels = ["Partido y convocatoria", "Cancha y publicar"];
             const unlocked = step <= activeStep || canOpenStep(step);
             const completed = step < activeStep && !stepError(step);
             return (
@@ -425,9 +431,9 @@ export function MatchBuilder() {
               </div>
             </section>}
 
-            {activeStep === 2 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-2-title">
+            {activeStep === 1 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-2-title">
               <div className="matchFormSectionTitle">
-                <span>2</span>
+                <span><UsersThree size={18} /></span>
                 <div><h2 id="match-step-2-title">Cupos y convocatoria</h2><p>Define cuándo el partido está listo y cuántos podrán inscribirse.</p></div>
               </div>
               <div className="formPair">
@@ -463,9 +469,9 @@ export function MatchBuilder() {
               </label>
             </section>}
 
-            {activeStep === 3 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-3-title">
+            {activeStep === 1 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-3-title">
               <div className="matchFormSectionTitle">
-                <span>3</span>
+                <span><Eye size={18} /></span>
                 <div><h2 id="match-step-3-title">Publicación</h2><p>Elige quién podrá encontrar el partido y deja claras sus reglas.</p></div>
               </div>
               <fieldset className="visibilityChoice visibilityChoiceTwo">
@@ -490,9 +496,9 @@ export function MatchBuilder() {
               </label>
             </section>}
 
-            {activeStep === 4 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-4-title">
+            {activeStep === 2 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-4-title">
               <div className="matchFormSectionTitle">
-                <span>4</span>
+                <span>2</span>
                 <div><h2 id="match-step-4-title">Cancha y horario</h2><p>Selecciona al final una reserva que admita todos los cupos.</p></div>
               </div>
               {!compatibleReservations.length ? (
@@ -529,13 +535,14 @@ export function MatchBuilder() {
               )}
             </section>}
 
+            <button className="secondary" type="button" onClick={() => setPreviewOpen(true)}><Eye size={18} /> Ver vista previa</button>
             <div className="matchStepActions">
               {activeStep > 1 && (
                 <button className="secondary" onClick={() => goToStep((activeStep - 1) as BuilderStep)} type="button">
                   Volver
                 </button>
               )}
-              {activeStep < 4 ? (
+              {activeStep < 2 ? (
                 <button className="primary matchNextButton" onClick={continueToNextStep} type="button">
                   <span>Siguiente</span>
                   <ArrowRight aria-hidden="true" size={20} weight="bold" />
@@ -549,6 +556,7 @@ export function MatchBuilder() {
             </div>
           </form>
 
+          <FormSheet open={previewOpen} title="Vista previa del partido" onClose={() => setPreviewOpen(false)}>
           <aside className="matchComposerPreview" aria-label="Vista previa de la pichanga">
             <div className="matchPreviewTopline"><span>VISTA PREVIA</span><b>{visibilityOptions.find((item) => item.value === visibility)?.label}</b></div>
             <div className="matchPreviewIdentity">
@@ -574,9 +582,10 @@ export function MatchBuilder() {
             </div>
             <p><Clock /> Horario y precio visibles antes de que alguien se una.</p>
           </aside>
+          </FormSheet>
       </div>
 
       <FloatingNotice message={notice} onDismiss={() => setNotice("")} tone={noticeTone} />
-    </main>
+    </Root>
   );
 }

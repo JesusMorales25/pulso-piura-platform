@@ -370,6 +370,7 @@ typescript	matches	function	defaultMatchDraft	frontend/features/matches/draft.ts
 typescript	matches	function	MatchBuilder	frontend/features/matches/MatchBuilder.tsx
 typescript	matches	function	MatchCatalog	frontend/features/matches/MatchCatalog.tsx
 typescript	matches	function	MatchCheckInScanner	frontend/features/matches/MatchCheckInScanner.tsx
+typescript	matches	function	MatchCreationWorkspace	frontend/features/matches/MatchCreationWorkspace.tsx
 typescript	matches	function	MatchDetail	frontend/features/matches/MatchDetail.tsx
 typescript	matches	function	MatchInvitationAcceptance	frontend/features/matches/MatchInvitationAcceptance.tsx
 typescript	matches	function	MatchOrganizerDashboard	frontend/features/matches/MatchOrganizerDashboard.tsx
