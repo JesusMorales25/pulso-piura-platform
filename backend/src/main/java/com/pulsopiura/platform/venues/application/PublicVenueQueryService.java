@@ -35,6 +35,34 @@ public class PublicVenueQueryService
     }
 
     @Transactional(readOnly = true)
+    public List<String> districts() {
+        return venues.findAllByStatusOrderByNameAsc(VenueStatus.PUBLISHED).stream()
+                .map(VenueEntity::districtCode)
+                .filter(value -> value != null && !value.isBlank())
+                .map(com.pulsopiura.platform.shared.DistrictCatalog::canonical)
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<UUID> publishedSpaceIdsInDistrict(String district) {
+        return venues.findAllByStatusOrderByNameAsc(VenueStatus.PUBLISHED).stream()
+                .filter(
+                        venue ->
+                                com.pulsopiura.platform.shared.DistrictCatalog.same(
+                                        com.pulsopiura.platform.shared.DistrictCatalog.canonical(
+                                                venue.districtCode()),
+                                        com.pulsopiura.platform.shared.DistrictCatalog.canonical(
+                                                district)))
+                .flatMap(venue -> publishedSpaces(venue).stream())
+                .map(SportSpaceEntity::id)
+                .collect(java.util.stream.Collectors.toSet());
+    }
+
+    @Transactional(readOnly = true)
     public PublicVenueViews.VenuePage search(
             String district, String sportCode, LocalDate date, int page, int size) {
         if (page < 0) throw new IllegalArgumentException("La página no puede ser negativa");
@@ -47,9 +75,14 @@ public class PublicVenueQueryService
                         .filter(
                                 venue ->
                                         normalizedDistrict == null
-                                                || venue.districtCode()
-                                                        .toUpperCase(Locale.ROOT)
-                                                        .contains(normalizedDistrict))
+                                                || com.pulsopiura.platform.shared.DistrictCatalog
+                                                        .same(
+                                                                com.pulsopiura.platform.shared
+                                                                        .DistrictCatalog.canonical(
+                                                                        venue.districtCode()),
+                                                                com.pulsopiura.platform.shared
+                                                                        .DistrictCatalog.canonical(
+                                                                        district)))
                         .filter(venue -> matchesSpaceFilter(venue, normalizedSport, date))
                         .toList();
         var offset = (long) page * size;

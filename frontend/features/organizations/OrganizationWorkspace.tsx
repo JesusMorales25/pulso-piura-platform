@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { DistrictSelect } from "@/components/forms/DistrictSelect";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
+import { Buildings, MapPin, Plus, ArrowRight } from "@phosphor-icons/react";
+import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import {
   organizationRoleLabel,
   organizationStatusLabel,
@@ -16,7 +19,11 @@ type Organization = {
   slug: string;
   status: string;
   role: "OWNER" | "ADMIN" | "OPERATOR";
+  districtCode: string | null;
+  address: string | null;
 };
+
+type Overview = { venues: number; spaces: number; members: number; matchesToday: number; reservationsToday: number; expectedMinor: number; locations: string | null };
 
 export function OrganizationWorkspace() {
   const { accessToken, loading: authLoading, login } = useAuth();
@@ -25,6 +32,14 @@ export function OrganizationWorkspace() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [overviews, setOverviews] = useState<Record<string, Overview>>({});
+  const [showCreate, setShowCreate] = useState(false);
+  const createDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (showCreate && createDialog.current && !createDialog.current.open) {
+      createDialog.current.showModal();
+    }
+  }, [showCreate]);
 
   const fetchOrganizations = useCallback(async () => {
     if (!accessToken) throw new Error("Tu sesión venció. Vuelve a ingresar.");
@@ -36,7 +51,11 @@ export function OrganizationWorkspace() {
     let active = true;
     void fetchOrganizations()
       .then((result) => {
-        if (active) setOrganizations(result);
+        if (active) { setOrganizations(result); if (new URLSearchParams(window.location.search).get("create") === "1") setShowCreate(true); }
+        return Promise.all(result.map(async (organization) => {
+          const overview = await apiRequest<Overview>(`/organizations/${organization.id}/overview`, accessToken);
+          return [organization.id, overview] as const;
+        })).then((entries) => { if (active) setOverviews(Object.fromEntries(entries)); });
       })
       .catch((requestError: unknown) => {
         if (!active) return;
@@ -59,6 +78,10 @@ export function OrganizationWorkspace() {
     if (!accessToken) return;
     const form = event.currentTarget;
     const values = new FormData(form);
+    if (!["name", "districtCode", "address"].every((field) => String(values.get(field) || "").trim())) {
+      setError("Completa el nombre, distrito y dirección del complejo.");
+      return;
+    }
     setCreating(true);
     setError(null);
     try {
@@ -67,11 +90,12 @@ export function OrganizationWorkspace() {
         accessToken,
         {
           method: "POST",
-          body: JSON.stringify({ name: values.get("name") }),
+          body: JSON.stringify({ name: values.get("name"), districtCode: values.get("districtCode"), address: values.get("address") }),
         },
       );
       setOrganizations((current) => [...current, created]);
       form.reset();
+      setShowCreate(false);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -101,18 +125,18 @@ export function OrganizationWorkspace() {
 
   return (
     <>
-      {error && (
-        <div className="inlineAlert errorNotice" role="alert">
-          {error}
-        </div>
-      )}
+      <header className="ownerWorkspaceHero"><div><p className="eyebrow">MI CANCHA</p><h1>Gestiona tu complejo</h1><p>Configura tus sedes y revisa la operación de hoy.</p></div>{capabilities.canManageOrganizations && <button className="primary borderless" onClick={() => setShowCreate((current) => !current)} type="button"><Plus /> Crear complejo</button>}</header>
+      <div className="ownerOverviewMetrics" aria-label="Resumen de complejos">
+        {[["Complejos", organizations.length], ["Canchas habilitadas", Object.values(overviews).reduce((sum, item) => sum + item.spaces, 0)], ["Partidos hoy", Object.values(overviews).reduce((sum, item) => sum + item.matchesToday, 0)], ["Recaudación estimada hoy", new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(Object.values(overviews).reduce((sum, item) => sum + item.expectedMinor, 0) / 100)]].map(([label, value]) => <article key={label}><small>{label}</small><strong>{Object.keys(overviews).length === organizations.length ? value : "—"}</strong></article>)}
+      </div>
+      <p className="muted">Estimación basada en las reservas confirmadas de hoy; no equivale a dinero cobrado.</p>
 
-      <section className="workspaceGrid" aria-label="Organizaciones deportivas">
+      <section className="workspaceGrid ownerComplexWorkspace" aria-label="Organizaciones deportivas">
         <div>
           <div className="sectionTitle workspaceTitle">
             <div>
               <p className="eyebrow">TUS ESPACIOS</p>
-              <h2>Organizaciones</h2>
+              <h2>Mis complejos</h2>
             </div>
             <span className="countBadge">{organizations.length}</span>
           </div>
@@ -128,18 +152,21 @@ export function OrganizationWorkspace() {
             <div className="organizationList">
               {organizations.map((organization) => (
                 <article
-                  className="card organizationCard"
+                  className="card organizationCard ownerComplexCard"
                   key={organization.id}
                 >
                   <div>
                     <span className="pill">
                       {organizationRoleLabel(organization.role)}
                     </span>
+                    <span className="ownerComplexVisual" aria-hidden="true"><Buildings size={38} /></span>
                     <h3>{organization.name}</h3>
+                    <p><MapPin size={16} /> {organization.address || overviews[organization.id]?.locations || "Ubicación pendiente de configurar"}{organization.districtCode ? ` · ${organization.districtCode}` : ""}</p>
                     <p>{organizationStatusLabel(organization.status)}</p>
+                    <div className="ownerComplexFacts"><span>{overviews[organization.id]?.spaces ?? "—"} canchas habilitadas</span><span>{overviews[organization.id]?.members ?? "—"} colaboradores</span><span>{overviews[organization.id]?.reservationsToday ?? "—"} reservas hoy</span></div>
                   </div>
                   <Link className="primary" href={`/admin/${organization.id}`}>
-                    Abrir panel
+                    Abrir panel <ArrowRight />
                   </Link>
                 </article>
               ))}
@@ -147,14 +174,15 @@ export function OrganizationWorkspace() {
           )}
         </div>
 
-        {capabilities.canManageOrganizations ? (
+        {capabilities.canManageOrganizations && showCreate ? (
+          <dialog ref={createDialog} className="createComplexDialog" aria-labelledby="create-complex-title" onCancel={() => setShowCreate(false)} onClose={() => setShowCreate(false)}>
           <form
             className="card adminForm createOrganization"
             noValidate
             onSubmit={createOrganization}
           >
             <p className="eyebrow">NUEVO COMPLEJO</p>
-            <h2>Crear organización</h2>
+            <div className="createComplexDialogHeading"><h2 id="create-complex-title">Crear complejo</h2><button type="button" className="secondary" aria-label="Cerrar formulario" onClick={() => setShowCreate(false)}>×</button></div>
             <p className="muted">
               Serás propietario y podrás invitar administradores u operadores.
             </p>
@@ -168,11 +196,16 @@ export function OrganizationWorkspace() {
                 required
               />
             </label>
+            <DistrictSelect />
+            <label>Dirección de la sede<input name="address" maxLength={240} placeholder="Av. y número o referencia de ubicación" autoComplete="street-address" required /></label>
+            {error && <p className="errorNotice" role="alert">{error}</p>}
             <button className="primary borderless" disabled={creating}>
-              {creating ? "Creando…" : "Crear organización"}
+              {creating ? "Creando…" : "Crear complejo"}
             </button>
+            <button type="button" className="secondary" disabled={creating} onClick={() => setShowCreate(false)}>Cancelar</button>
           </form>
-        ) : (
+          </dialog>
+        ) : !capabilities.canManageOrganizations ? (
           <aside className="card adminForm createOrganization">
             <p className="eyebrow">ACCESO PARA PROPIETARIOS</p>
             <h2>Publica tu complejo</h2>
@@ -184,8 +217,9 @@ export function OrganizationWorkspace() {
               Ir a mi perfil
             </Link>
           </aside>
-        )}
+        ) : null}
       </section>
+      <FloatingNotice message={error || ""} tone="error" onDismiss={() => setError(null)} />
     </>
   );
 }

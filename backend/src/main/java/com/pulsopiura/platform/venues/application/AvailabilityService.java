@@ -83,6 +83,36 @@ public class AvailabilityService {
         return view(saved);
     }
 
+    @Transactional
+    public AvailabilityRuleView updateRule(
+            UUID actorId,
+            UUID organizationId,
+            UUID spaceId,
+            UUID ruleId,
+            int day,
+            LocalTime start,
+            LocalTime end,
+            int minutes,
+            long price,
+            LocalDate from,
+            LocalDate to,
+            long version) {
+        authorization.require(actorId, organizationId, OrganizationPermission.MANAGE_ORGANIZATION);
+        requireConfigurableSpace(organizationId, spaceId);
+        var rule =
+                rules.findByIdAndOrganizationId(ruleId, organizationId)
+                        .filter(candidate -> candidate.sportSpaceId().equals(spaceId))
+                        .orElseThrow(
+                                () ->
+                                        new NoSuchElementException(
+                                                "Regla de disponibilidad no encontrada"));
+        rule.update(day, start, end, minutes, price, from, to, version, clock.instant());
+        if ("ACTIVE".equals(rule.status())) ensureRuleDoesNotOverlap(organizationId, spaceId, rule);
+        var saved = rules.saveAndFlush(rule);
+        audit(actorId, organizationId, "AVAILABILITY_RULE_UPDATED", "AVAILABILITY_RULE", ruleId);
+        return view(saved);
+    }
+
     @Transactional(readOnly = true)
     public List<AvailabilityRuleView> listRules(UUID actorId, UUID organizationId, UUID spaceId) {
         authorization.require(actorId, organizationId, OrganizationPermission.VIEW);
@@ -93,6 +123,25 @@ public class AvailabilityService {
                 .stream()
                 .map(this::view)
                 .toList();
+    }
+
+    @Transactional
+    public AvailabilityRuleView activateRule(
+            UUID actorId, UUID organizationId, UUID spaceId, UUID ruleId, long version) {
+        authorization.require(actorId, organizationId, OrganizationPermission.MANAGE_ORGANIZATION);
+        requireConfigurableSpace(organizationId, spaceId);
+        var rule =
+                rules.findByIdAndOrganizationId(ruleId, organizationId)
+                        .filter(candidate -> candidate.sportSpaceId().equals(spaceId))
+                        .orElseThrow(
+                                () ->
+                                        new NoSuchElementException(
+                                                "Regla de disponibilidad no encontrada"));
+        ensureRuleDoesNotOverlap(organizationId, spaceId, rule);
+        rule.activate(version, clock.instant());
+        var saved = rules.saveAndFlush(rule);
+        audit(actorId, organizationId, "AVAILABILITY_RULE_ACTIVATED", "AVAILABILITY_RULE", ruleId);
+        return view(saved);
     }
 
     @Transactional
@@ -207,6 +256,7 @@ public class AvailabilityService {
                         .findAllByOrganizationIdAndSportSpaceIdOrderByDayOfWeekAscStartLocalTimeAsc(
                                 organizationId, spaceId)
                         .stream()
+                        .filter(rule -> !rule.id().equals(candidate.id()))
                         .filter(rule -> "ACTIVE".equals(rule.status()))
                         .filter(rule -> rule.dayOfWeek() == candidate.dayOfWeek())
                         .filter(

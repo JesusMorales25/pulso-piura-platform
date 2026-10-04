@@ -9,10 +9,14 @@ function ReservationItem({
   initial,
   accessToken,
   highlighted = false,
+  paymentActive = true,
+  onSelectPayment,
 }: {
   initial: Reservation;
   accessToken: string;
   highlighted?: boolean;
+  paymentActive?: boolean;
+  onSelectPayment?: () => void;
 }) {
   const [reservation, setReservation] = useState(initial);
   const update = useCallback(
@@ -36,12 +40,18 @@ function ReservationItem({
       className={`card reservationCard${highlighted ? " highlighted" : ""}`}
       id={`reservation-${reservation.id}`}
     >
+      {onSelectPayment && canPay(reservation) && (
+        <button className="secondary" type="button" aria-pressed={paymentActive} onClick={onSelectPayment}>
+          {paymentActive ? "Reserva seleccionada para pagar" : "Seleccionar para pagar"}
+        </button>
+      )}
       <ReservationCheckout
         accessToken={accessToken}
         reservation={reservation}
         venueName={reservation.venueName ?? "Complejo"}
         spaceName={reservation.spaceName ?? "Cancha"}
         onChange={update}
+        paymentActive={paymentActive}
       />
     </article>
   );
@@ -99,6 +109,7 @@ function ReservationsList({
 }) {
   const [result, setResult] = useState<ReservationPage | null>(null);
   const [page, setPage] = useState(0);
+  const [selectedPaymentId, setSelectedPaymentId] = useState("");
   const [error, setError] = useState("");
   useEffect(() => {
     const controller = new AbortController();
@@ -137,8 +148,10 @@ function ReservationsList({
       </p>
     );
   if (!result) return <p className="notice">Cargando tus reservas…</p>;
+  const activePaymentId = result.items.some((item) => item.id === selectedPaymentId)
+    ? selectedPaymentId : result.items.find(canPay)?.id;
   return (
-    <div className="reservationList">
+    <div className="reservationList activeReservationList">
       <aside className="reservationListNotice">
         <strong>Pagos de demostración</strong>
         <span>No se realizan cobros reales. Puedes cancelar hasta 2 horas antes.</span>
@@ -157,6 +170,8 @@ function ReservationsList({
             initial={reservation}
             accessToken={accessToken}
             highlighted={reservation.id === highlightedReservationId}
+            paymentActive={reservation.id === activePaymentId}
+            onSelectPayment={() => setSelectedPaymentId(reservation.id)}
           />
         ))
       )}
@@ -187,6 +202,12 @@ function ReservationsList({
       </nav>
     </div>
   );
+}
+
+function canPay(reservation: Reservation) {
+  if (reservation.status === "CONFIRMED") return reservation.paidMinor > 0 && reservation.paidMinor < reservation.totalMinor;
+  return (reservation.status === "HOLD" || reservation.status === "PENDING_PAYMENT") &&
+    (!reservation.expiresAt || Date.parse(reservation.expiresAt) > Date.now());
 }
 
 export function MyReservations({

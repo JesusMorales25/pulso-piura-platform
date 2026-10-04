@@ -30,6 +30,7 @@ type Props = {
   spaceName: string;
   onChange: (reservation: Reservation) => void;
   initialPlan?: ReservationPaymentPlan;
+  paymentActive?: boolean;
 };
 export function ReservationCheckout({
   accessToken,
@@ -38,6 +39,7 @@ export function ReservationCheckout({
   spaceName,
   onChange,
   initialPlan = "DEPOSIT",
+  paymentActive = true,
 }: Props) {
   const [now, setNow] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
@@ -303,7 +305,7 @@ export function ReservationCheckout({
           iniciar otra reserva.
         </p>
       )}
-      {((temporary && !expired) || balancePayment) && (
+      {paymentActive && ((temporary && !expired) || balancePayment) && (
         <div className="paymentChoice">
           <p className="eyebrow">MODO DE PRUEBAS · SIN COBROS REALES</p>
           <p>
@@ -363,30 +365,6 @@ export function ReservationCheckout({
               </button>
             ))}
           </div>
-          <label className="reservationPolicy">
-            <input
-              type="checkbox"
-              checked={accepted}
-              disabled={busy}
-              onChange={(event) => setAccepted(event.target.checked)}
-            />
-            <span>
-              Acepto que puedo cancelar hasta 2 horas antes y que no hay
-              devoluciones de ningún importe pagado.
-            </span>
-          </label>
-          <button
-            className="primary"
-            type="button"
-            disabled={busy || !accepted || !checkoutReady}
-            onClick={() => void pay()}
-          >
-            {busy
-              ? "Verificando pago…"
-              : !checkoutReady
-                ? "Preparando pago seguro…"
-                : `${pending ? "Retomar" : "Simular"} pago de ${money(amount)}`}
-          </button>
           {!checkoutReady && simulation !== false && (
             <div className="checkoutPreparation" role="status">
               <span>Verificando tu reserva antes de habilitar el pago…</span>
@@ -407,8 +385,20 @@ export function ReservationCheckout({
           )}
         </div>
       )}
-      {((temporary && !expired) || balancePayment) && (
+      {paymentActive && ((temporary && !expired) || balancePayment) && (
         <div className="mobileReservationAction">
+          <label className="reservationPolicy">
+            <input
+              type="checkbox"
+              checked={accepted}
+              disabled={busy}
+              onChange={(event) => setAccepted(event.target.checked)}
+            />
+            <span>
+              Acepto que puedo cancelar hasta 2 horas antes y que no hay
+              devoluciones de ningún importe pagado.
+            </span>
+          </label>
           <span>
             <small>{balancePayment ? "Saldo pendiente" : "Paga ahora"}</small>
             <strong>{money(amount)}</strong>

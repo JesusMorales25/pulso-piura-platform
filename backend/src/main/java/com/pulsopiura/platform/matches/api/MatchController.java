@@ -56,8 +56,10 @@ public class MatchController {
     }
 
     @GetMapping
-    List<MatchView> catalog(@RequestParam(required = false) String sport) {
-        return matches.publicCatalog(sport);
+    List<MatchView> catalog(
+            @RequestParam(required = false) String sport,
+            @RequestParam(required = false) String district) {
+        return matches.publicCatalog(sport, district);
     }
 
     @GetMapping("/{publicSlug:[a-z0-9-]+}")

@@ -34,8 +34,20 @@ paths:
     post:
       summary: Crea una organización para un dueño aprobado o administrador global
       security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, districtCode, address]
+              properties:
+                name: {type: string, maxLength: 160}
+                districtCode: {type: string, maxLength: 60}
+                address: {type: string, maxLength: 240}
       responses:
         "201": {description: Organización creada}
+        "409": {description: Nombre y ubicación ya registrados}
         "400": {description: Nombre inválido}
         "403": {description: La capacidad de dueño de cancha no está aprobada}
   /organizations/{organizationId}:
@@ -51,6 +63,35 @@ paths:
         "200": {description: Organización accesible}
         "403": {description: Sin acceso al tenant solicitado}
         "404": {description: Organización no encontrada}
+  /organizations/{organizationId}/overview:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+    get:
+      summary: Métricas reales del complejo para miembros con permiso VIEW
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: "venues, spaces publicados, members activos, matchesToday, reservationsToday, expectedMinor y locations; fecha según timezone del complejo"}
+        "403": {description: Sin acceso al complejo}
+  /organizations/{organizationId}/staff:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+    get:
+      summary: Responsables activos con nombres, correo, avatar, rol y principal
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Lista de miembros; requiere MANAGE_MEMBERS}
+        "403": {description: Sin permiso contextual}
+  /organizations/{organizationId}/schedule:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - {in: query, name: date, required: true, schema: {type: string, format: date}}
+      - {in: query, name: spaceId, required: false, schema: {type: string, format: uuid}}
+    get:
+      summary: Turnos configurados por fecha y cancha; requiere OPERATE
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: "Turnos con spaceId, spaceName, venueName, publicSlug, startsAt, endsAt, priceMinor, state (FREE/RENTED/PENDING/MAINTENANCE), reservationId, customerName, totalMinor, paidMinor, reason y bookable"}
+        "403": {description: Sin permiso o cancha de otro complejo}
   /organizations/{organizationId}/invitations:
     post:
       summary: Invita un administrador u operador por correo
@@ -109,6 +150,16 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/PublicVenuePage"}
         "400": {$ref: "#/components/responses/BadRequest"}
+  /venue-catalogs/districts:
+    get:
+      summary: Catálogo oficial de los diez distritos de la provincia de Piura para crear y editar complejos y sedes
+      responses:
+        "200": {description: Distritos válidos, content: {application/json: {schema: {type: array, items: {type: string}}}}}
+  /venues/districts:
+    get:
+      summary: Distritos únicos de sedes publicadas para el selector global de ubicación
+      responses:
+        "200": {description: Distritos disponibles, content: {application/json: {schema: {type: array, items: {type: string}}}}}
   /venues/{publicSlug}:
     parameters:
       - {in: path, name: publicSlug, required: true, schema: {type: string}}
@@ -267,6 +318,7 @@ paths:
       summary: Lista partidos públicos publicados y futuros
       parameters:
         - {in: query, name: sport, required: false, schema: {type: string}}
+        - {in: query, name: district, required: false, schema: {type: string}}
       responses:
         "200": {description: Partidos disponibles, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Match"}}}}}
     post:
@@ -508,11 +560,40 @@ paths:
       - $ref: "#/components/parameters/SpaceId"
       - {in: path, name: ruleId, required: true, schema: {type: string, format: uuid}}
       - $ref: "#/components/parameters/Version"
+    put:
+      summary: Edita un horario semanal conservando su estado
+      description: Requiere OWNER o ADMIN. Valida versión y superposición con otros horarios activos.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/AvailabilityRuleInput"}
+      responses:
+        "200": {description: Horario actualizado, content: {application/json: {schema: {$ref: "#/components/schemas/AvailabilityRule"}}}}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
     delete:
       summary: Desactiva una regla semanal
       security: [{ bearerAuth: [] }]
       responses:
         "204": {description: Regla desactivada}
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "404": {$ref: "#/components/responses/NotFound"}
+        "409": {$ref: "#/components/responses/Conflict"}
+  /organizations/{organizationId}/spaces/{spaceId}/availability-rules/{ruleId}/activate:
+    parameters:
+      - $ref: "#/components/parameters/OrganizationId"
+      - $ref: "#/components/parameters/SpaceId"
+      - {in: path, name: ruleId, required: true, schema: {type: string, format: uuid}}
+      - $ref: "#/components/parameters/Version"
+    post:
+      summary: Reactiva un horario sin superponerse con otros horarios activos
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": {description: Horario activado, content: {application/json: {schema: {$ref: "#/components/schemas/AvailabilityRule"}}}}
         "403": {$ref: "#/components/responses/Forbidden"}
         "404": {$ref: "#/components/responses/NotFound"}
         "409": {$ref: "#/components/responses/Conflict"}
@@ -608,8 +689,18 @@ paths:
     parameters:
       - $ref: "#/components/parameters/OrganizationId"
     post:
-      summary: Asigna como dueño a una cuenta registrada
+      summary: Asigna como dueño o administrador a una cuenta registrada
       security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: {type: string, format: email}
+                role: {type: string, enum: [OWNER, ADMIN], default: OWNER}
       responses:
         "200": {description: Dueño asignado}
         "403": {description: Requiere PLATFORM_ADMIN}

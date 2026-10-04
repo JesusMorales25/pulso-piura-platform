@@ -36,6 +36,7 @@ public class SecurityConfig {
                                                 "/api/v1/spaces/*/availability",
                                                 "/api/v1/spaces/*/bookable-slots",
                                                 "/api/v1/venue-catalogs",
+                                                "/api/v1/venue-catalogs/districts",
                                                 "/api/v1/businesses",
                                                 "/api/v1/businesses/*/image",
                                                 "/api/v1/payment-orders/capabilities",

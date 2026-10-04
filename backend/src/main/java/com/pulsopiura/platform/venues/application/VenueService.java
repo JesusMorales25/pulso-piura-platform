@@ -65,6 +65,10 @@ public class VenueService {
             Collection<String> amenityCodes) {
         authorization.require(actorId, organizationId, OrganizationPermission.MANAGE_ORGANIZATION);
         var selectedAmenities = catalogs.requireVenueAmenities(amenityCodes);
+        districtCode = com.pulsopiura.platform.shared.DistrictCatalog.require(districtCode);
+        if (venues.duplicateLocation(name, districtCode, address, null))
+            throw new IllegalStateException(
+                    "Ya existe un complejo con este nombre y ubicación. Selecciona la sede existente.");
         var entity =
                 VenueEntity.create(
                         organizationId,
@@ -111,6 +115,9 @@ public class VenueService {
         authorization.require(actorId, organizationId, OrganizationPermission.MANAGE_ORGANIZATION);
         var selectedAmenities = catalogs.requireVenueAmenities(amenityCodes);
         var venue = requireVenue(organizationId, venueId);
+        districtCode = com.pulsopiura.platform.shared.DistrictCatalog.require(districtCode);
+        if (venues.duplicateLocation(name, districtCode, address, venueId))
+            throw new IllegalStateException("Ya existe un complejo con este nombre y ubicación.");
         venue.update(
                 name,
                 address,

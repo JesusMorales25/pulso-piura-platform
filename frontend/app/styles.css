@@ -225,6 +225,18 @@ button:disabled {
 .locationPill svg {
   color: var(--cyan);
 }
+.locationSelector { position: relative; min-width: 0; justify-self: center; }
+.locationSelector .locationPill { cursor: pointer; background: var(--midnight); font-family: inherit; min-height: 44px; max-width: 200px; }
+.locationSelector .locationPill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.locationSelector .locationPill svg { flex-shrink: 0; }
+.locationPopover { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); width: min(310px, 90vw); padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--navy); box-shadow: var(--shadow); z-index: 100; }
+.locationPopover h2 { font-size: 1rem; margin: 0 0 6px; }
+.locationPopover p { font-size: .75rem; color: var(--muted); margin: 0 0 12px; }
+.locationPopover > div { max-height: 45vh; overflow-y: auto; display: grid; gap: 6px; }
+.locationPopover button { display: flex; align-items: center; gap: 10px; text-align: left; min-height: 44px; padding: 10px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--white); font: inherit; font-size: .8rem; cursor: pointer; }
+.locationPopover button span { flex: 1; overflow-wrap: anywhere; }
+.locationPopover button[aria-pressed="true"] { border-color: var(--cyan); color: var(--cyan); background: rgba(16,198,210,.08); }
+@media(max-width: 480px) { .locationSelector .locationPill { max-width: 170px; padding: 8px 10px; font-size: .7rem; } }
 .login {
   justify-self: end;
   display: inline-flex;
@@ -7564,6 +7576,9 @@ body:has(.scheduleModal) .appNavigation {
   width: min(1040px, calc(100% - 32px));
   margin-inline: auto;
 }
+.activityPage.hybridHome { width: 100%; max-width: none; }
+.activityUnifiedHero .activityModeSwitch { margin-inline: 0; }
+.activityDashboard > .activityReturnToDraft { width: min(1000px, 92vw); margin: 16px auto 0; }
 .activityPassHero {
   display: grid;
   grid-template-columns: 58px minmax(0, 1fr) auto;
@@ -9401,6 +9416,85 @@ body:has(.scheduleModal) .appNavigation {
   .participantControlSummary > b { grid-column: 1 / -1; justify-self: start; }
 }
 
+/* Consolas de complejos y cuentas: observaciones de octubre */
+.ownerWorkspaceHero { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
+.ownerWorkspaceHero h1 { margin: 5px 0; font-size: clamp(1.5rem, 4vw, 2rem); }
+.ownerWorkspaceHero p { color: var(--muted); font-size: .82rem; }
+.ownerWorkspaceHero button { flex-shrink: 0; min-height: 44px; font-size: .8rem; }
+.ownerOverviewMetrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.ownerOverviewMetrics article { display: grid; gap: 7px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--navy); }
+.ownerOverviewMetrics small { color: var(--muted); font-size: .72rem; }
+.ownerOverviewMetrics strong { color: var(--lime); font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+.ownerComplexCard { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; justify-items: stretch; gap: 14px; }
+.ownerComplexCard > div { min-width: 0; width: 100%; }
+.ownerComplexVisual { display: grid; min-height: 88px; place-items: center; margin-top: 12px; border-radius: 10px; background: rgba(24,198,200,.08); color: var(--cyan); }
+.ownerComplexCard h3 { margin: 12px 0 7px; overflow-wrap: anywhere; font-size: 1rem; }
+.ownerComplexCard p { display: flex; gap: 5px; margin: 7px 0; color: var(--muted); font-size: .72rem; overflow-wrap: anywhere; }
+.ownerComplexCard p svg { flex-shrink: 0; }
+.ownerComplexFacts { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 12px; color: var(--muted); font-size: .68rem; }
+.ownerComplexCard > a { width: 100%; min-height: 44px; font-size: .8rem; }
+.profileFilterTabs { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0; }
+.profileFilterTabs button { display: flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--navy); color: var(--muted); font: inherit; font-size: .75rem; font-weight: 750; cursor: pointer; }
+.profileFilterTabs button[aria-pressed="true"] { border-color: var(--cyan); background: rgba(24,198,200,.12); color: var(--cyan); }
+.profileFilterTabs button span { font-size: .67rem; }
+.directorySearch { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; color: var(--cyan); }
+.directorySearch input { flex: 1; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--navy); color: var(--white); font: inherit; font-size: .8rem; }
+.accountDirectoryGrid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.accountDirectoryCard { display: grid; gap: 12px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--navy); }
+.accountDirectoryCard header { display: grid; grid-template-columns: 46px minmax(0,1fr); gap: 12px; align-items: center; }
+.directoryAvatar { display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid var(--cyan); border-radius: 50%; background-size: cover; background-position: center; background-color: rgba(24,198,200,.1); color: var(--cyan); font-size: .82rem; font-weight: 800; }
+.accountDirectoryCard h3 { margin: 0 0 5px; font-size: .93rem; overflow-wrap: anywhere; }
+.accountState { color: var(--muted); font-size: .66rem; }
+.accountState.active { color: var(--lime); }
+.accountDirectoryCard p { display: flex; align-items: center; gap: 5px; margin: 0; color: var(--muted); font-size: .73rem; overflow-wrap: anywhere; }
+.directoryRoles { display: flex; flex-wrap: wrap; gap: 6px; }
+.directoryRoles span { padding: 5px 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--cyan); font-size: .65rem; }
+.accountDirectoryCard > a { min-height: 44px; margin-top: auto; font-size: .75rem; }
+.responsibleList > div, .responsibleList > li { min-width: 0; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 11px; background: rgba(3,20,33,.4); }
+.responsibleList strong, .responsibleList small { overflow-wrap: anywhere; }
+.responsibleList .pill { justify-self: start; width: fit-content; margin-top: 6px; font-size: .64rem; }
+.responsibleList button { min-height: 44px; font-size: .7rem; flex-shrink: 0; }
+.responsibleOrganizationCard > h3 { font-size: .8rem; color: var(--muted); }
+.responsibleAssignForm { grid-template-columns: minmax(0,1fr) minmax(130px,.55fr); padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.responsibleAssignForm button { grid-column: 1 / -1; min-height: 44px; font-size: .78rem; }
+.organizationSchedule { margin-top: 20px; }
+.scheduleControls { display: grid; grid-template-columns: minmax(0,.7fr) minmax(0,1.3fr); gap: 12px; margin: 18px 0; }
+.ownerReservationsPage.section { min-width: 0; max-width: calc(100% - 32px); }
+.organizationSchedule { min-width: 0; }
+.scheduleControls label { display: grid; min-width: 0; gap: 7px; color: var(--muted); font-size: .76rem; }
+.scheduleControls input, .scheduleControls select { width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--navy); color: var(--white); font: inherit; color-scheme: dark; }
+.scheduleLegend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.scheduleState { display: inline-flex; gap: 5px; align-items: center; padding: 5px 8px; border-radius: 7px; font-size: .65rem; font-weight: 800; }
+.scheduleState.FREE { color: var(--cyan); background: rgba(24,198,200,.12); }
+.scheduleState.RENTED { color: var(--lime); background: rgba(184,230,58,.12); }
+.scheduleState.PENDING { color: #f4cd67; background: rgba(244,205,103,.12); }
+.scheduleState.MAINTENANCE { color: #d7b4f6; background: rgba(215,180,246,.12); }
+.scheduleTurnGrid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.scheduleTurn { min-width: 0; padding: 15px; border: 1px solid var(--line); border-left: 3px solid var(--cyan); border-radius: 12px; background: var(--navy); }
+.scheduleTurn.RENTED { border-left-color: var(--lime); }
+.scheduleTurn.PENDING { border-left-color: #f4cd67; }
+.scheduleTurn.MAINTENANCE { border-left-color: #d7b4f6; }
+.scheduleTurn header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.scheduleTurn header strong { display: flex; align-items: center; gap: 6px; font-size: .78rem; }
+.scheduleTurn h3 { margin: 12px 0 5px; font-size: .88rem; overflow-wrap: anywhere; }
+.scheduleTurn p { margin: 5px 0; color: var(--muted); font-size: .72rem; overflow-wrap: anywhere; }
+.scheduleTurn footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.scheduleTurn footer span { display: grid; gap: 4px; }
+.scheduleTurn footer small { color: var(--muted); font-size: .65rem; }
+.scheduleTurn footer b { font-size: .92rem; color: var(--lime); }
+.scheduleTurn footer a { min-height: 44px; font-size: .72rem; }
+@media(max-width: 650px) {
+  .ownerWorkspaceHero { align-items: stretch; flex-direction: column; gap: 8px; }
+  .ownerOverviewMetrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .ownerOverviewMetrics article { padding: 12px; }
+  .ownerOverviewMetrics strong { font-size: 1.2rem; }
+  .accountDirectoryGrid, .scheduleTurnGrid { grid-template-columns: minmax(0,1fr); }
+  .profileFilterTabs button { flex: 1 1 40%; }
+  .responsibleAssignForm { grid-template-columns: minmax(0,1fr); }
+  .responsibleList > div, .responsibleList > li { align-items: stretch; flex-direction: column; }
+  .scheduleControls { grid-template-columns: minmax(0,1fr); }
+}
+
 /* Flujo guiado para configurar sedes y canchas */
 .venueAdmin { min-width: 0; }
 .venueAdmin > .sectionHeading,
@@ -9633,4 +9727,199 @@ body:has(.scheduleModal) .appNavigation {
   .venueRatingFields > div {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 480px) {
+  .topbar, body:has(.hybridHome) .topbar { grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; padding-inline: 12px; }
+  .topbar .brand, body:has(.hybridHome) .topbar .brand { gap: 5px; }
+  .topbar .brandPulse, body:has(.hybridHome) .topbar .brandPulse { width: 28px; height: 28px; }
+  .topbar .brandWords strong, body:has(.hybridHome) .topbar .brandWords strong { font-size: .85rem; }
+  .topbar .brandWords small, body:has(.hybridHome) .topbar .brandWords small { font-size: .62rem; }
+  .locationSelector { max-width: 100%; }
+  .locationSelector .locationPill { max-width: 100%; }
+}
+
+.createComplexDialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); margin: auto; padding: 0; border: 1px solid #244554; border-radius: 20px; background: #082230; color: inherit; overflow-y: auto; overscroll-behavior: contain; }
+.createComplexDialog::backdrop { background: rgb(0 12 20 / 75%); }
+.createComplexDialog .createOrganization { margin: 0; border: 0; width: 100%; min-width: 0; }
+.createComplexDialogHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.createComplexDialogHeading h2 { margin: 0; }
+.createComplexDialogHeading button { padding: 0; width: 32px; height: 32px; flex-shrink: 0; font-size: 22px; }
+body:has(.createComplexDialog[open]) { overflow: hidden; }
+
+/* Shared opening motion for modal sheets, including native dialogs. */
+@keyframes popup-sheet-in {
+  from { opacity: 0; transform: translateY(48px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes popup-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+[role="dialog"], dialog[open] {
+  animation: popup-sheet-in 240ms cubic-bezier(.22, 1, .36, 1) both;
+}
+.matchDialogBackdrop, .scheduleModalBackdrop {
+  align-items: end;
+  place-items: end center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: popup-backdrop-in 180ms ease-out both;
+}
+.createComplexDialog[open] { margin: auto auto 18px; }
+.createComplexDialog::backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: popup-backdrop-in 180ms ease-out both;
+}
+@media (max-width: 620px) {
+  .matchDialogBackdrop, .scheduleModalBackdrop { padding: 0; }
+  .manualPlayerDialog, .scheduleModal, .createComplexDialog[open] {
+    width: 100%;
+    max-height: 94dvh;
+    border-radius: 20px 20px 0 0;
+    margin-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [role="dialog"], dialog[open], .matchDialogBackdrop, .scheduleModalBackdrop, .createComplexDialog::backdrop { animation: none; }
+}
+.mobileCheckoutBackdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: popup-backdrop-in 180ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobileCheckoutBackdrop { animation: none; }
+}
+.locationPopover { animation: popup-sheet-in 240ms cubic-bezier(.22, 1, .36, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .locationPopover { animation: none; }
+}
+
+/* Keep centering independent of the sheet animation's transform. */
+.locationPopover {
+  translate: -50% 0;
+  transform: none;
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
+}
+.locationPopover button { min-width: 0; width: 100%; }
+.locationPopover button svg { flex-shrink: 0; }
+.locationPopover button[aria-pressed="true"] {
+  border-color: var(--lime);
+  color: var(--lime);
+  background: rgb(200 242 56 / 7%);
+}
+@media (max-width: 620px) {
+  .locationPopover { width: min(310px, calc(100vw - 24px)); }
+  .appNavigation {
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    padding-inline: 4px;
+  }
+  .appNavigation > a { min-width: 0; max-width: 100%; padding-inline: 2px; }
+  .appNavigation > a > span { max-width: 100%; font-size: .6rem; overflow-wrap: anywhere; }
+  .appNavigation > a.active { color: var(--lime); }
+}
+@keyframes location-popover-in {
+  from { opacity: 0; transform: translate(-50%, 24px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+.locationPopover { translate: none; transform: translateX(-50%); animation-name: location-popover-in; }
+@media (prefers-reduced-motion: reduce) {
+  .locationPopover { animation: none; transform: translateX(-50%); }
+}
+@media (max-width: 620px) {
+  .locationPopover { position: fixed; top: 76px; left: 12px; right: 12px; width: auto; max-width: none; translate: none; transform: none; animation-name: popup-sheet-in; }
+  .appNavigation a.active::before { background: var(--lime); }
+}
+@media (max-width: 620px) and (prefers-reduced-motion: reduce) {
+  .locationPopover { animation: none; transform: none; }
+}
+
+.ownerComplexWorkspace { grid-template-columns: minmax(0, 1fr); }
+.ownerComplexWorkspace .ownerComplexCard { align-items: stretch; justify-items: stretch; }
+.ownerComplexWorkspace .ownerComplexCard > a { box-sizing: border-box; width: 100%; min-width: 0; }
+
+.complexPanelSwitch { margin: 20px 0; width: 100%; min-width: 0; }
+.complexPanelSwitch button { min-width: 0; }
+.complexPanelSwitch button.active { background: var(--lime); color: #10200a; }
+.resourceFormSheet { padding: 18px; }
+.resourceFormSheet > header { margin-bottom: 16px; }
+.resourceFormSheet .adminForm { border: 0; padding: 0; margin: 0; background: transparent; min-width: 0; }
+.resourceFormSheet label, .resourceFormSheet input, .resourceFormSheet select, .resourceFormSheet fieldset { min-width: 0; max-width: 100%; box-sizing: border-box; }
+.resourceFormSheet .formPair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.venueAdmin .resourceSelect { width: 100%; min-width: 0; }
+.venueAdmin .resourceSelect > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.venueAdmin .resourceSelectMeta { flex-shrink: 0; }
+.venueAdmin .venueSelector.selected, .venueAdmin .spaceCard.selected { border-color: rgb(200 242 56 / 45%); }
+.venueSetupTabs button[aria-current="step"] > span { background: var(--lime); color: #10200a; }
+.scheduleCard { min-width: 0; }
+.scheduleCard > div { min-width: 0; overflow-wrap: anywhere; }
+body:has(.resourceFormSheet[open]) { overflow: hidden; }
+@media (max-width: 620px) {
+  .resourceFormSheet { padding: 16px 14px calc(16px + env(safe-area-inset-bottom)); }
+  .resourceFormSheet .formPair label { font-size: .72rem; }
+  .scheduleCard { flex-wrap: wrap; }
+}
+
+.resourceFormSheet button { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.resourceFormSheet .formPair > *, .resourceFormSheet .locationActions > * { min-width: 0; }
+.complexPanelSwitch { box-sizing: border-box; }
+
+.complexPanelHero { width: 100%; min-width: 0; min-height: 0; height: auto; }
+.complexPanelHero .hybridHero { min-height: 0; border-radius: 18px; overflow: hidden; }
+.complexPanelHero .hybridHeroContent { width: 100%; padding: 24px 20px 16px; box-sizing: border-box; }
+.complexPanelHero .hybridHeroContent h1 { max-width: 650px; font-size: clamp(1.85rem, 4vw, 2.8rem); overflow-wrap: anywhere; }
+.complexPanelHero .prototypeGreeting { font-size: .75rem; color: var(--cyan); }
+.complexPanelHero .complexPanelSwitch { margin: 14px 0 0; width: 100%; }
+.complexPanelHero .complexPanelSwitch button.active { background: var(--cyan); color: #00151f; box-shadow: 0 0 0 1px rgb(200 242 56 / 20%); }
+.complexPanelHero .hybridHeroImage { object-position: 70% center; }
+.complexPanelHero .hybridHeroShade { background: linear-gradient(90deg, rgba(3,20,33,.97) 0%, rgba(3,20,33,.75) 48%, rgba(3,20,33,.2) 100%), linear-gradient(0deg, #031421, transparent 70%); }
+@media (max-width: 760px) {
+  .complexPanelHero .hybridHeroContent { padding: 18px 14px 12px; }
+  .complexPanelHero .hybridHeroContent h1 { max-width: 315px; font-size: clamp(1.85rem, 9vw, 2.35rem); }
+  .complexPanelHero .prototypeGreeting { font-size: .72rem; }
+}
+.weeklyScheduleCard { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px; }
+.weeklyScheduleDetails { display: grid; gap: 6px; }
+.weeklyScheduleDetails strong { display: block; font-size: .85rem; }
+.weeklyScheduleTime { color: var(--white); font-size: .8rem; line-height: 1.4; }
+.weeklyScheduleDetails small { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .72rem; line-height: 1.5; }
+.weeklyScheduleDetails small > span:first-child { color: var(--lime); font-weight: 750; }
+.weeklyScheduleActions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.weeklyScheduleActions button { min-height: 38px; font-size: .72rem; padding: 8px 12px; }
+.homeModeSwitch.complexPanelSwitch button { min-width: 0; white-space: normal; }
+.topbar > :last-child { grid-column: 3; justify-self: end; }
+.mobileReservationAction { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); align-items: center; gap: 10px; padding: 12px; }
+.mobileReservationAction .reservationPolicy { grid-column: 1 / -1; margin: 0; align-items: start; font-size: .72rem; line-height: 1.45; }
+.mobileReservationAction > span { display: grid; gap: 3px; }
+.mobileReservationAction button { min-height: 44px; min-width: 0; border: 0; border-radius: 11px; padding: 10px 14px; background: var(--lime); color: #102000; font: inherit; font-size: .78rem; font-weight: 800; }
+.mobileReservationAction button:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 760px) {
+  .reservationList.activeReservationList .mobileReservationAction { position: fixed; margin: 0; border-radius: 0; border: 0; border-top: 1px solid var(--line); }
+  body:has(.activeReservationList .mobileReservationAction) main { padding-bottom: calc(230px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 760px) {
+  body:has(.mobileReservationAction):not(:has(.reservationList:not(.focusedReservationList))) main { padding-bottom: calc(230px + env(safe-area-inset-bottom)); }
+}
+
+/* Keep every modal sheet above the fixed mobile navigation. */
+@media (max-width: 760px) {
+  :root { --popup-menu-clearance: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  dialog[open] { max-height: calc(100dvh - var(--popup-menu-clearance) - 24px); margin-bottom: var(--popup-menu-clearance); }
+  .createComplexDialog[open] { width: calc(100vw - 20px); margin: auto auto var(--popup-menu-clearance); border-radius: 20px; }
+  .matchDialogBackdrop, .scheduleModalBackdrop, .mobileCheckoutBackdrop { box-sizing: border-box; padding: 12px 10px var(--popup-menu-clearance); }
+  .manualPlayerDialog, .scheduleModal, .mobileCheckoutSheet { max-height: calc(100dvh - var(--popup-menu-clearance) - 24px); margin-bottom: 0; border-radius: 20px; overflow-y: auto; }
+}
+@media (max-width: 480px) {
+  .weeklyScheduleCard { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .weeklyScheduleActions { justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--line); }
 }

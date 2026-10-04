@@ -43,12 +43,46 @@ public class AvailabilityController {
         return ResponseEntity.status(HttpStatus.CREATED).body(rule);
     }
 
+    @PutMapping("/availability-rules/{ruleId}")
+    AvailabilityRuleView updateRule(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID organizationId,
+            @PathVariable UUID spaceId,
+            @PathVariable UUID ruleId,
+            @RequestParam @PositiveOrZero long version,
+            @Valid @RequestBody CreateAvailabilityRuleRequest request) {
+        return availability.updateRule(
+                users.provision(jwt).id(),
+                organizationId,
+                spaceId,
+                ruleId,
+                request.dayOfWeek(),
+                request.startLocalTime(),
+                request.endLocalTime(),
+                request.slotMinutes(),
+                request.priceMinor(),
+                request.validFrom(),
+                request.validTo(),
+                version);
+    }
+
     @GetMapping("/availability-rules")
     List<AvailabilityRuleView> listRules(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID organizationId,
             @PathVariable UUID spaceId) {
         return availability.listRules(users.provision(jwt).id(), organizationId, spaceId);
+    }
+
+    @PostMapping("/availability-rules/{ruleId}/activate")
+    AvailabilityRuleView activateRule(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID organizationId,
+            @PathVariable UUID spaceId,
+            @PathVariable UUID ruleId,
+            @RequestParam @PositiveOrZero long version) {
+        return availability.activateRule(
+                users.provision(jwt).id(), organizationId, spaceId, ruleId, version);
     }
 
     @DeleteMapping("/availability-rules/{ruleId}")

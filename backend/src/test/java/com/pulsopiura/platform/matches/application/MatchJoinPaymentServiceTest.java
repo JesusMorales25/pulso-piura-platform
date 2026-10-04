@@ -162,8 +162,7 @@ class MatchJoinPaymentServiceTest {
     @Test
     void playingOrganizerCanCreateOrderWhenMatchIsFull() {
         match = matchWithOrganizer(actor, true);
-        when(matches.findPublishedBySlugForUpdate("partido-prueba"))
-                .thenReturn(Optional.of(match));
+        when(matches.findPublishedBySlugForUpdate("partido-prueba")).thenReturn(Optional.of(match));
         var result =
                 service.start(
                         actor, "partido-prueba", MatchPaymentMethod.YAPE, "organizer-payment");
@@ -192,8 +191,7 @@ class MatchJoinPaymentServiceTest {
     @Test
     void nonPlayingOrganizerCannotCreateOwnOrder() {
         match = matchWithOrganizer(actor, false);
-        when(matches.findPublishedBySlugForUpdate("partido-prueba"))
-                .thenReturn(Optional.of(match));
+        when(matches.findPublishedBySlugForUpdate("partido-prueba")).thenReturn(Optional.of(match));
 
         assertThatThrownBy(
                         () ->

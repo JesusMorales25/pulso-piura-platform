@@ -123,7 +123,8 @@ public class MatchOrganizerQueryService {
 
     private ParticipantView organizerParticipant(SportsMatch match) {
         var identity =
-                jdbc.query(
+                jdbc
+                        .query(
                                 """
                         select coalesce(case when profile.visibility <> 'PRIVATE'
                                              then nullif(profile.preferred_display_name, '') end,
@@ -144,7 +145,10 @@ public class MatchOrganizerQueryService {
                         .stream()
                         .findFirst()
                         .orElse(new OrganizerIdentity("Organizador", null, null));
-        var order = match.priceMinor() == 0 ? Optional.<MatchJoinOrderEntity>empty() : latestOrder(match);
+        var order =
+                match.priceMinor() == 0
+                        ? Optional.<MatchJoinOrderEntity>empty()
+                        : latestOrder(match);
         var paymentStatus =
                 match.priceMinor() == 0
                         ? "NOT_REQUIRED"

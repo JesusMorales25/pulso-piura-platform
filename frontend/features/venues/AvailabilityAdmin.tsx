@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
+import { FormSheet } from "@/components/forms/FormSheet";
 
 type Role = "OWNER" | "ADMIN" | "OPERATOR";
 type SpaceSummary = { id: string; name: string };
@@ -58,6 +59,8 @@ export function AvailabilityAdmin({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [panel, setPanel] = useState<"schedule" | "exceptions">("schedule");
+  const [formOpen, setFormOpen] = useState<"schedule" | "exceptions" | null>(null);
+  const [editingRule, setEditingRule] = useState<AvailabilityRule | null>(null);
   const [pendingAction, setPendingAction] = useState<
     | { kind: "rule"; item: AvailabilityRule }
     | { kind: "exception"; item: AvailabilityException }
@@ -95,10 +98,10 @@ export function AvailabilityAdmin({
     const form = new FormData(formElement);
     await runMutation(async () => {
       const rule = await apiRequest<AvailabilityRule>(
-        `/organizations/${organizationId}/spaces/${space.id}/availability-rules`,
+        `/organizations/${organizationId}/spaces/${space.id}/availability-rules${editingRule ? `/${editingRule.id}?version=${editingRule.version}` : ""}`,
         accessToken,
         {
-          method: "POST",
+          method: editingRule ? "PUT" : "POST",
           body: JSON.stringify({
             dayOfWeek: Number(form.get("dayOfWeek")),
             startLocalTime: form.get("startLocalTime"),
@@ -110,9 +113,10 @@ export function AvailabilityAdmin({
           }),
         },
       );
-      setRules((current) => [...current, rule]);
+      setRules((current) => editingRule ? current.map((item) => item.id === rule.id ? rule : item) : [...current, rule]);
+      setFormOpen(null);
       formElement.reset();
-      return "Horario semanal agregado.";
+      return editingRule ? "Horario actualizado." : "Horario semanal agregado.";
     });
   }
 
@@ -124,12 +128,18 @@ export function AvailabilityAdmin({
         accessToken,
         { method: "DELETE" },
       );
-      setRules((current) =>
-        current.map((item) =>
-          item.id === rule.id ? { ...item, status: "INACTIVE" } : item,
-        ),
-      );
+      const refreshed = await apiRequest<AvailabilityRule[]>(`/organizations/${organizationId}/spaces/${space.id}/availability-rules`, accessToken);
+      setRules(refreshed);
       return "Horario desactivado.";
+    });
+  }
+
+  async function activateRule(rule: AvailabilityRule) {
+    if (!accessToken) return;
+    await runMutation(async () => {
+      const updated = await apiRequest<AvailabilityRule>(`/organizations/${organizationId}/spaces/${space.id}/availability-rules/${rule.id}/activate?version=${rule.version}`, accessToken, { method: "POST" });
+      setRules((current) => current.map((item) => item.id === updated.id ? updated : item));
+      return "Horario activado.";
     });
   }
 
@@ -156,6 +166,7 @@ export function AvailabilityAdmin({
         },
       );
       setExceptions((current) => [...current, exception]);
+      setFormOpen(null);
       formElement.reset();
       return "Excepción operativa agregada.";
     });
@@ -291,20 +302,17 @@ export function AvailabilityAdmin({
               {rules.length === 0 ? (
                 <p className="muted">Sin horarios configurados.</p>
               ) : (
-                rules.map((rule) => (
-                  <article className="scheduleCard" key={rule.id}>
-                    <div>
-                      <strong>
-                        {days[rule.dayOfWeek - 1]},{" "}
-                        {shortTime(rule.startLocalTime)}–
-                        {shortTime(rule.endLocalTime)}
-                      </strong>
-                      <small>
-                        S/ {minorToSoles(rule.priceMinor)} · slots de{" "}
-                        {rule.slotMinutes} min
-                      </small>
+                [...rules].sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startLocalTime.localeCompare(b.startLocalTime)).map((rule) => (
+                  <article className="scheduleCard weeklyScheduleCard" key={rule.id}>
+                    <div className="weeklyScheduleDetails">
+                      <strong>{days[rule.dayOfWeek - 1]}</strong>
+                      <span className="weeklyScheduleTime">{shortTime(rule.startLocalTime)} – {shortTime(rule.endLocalTime)}</span>
+                      <small><span>S/ {minorToSoles(rule.priceMinor)}</span><span>Turnos de {rule.slotMinutes} min</span></small>
                     </div>
-                    <span className="pill">{rule.status}</span>
+                    <div className="weeklyScheduleActions">
+                    <span className="pill">{rule.status === "ACTIVE" ? "Activo" : "Inactivo"}</span>
+                    {canManage && rule.status === "INACTIVE" && <button className="secondary" type="button" disabled={submitting} onClick={() => void activateRule(rule)}>Activar</button>}
+                    {canManage && <button className="secondary" type="button" disabled={submitting} onClick={() => { setEditingRule(rule); setError(null); setFormOpen("schedule"); }}>Editar</button>}
                     {canManage && rule.status === "ACTIVE" && (
                       <button
                         className="dangerButton"
@@ -316,12 +324,19 @@ export function AvailabilityAdmin({
                         Desactivar
                       </button>
                     )}
+                    </div>
                   </article>
                 ))
               )}
             </div>
             {canManage && (
-              <RuleForm disabled={submitting} onSubmit={createRule} />
+              <>
+              <button className="primary borderless" type="button" onClick={() => { setEditingRule(null); setError(null); setFormOpen("schedule"); }}>Nuevo horario</button>
+              <FormSheet open={formOpen === "schedule"} title={editingRule ? "Editar horario" : "Nuevo horario"} onClose={() => setFormOpen(null)}>
+              {error && <p className="errorNotice" role="alert">{error}</p>}
+              <RuleForm key={editingRule ? `${editingRule.id}-${editingRule.version}` : "new"} initial={editingRule} disabled={submitting} onSubmit={createRule} />
+              </FormSheet>
+              </>
             )}
           </div>
         )}
@@ -361,11 +376,15 @@ export function AvailabilityAdmin({
                 ))
               )}
             </div>
+            <button className="primary borderless" type="button" onClick={() => setFormOpen("exceptions")}>Nueva excepción</button>
+            <FormSheet open={formOpen === "exceptions"} title="Nueva excepción" onClose={() => setFormOpen(null)}>
+            {error && <p className="errorNotice" role="alert">{error}</p>}
             <ExceptionForm
               canManage={canManage}
               disabled={submitting}
               onSubmit={createException}
             />
+            </FormSheet>
           </div>
         )}
       </div>
@@ -374,18 +393,20 @@ export function AvailabilityAdmin({
 }
 
 function RuleForm({
+  initial,
   disabled,
   onSubmit,
 }: {
+  initial: AvailabilityRule | null;
   disabled: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <form className="card adminForm compactForm" noValidate onSubmit={onSubmit}>
-      <h4>Agregar horario</h4>
+    <form className="card adminForm compactForm" onSubmit={onSubmit}>
+      <h4>{initial ? "Modificar horario" : "Agregar horario"}</h4>
       <label>
         Día
-        <select name="dayOfWeek" defaultValue="1">
+        <select name="dayOfWeek" defaultValue={initial?.dayOfWeek ?? 1}>
           {days.map((day, index) => (
             <option key={day} value={index + 1}>
               {day}
@@ -396,40 +417,42 @@ function RuleForm({
       <div className="formPair">
         <label>
           Desde
-          <input name="startLocalTime" type="time" required />
+          <input name="startLocalTime" type="time" defaultValue={initial?.startLocalTime.slice(0, 5)} required />
         </label>
         <label>
           Hasta
-          <input name="endLocalTime" type="time" required />
+          <input name="endLocalTime" type="time" defaultValue={initial?.endLocalTime.slice(0, 5)} required />
         </label>
       </div>
       <div className="formPair">
         <label>
           Duración
-          <select name="slotMinutes" defaultValue="60">
+          <select name="slotMinutes" defaultValue={initial?.slotMinutes ?? 60}>
             <option value="30">30 min</option>
             <option value="60">60 min</option>
             <option value="90">90 min</option>
             <option value="120">120 min</option>
+            <option value="150">150 min</option>
+            <option value="180">180 min</option>
           </select>
         </label>
         <label>
           Precio (S/)
-          <input name="price" type="number" min="0" step="0.01" required />
+          <input name="price" type="number" min="0" step="0.01" defaultValue={initial ? minorToSoles(initial.priceMinor) : undefined} required />
         </label>
       </div>
       <div className="formPair">
         <label>
           Vigente desde
-          <input name="validFrom" type="date" required />
+          <input name="validFrom" type="date" defaultValue={initial?.validFrom} required />
         </label>
         <label>
           Hasta (opcional)
-          <input name="validTo" type="date" />
+          <input name="validTo" type="date" defaultValue={initial?.validTo ?? ""} />
         </label>
       </div>
       <button className="primary borderless" disabled={disabled}>
-        Agregar horario
+        {initial ? "Guardar cambios" : "Agregar horario"}
       </button>
     </form>
   );

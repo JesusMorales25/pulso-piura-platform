@@ -5,6 +5,8 @@ import java.util.UUID;
 public interface VenueSpaceQuery {
     SpaceSnapshot requirePublishedSpace(UUID sportSpaceId);
 
+    java.util.Set<UUID> publishedSpaceIdsInDistrict(String district);
+
     record SpaceSnapshot(
             UUID organizationId,
             UUID sportSpaceId,

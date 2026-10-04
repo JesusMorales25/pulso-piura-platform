@@ -37,11 +37,33 @@ public class OrganizationService {
 
     @Transactional
     public OrganizationView create(UUID actorId, String rawName) {
+        return create(actorId, rawName, null, null);
+    }
+
+    @Transactional
+    public OrganizationView create(
+            UUID actorId, String rawName, String districtCode, String address) {
         var name = requireName(rawName);
+        if (districtCode != null)
+            districtCode = com.pulsopiura.platform.shared.DistrictCatalog.require(districtCode);
+        if (districtCode != null
+                && address != null
+                && organizations.duplicateLocation(name, districtCode, address))
+            throw new IllegalStateException(
+                    "Ya existe un complejo con este nombre y ubicación. Revisa tus complejos antes de volver a crearlo.");
         var slug = uniqueSlug(name);
-        var organization =
-                organizations.saveAndFlush(
-                        OrganizationEntity.create(name, slug, actorId, clock.instant()));
+        var entity = OrganizationEntity.create(name, slug, actorId, clock.instant());
+        entity.setLocation(
+                districtCode == null ? null : districtCode.trim().replaceAll("\\s+", " "),
+                address == null ? null : address.trim().replaceAll("\\s+", " "));
+        OrganizationEntity organization;
+        try {
+            organization = organizations.saveAndFlush(entity);
+        } catch (org.springframework.dao.DataIntegrityViolationException conflict) {
+            throw new IllegalStateException(
+                    "Ya existe un complejo con este nombre y ubicación. Revisa tus complejos antes de volver a crearlo.",
+                    conflict);
+        }
         var membership =
                 memberships.save(
                         MembershipEntity.owner(organization.id(), actorId, clock.instant()));
@@ -74,7 +96,7 @@ public class OrganizationService {
     private String requireName(String rawName) {
         if (rawName == null || rawName.isBlank())
             throw new IllegalArgumentException("El nombre es obligatorio");
-        var name = rawName.trim();
+        var name = rawName.trim().replaceAll("\\s+", " ");
         if (name.length() > 160)
             throw new IllegalArgumentException("El nombre excede 160 caracteres");
         return name;
@@ -101,6 +123,8 @@ public class OrganizationService {
                 organization.slug(),
                 organization.status(),
                 organization.timezone(),
-                role);
+                role,
+                organization.districtCode(),
+                organization.address());
     }
 }

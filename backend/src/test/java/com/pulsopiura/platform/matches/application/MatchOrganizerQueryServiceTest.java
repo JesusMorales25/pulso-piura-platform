@@ -113,11 +113,7 @@ class MatchOrganizerQueryServiceTest {
                                 eq(match.id())))
                 .thenReturn(List.of());
         lenient()
-                .when(
-                        jdbc.query(
-                                contains("where u.id = ?"),
-                                any(RowMapper.class),
-                                eq(organizer)))
+                .when(jdbc.query(contains("where u.id = ?"), any(RowMapper.class), eq(organizer)))
                 .thenReturn(
                         List.of(
                                 new OrganizerIdentity(

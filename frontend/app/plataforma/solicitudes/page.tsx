@@ -29,6 +29,7 @@ export default function PlatformRequestsPage() {
   const [requests, setRequests] = useState<CapabilityRequest[]>([]);
   const [message, setMessage] = useState("");
   const [reviewing, setReviewing] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -36,7 +37,7 @@ export default function PlatformRequestsPage() {
       "/platform/capability-requests",
       accessToken,
     )
-      .then(setRequests)
+      .then((items) => { setRequests(items); setSelectedUser(new URLSearchParams(window.location.search).get("user")); })
       .catch((error: Error) => setMessage(error.message));
   }, [accessToken, capabilities.canManagePlatform]);
 
@@ -105,6 +106,7 @@ export default function PlatformRequestsPage() {
     <main className="section">
       <p className="eyebrow">ADMINISTRACIÓN DE PLATAFORMA</p>
       <h1>Solicitudes de perfil</h1>
+      {selectedUser && <p className="notice">Gestionando la cuenta seleccionada. <Link href="/plataforma">Ver todas las cuentas</Link></p>}
       <Link className="platformBackLink" href="/plataforma">← Volver a la consola</Link>
       <p className="pageLead">
         Revisa solicitudes antes de habilitar capacidades. Cada decisión queda auditada.
@@ -115,10 +117,10 @@ export default function PlatformRequestsPage() {
         </p>
       )}
       <div className="platformRequestList">
-        {requests.length === 0 && !message ? (
-          <p className="empty">No hay solicitudes para revisar.</p>
+        {requests.filter((request) => !selectedUser || request.userId === selectedUser).length === 0 && !message ? (
+          <p className="empty">{selectedUser ? "Esta cuenta no tiene solicitudes de privilegios. El usuario debe solicitar el acceso desde su perfil." : "No hay solicitudes para revisar."}</p>
         ) : (
-          requests.map((request) => (
+          requests.filter((request) => !selectedUser || request.userId === selectedUser).map((request) => (
             <article className="platformRequestCard" key={request.id}>
               <div>
                 <span className="pill">{request.status}</span>

@@ -91,4 +91,16 @@ class MatchServiceTest {
         reservation.confirmWithoutPayment(NOW.plusSeconds(1));
         return reservation;
     }
+
+    @Test
+    void excludesMatchesOutsideSelectedDistrictBeforeLoadingDetails() {
+        var outside = mock(com.pulsopiura.platform.matches.domain.SportsMatch.class);
+        when(outside.sportSpaceId()).thenReturn(UUID.randomUUID());
+        when(matches.findPublicUpcoming(NOW, "FOOTBALL")).thenReturn(java.util.List.of(outside));
+        when(spaces.publishedSpaceIdsInDistrict("CASTILLA"))
+                .thenReturn(java.util.Set.of(UUID.randomUUID()));
+        org.assertj.core.api.Assertions.assertThat(service.publicCatalog("FOOTBALL", "CASTILLA"))
+                .isEmpty();
+        verifyNoInteractions(participants, participantPreviews, detailMetadata);
+    }
 }

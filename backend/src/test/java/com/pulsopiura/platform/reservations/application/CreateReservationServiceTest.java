@@ -73,8 +73,7 @@ class CreateReservationServiceTest {
         when(transaction.create(any(), eq(customerId), isNull(), eq(NOW)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        var result =
-                service.create(customerId, spaceId, startsAt, endsAt, "request-odd", null);
+        var result = service.create(customerId, spaceId, startsAt, endsAt, "request-odd", null);
 
         assertThat(result.reservation().depositMinor()).isEqualTo(1801);
     }

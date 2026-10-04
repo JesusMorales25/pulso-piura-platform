@@ -22,6 +22,21 @@ function load(file, dependencies = {}) {
   return exports;
 }
 
+test("directory combines profiles and search without duplicate accounts", () => {
+  const { filterDirectory, belongsToProfile } = load("features/organizations/user-directory.ts");
+  const player = { id: "1", displayName: "José Pérez", email: "jose@example.test", districtCode: "PIURA", capabilities: "", owner: false };
+  const both = { ...player, id: "2", displayName: "Ana", districtCode: "CASTILLA", capabilities: "MATCH_ORGANIZER:APPROVED, VENUE_OWNER:APPROVED" };
+  const revoked = { ...player, id: "3", capabilities: "VENUE_OWNER:REVOKED, MATCH_ORGANIZER:PENDING" };
+  const users = [player, both, both, revoked];
+  assert.equal(filterDirectory(users, "Todos", "").length, 3);
+  assert.equal(filterDirectory(users, "Organizadores", "").length, 1);
+  assert.equal(filterDirectory(users, "Dueños", "CASTILLA")[0].id, "2");
+  assert.equal(filterDirectory(users, "Dueños", "PIURA").length, 0);
+  assert.equal(filterDirectory(users, "Todos", "jose").length, 3);
+  assert.equal(belongsToProfile(revoked, "Dueños"), false);
+  assert.equal(belongsToProfile({ ...revoked, owner: true }, "Dueños"), true);
+});
+
 test("organizer participates by default in a new match draft", () => {
   const { defaultMatchDraft } = load("features/matches/draft.ts");
 

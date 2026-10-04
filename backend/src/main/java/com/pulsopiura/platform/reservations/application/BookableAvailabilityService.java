@@ -51,7 +51,8 @@ public class BookableAvailabilityService {
                                                                                         == null
                                                                                 || reservation
                                                                                         .expiresAt()
-                                                                                        .isAfter(now)))
+                                                                                        .isAfter(
+                                                                                                now)))
                                                 .noneMatch(
                                                         reservation ->
                                                                 reservation

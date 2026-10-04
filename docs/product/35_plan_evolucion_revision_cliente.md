@@ -228,3 +228,7 @@ Estado: implementada y verificada.
 - Detalle de cancha con amenidades y selector que solo presenta disponibilidad real.
 - Validación visual aprobada en 320, 393 y 768 px; valoraciones reales de usuarios permanecen como
   evolución futura.
+
+## Revisión octubre 2026 — complejos, cuentas y agenda
+
+Implementadas las nueve observaciones del PDF Mejoras_Pulso_Piura_para_Codex. Detalle y validación en [Levantamiento de octubre](../OBSERVATIONS_OCTOBER_2026.md): duplicados por ubicación, acceso a creación, métricas reales, tarjetas de complejos y responsables, filtros multirrol y agenda por fecha/cancha con cuatro estados. Fotografías y verificación de complejos requieren datos respaldados; no se inventan.

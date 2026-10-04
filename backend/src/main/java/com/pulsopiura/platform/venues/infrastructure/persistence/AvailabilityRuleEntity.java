@@ -94,6 +94,35 @@ public class AvailabilityRuleEntity {
         return rule;
     }
 
+    public void update(
+            int day,
+            LocalTime start,
+            LocalTime end,
+            int minutes,
+            long price,
+            LocalDate from,
+            LocalDate to,
+            long expectedVersion,
+            Instant now) {
+        requireVersion(expectedVersion);
+        validate(day, start, end, minutes, price, from, to);
+        dayOfWeek = day;
+        startLocalTime = start;
+        endLocalTime = end;
+        slotMinutes = minutes;
+        priceMinor = price;
+        validFrom = from;
+        validTo = to;
+        updatedAt = now;
+    }
+
+    public void activate(long expectedVersion, Instant now) {
+        requireVersion(expectedVersion);
+        if ("ACTIVE".equals(status)) throw new IllegalStateException("El horario ya está activo");
+        status = "ACTIVE";
+        updatedAt = now;
+    }
+
     public void deactivate(long expectedVersion, Instant now) {
         requireVersion(expectedVersion);
         if ("INACTIVE".equals(status)) throw new IllegalStateException("La regla ya está inactiva");

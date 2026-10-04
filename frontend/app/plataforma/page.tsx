@@ -11,6 +11,7 @@ import {
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
+import { PlatformUserDirectory, type PlatformUser } from "@/features/organizations/PlatformUserDirectory";
 
 type Summary = {
   activeUsers: number;
@@ -19,13 +20,6 @@ type Summary = {
   venues: number;
 };
 
-type PlatformUser = {
-  id: string;
-  displayName: string;
-  email: string;
-  status: string;
-  capabilities: string;
-};
 
 export default function PlatformPage() {
   const { accessToken, login } = useAuth();
@@ -78,12 +72,7 @@ export default function PlatformPage() {
         <Link href="/plataforma/negocios"><Storefront size={30}/><span><strong>Choperías y restaurantes</strong><small>Administrar el directorio que aparece en “El tercer tiempo”.</small></span></Link>
       </section>
 
-      <section className="platformUsers" aria-labelledby="platform-users-title">
-        <div className="sectionTitle"><div><p className="eyebrow">CUENTAS REGISTRADAS</p><h2 id="platform-users-title">Usuarios</h2></div><span className="countBadge">{users.length}</span></div>
-        <div className="platformUserList">
-          {users.map((user) => <article key={user.id}><span><strong>{user.displayName}</strong><small>{user.email}</small></span><div><b>{user.status}</b>{user.capabilities && <small>{user.capabilities}</small>}</div></article>)}
-        </div>
-      </section>
+      <PlatformUserDirectory users={users} />
     </main>
   );
 }

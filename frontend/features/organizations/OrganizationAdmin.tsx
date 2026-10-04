@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { VenueAdmin } from "@/features/venues/VenueAdmin";
+import { Buildings, UsersThree } from "@phosphor-icons/react";
 import {
   organizationRoleLabel,
   organizationStatusLabel,
@@ -18,9 +20,12 @@ type Organization = {
 };
 
 type Member = {
-  organizationId: string;
   userId: string;
   role: "OWNER" | "ADMIN" | "OPERATOR";
+  displayName: string;
+  email: string | null;
+  avatarUrl: string | null;
+  principal: boolean;
 };
 
 export function OrganizationAdmin({
@@ -36,6 +41,8 @@ export function OrganizationAdmin({
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
+  const [removal, setRemoval] = useState<Member | null>(null);
+  const [panel, setPanel] = useState<"team" | "operations">("operations");
 
   const canManageMembers =
     organization?.role === "OWNER" || organization?.role === "ADMIN";
@@ -50,7 +57,7 @@ export function OrganizationAdmin({
       currentOrganization.role === "OWNER" ||
       currentOrganization.role === "ADMIN"
         ? await apiRequest<Member[]>(
-            `/organizations/${organizationId}/members`,
+            `/organizations/${organizationId}/staff`,
             accessToken,
           )
         : [];
@@ -105,6 +112,7 @@ export function OrganizationAdmin({
     event.preventDefault();
     if (!accessToken) return;
     const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
     setSubmitting(true);
     setError(null);
     setMessage(null);
@@ -123,7 +131,7 @@ export function OrganizationAdmin({
       setInvitationLink(
         `${window.location.origin}/invitaciones/${invitation.id}`,
       );
-      event.currentTarget.reset();
+      formElement.reset();
       setMessage(
         "Invitación creada. Comparte el acceso con el correo indicado.",
       );
@@ -140,7 +148,7 @@ export function OrganizationAdmin({
 
   async function revoke(member: Member) {
     if (!accessToken || member.role === "OWNER") return;
-    if (!window.confirm("¿Revocar el acceso de este miembro?")) return;
+    setRemoval(null);
     setError(null);
     try {
       await apiRequest<void>(
@@ -186,18 +194,20 @@ export function OrganizationAdmin({
 
   return (
     <>
-      <div className="adminHead">
-        <div>
-          <p className="eyebrow">PANEL DEL COMPLEJO</p>
+      <header className="hybridHome complexPanelHero">
+        <section className="hybridHero">
+        <div className="hybridHeroCarousel" aria-hidden="true"><Image src="/images/venue-football-7.png" alt="" fill sizes="(max-width: 760px) 100vw, 1120px" className="hybridHeroImage active" priority /></div>
+        <div className="hybridHeroShade" />
+        <div className="hybridHeroContent">
+          <p className="prototypeGreeting">PANEL DE TU COMPLEJO · {organizationStatusLabel(organization.status)}</p>
           <h1>{organization.name}</h1>
-          <p className="muted">
-            Rol actual: {organizationRoleLabel(organization.role)}
-          </p>
+          <div className="homeModeSwitch complexPanelSwitch" role="group" aria-label="Secciones del complejo">
+            <button type="button" className={panel === "team" ? "active" : ""} aria-pressed={panel === "team"} onClick={() => setPanel("team")}><UsersThree size={20} /> Equipo</button>
+            <button type="button" className={panel === "operations" ? "active" : ""} aria-pressed={panel === "operations"} onClick={() => setPanel("operations")}><Buildings size={20} /> Operación</button>
+          </div>
         </div>
-        <span className="pill">
-          {organizationStatusLabel(organization.status)}
-        </span>
-      </div>
+        </section>
+      </header>
 
       {error && (
         <div className="inlineAlert errorNotice" role="alert">
@@ -224,36 +234,40 @@ export function OrganizationAdmin({
         </div>
       )}
 
+      <div hidden={panel !== "team"}>
       <section className="adminGrid" aria-label="Gestión de accesos">
         <div className="card">
           <p className="eyebrow">EQUIPO</p>
-          <h2>Miembros activos</h2>
+          <h2>Responsables y colaboradores</h2>
           {!canManageMembers ? (
             <p className="muted">Tu rol no permite administrar miembros.</p>
           ) : members.length === 0 ? (
             <p className="muted">Todavía no hay miembros adicionales.</p>
           ) : (
-            <ul className="memberList">
+            <ul className="memberList responsibleList">
               {members.map((member) => (
                 <li key={member.userId}>
                   <div>
-                    <strong>{organizationRoleLabel(member.role)}</strong>
-                    <small>Identificador: {member.userId}</small>
+                    <strong>{member.displayName}</strong>
+                    <small>{member.email || "Sin correo disponible"}</small>
+                    <span className="pill">{member.principal ? "Dueño principal" : organizationRoleLabel(member.role)}</span>
                   </div>
                   {member.role !== "OWNER" && (
                     <button
                       className="dangerButton"
-                      onClick={() => void revoke(member)}
+                      onClick={() => setRemoval(member)}
                     >
                       Revocar
                     </button>
                   )}
+                  {member.role === "OWNER" && <button className="secondary" disabled title="Los propietarios se gestionan desde la consola de plataforma">Protegido</button>}
                 </li>
               ))}
             </ul>
           )}
         </div>
 
+        {removal && <div className="notice" role="alert"><p>¿Revocar el acceso de {removal.displayName} a este complejo?</p><button className="secondary" type="button" onClick={() => setRemoval(null)}>Cancelar</button><button className="secondary" type="button" onClick={() => void revoke(removal)}>Confirmar retiro</button></div>}
         {canManageMembers && (
           <form className="card adminForm" noValidate onSubmit={invite}>
             <p className="eyebrow">NUEVO ACCESO</p>
@@ -275,8 +289,10 @@ export function OrganizationAdmin({
           </form>
         )}
       </section>
-
+      </div>
+      <div hidden={panel !== "operations"}>
       <VenueAdmin organizationId={organizationId} role={organization.role} />
+      </div>
     </>
   );
 }

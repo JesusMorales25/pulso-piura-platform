@@ -38,6 +38,14 @@ public class PlatformOrganizationService {
 
     @Transactional
     public OrganizationAdminView addOwner(UUID actor, UUID organizationId, String rawEmail) {
+        return assignResponsible(actor, organizationId, rawEmail, "OWNER");
+    }
+
+    @Transactional
+    public OrganizationAdminView assignResponsible(
+            UUID actor, UUID organizationId, String rawEmail, String role) {
+        if (!List.of("OWNER", "ADMIN").contains(role))
+            throw new IllegalArgumentException("Rol no válido");
         lockOrganization(organizationId);
         var email = normalizeEmail(rawEmail);
         var userId =
@@ -52,21 +60,35 @@ public class PlatformOrganizationService {
                                 () ->
                                         new java.util.NoSuchElementException(
                                                 "Usuario no encontrado"));
+        if ("ADMIN".equals(role)
+                && Boolean.TRUE.equals(
+                        jdbc.queryForObject(
+                                "select exists(select 1 from app.organization_memberships where organization_id = ? and user_id = ? and role = 'OWNER' and status = 'ACTIVE')",
+                                Boolean.class,
+                                organizationId,
+                                userId)))
+            throw new IllegalStateException(
+                    "Retira el rol de dueño mediante el control de propietarios antes de cambiarlo");
         jdbc.update(
                 """
                 insert into app.organization_memberships
                   (id, organization_id, user_id, role, status, created_at, revoked_at, version)
-                values (?, ?, ?, 'OWNER', 'ACTIVE', ?, null, 0)
+                values (?, ?, ?, ?, 'ACTIVE', ?, null, 0)
                 on conflict (organization_id, user_id) do update
-                set role = 'OWNER', status = 'ACTIVE', revoked_at = null, version = app.organization_memberships.version + 1
+                set role = excluded.role, status = 'ACTIVE', revoked_at = null, version = app.organization_memberships.version + 1
                 """,
                 UUID.randomUUID(),
                 organizationId,
                 userId,
+                role,
                 clock.instant());
         auditEvents.save(
                 AuditEventEntity.organizationAction(
-                        actor, organizationId, "PLATFORM_OWNER_ASSIGNED"));
+                        actor,
+                        organizationId,
+                        "OWNER".equals(role)
+                                ? "PLATFORM_OWNER_ASSIGNED"
+                                : "PLATFORM_ADMIN_ASSIGNED"));
         return find(organizationId);
     }
 
@@ -78,7 +100,14 @@ public class PlatformOrganizationService {
                         "select count(*) from app.organization_memberships where organization_id = ? and role = 'OWNER' and status = 'ACTIVE'",
                         Long.class,
                         organizationId);
-        if (ownerCount == null || ownerCount <= 1)
+        var removingOwner =
+                Boolean.TRUE.equals(
+                        jdbc.queryForObject(
+                                "select exists(select 1 from app.organization_memberships where organization_id = ? and user_id = ? and role = 'OWNER' and status = 'ACTIVE')",
+                                Boolean.class,
+                                organizationId,
+                                userId));
+        if (removingOwner && (ownerCount == null || ownerCount <= 1))
             throw new IllegalStateException(
                     "Asigna otro dueño antes de retirar al único propietario activo");
         var changed =
@@ -86,7 +115,7 @@ public class PlatformOrganizationService {
                         """
                         update app.organization_memberships
                         set status = 'REVOKED', revoked_at = ?, version = version + 1
-                        where organization_id = ? and user_id = ? and role = 'OWNER' and status = 'ACTIVE'
+                        where organization_id = ? and user_id = ? and role in ('OWNER','ADMIN') and status = 'ACTIVE'
                         """,
                         clock.instant(),
                         organizationId,
@@ -94,7 +123,9 @@ public class PlatformOrganizationService {
         if (changed == 0) throw new java.util.NoSuchElementException("Dueño activo no encontrado");
         auditEvents.save(
                 AuditEventEntity.organizationAction(
-                        actor, organizationId, "PLATFORM_OWNER_REVOKED"));
+                        actor,
+                        organizationId,
+                        removingOwner ? "PLATFORM_OWNER_REVOKED" : "PLATFORM_ADMIN_REVOKED"));
         return find(organizationId);
     }
 
@@ -109,17 +140,21 @@ public class PlatformOrganizationService {
     private List<OwnerView> owners(UUID organizationId) {
         return jdbc.query(
                 """
-                select u.id, u.display_name, u.email
+                select u.id, u.display_name, u.email, membership.role,
+                  (u.id = o.created_by and membership.role = 'OWNER') principal
                 from app.organization_memberships membership
                 join app.users u on u.id = membership.user_id
-                where membership.organization_id = ? and membership.role = 'OWNER' and membership.status = 'ACTIVE'
-                order by u.display_name
+                join app.organizations o on o.id = membership.organization_id
+                where membership.organization_id = ? and membership.role in ('OWNER','ADMIN') and membership.status = 'ACTIVE'
+                order by principal desc, u.display_name
                 """,
                 (rs, row) ->
                         new OwnerView(
                                 rs.getObject("id", UUID.class),
                                 rs.getString("display_name"),
-                                rs.getString("email")),
+                                rs.getString("email"),
+                                rs.getString("role"),
+                                rs.getBoolean("principal")),
                 organizationId);
     }
 
@@ -139,7 +174,8 @@ public class PlatformOrganizationService {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
-    public record OwnerView(UUID userId, String displayName, String email) {}
+    public record OwnerView(
+            UUID userId, String displayName, String email, String role, boolean principal) {}
 
     public record OrganizationAdminView(
             UUID id, String name, String slug, String status, List<OwnerView> owners) {}

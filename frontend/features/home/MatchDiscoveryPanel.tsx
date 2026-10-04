@@ -11,6 +11,7 @@ import {
   Volleyball,
 } from "@phosphor-icons/react";
 import { apiRequest } from "@/lib/api";
+import { useLocation } from "@/features/navigation/LocationProvider";
 import { sortUpcomingMatches } from "@/lib/match-discovery";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { FeaturedMatchCardV2 } from "./FeaturedMatchCardV2";
@@ -26,6 +27,7 @@ const sports = [
 ];
 export function MatchDiscoveryPanel() {
   const router = useRouter();
+  const { district } = useLocation();
   const { accessToken } = useAuth();
   const [sport, setSport] = useState("Fútbol");
   const [matches, setMatches] = useState<MatchSummary[]>([]);
@@ -38,7 +40,7 @@ export function MatchDiscoveryPanel() {
   useEffect(() => {
     const controller = new AbortController();
     void apiRequest<MatchSummary[]>(
-      `/matches?sport=${selectedSport.code}`,
+      `/matches?${new URLSearchParams({ sport: selectedSport.code, ...(district ? { district } : {}) })}`,
       null,
       { signal: controller.signal },
     )
@@ -58,7 +60,7 @@ export function MatchDiscoveryPanel() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [selectedSport.code, retry]);
+  }, [selectedSport.code, retry, district]);
   useEffect(() => {
     if (!accessToken || !featured) { return; }
     void apiRequest<MatchParticipation | undefined>(

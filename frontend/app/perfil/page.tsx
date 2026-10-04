@@ -234,8 +234,9 @@ export default function ProfilePage() {
           <>
             <Link href="/organizaciones">
               <Buildings aria-hidden="true" size={21} />
-              <span><strong>Mis canchas</strong><small>Sedes, canchas y horarios</small></span>
+              <span><strong>Mis canchas</strong><small>Crear complejo, canchas y horarios</small></span>
             </Link>
+            <Link href="/organizaciones?create=1"><Buildings aria-hidden="true" size={21} /><span><strong>Crear complejo</strong><small>Registrar una nueva sede</small></span></Link>
             <Link href="/reservas-cancha">
               <CalendarCheck aria-hidden="true" size={21} />
               <span><strong>Reservas</strong><small>Pagos y llegadas</small></span>

@@ -39,7 +39,9 @@ public class OrganizationController {
             @Valid @RequestBody CreateOrganizationRequest request) {
         var actor = users.provision(jwt).id();
         venueOwnerAuthorization.requireCanCreateOrganization(actor, roleClaims.roles(jwt));
-        var result = organizations.create(actor, request.name());
+        var result =
+                organizations.create(
+                        actor, request.name(), request.districtCode(), request.address());
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
@@ -84,7 +86,10 @@ public class OrganizationController {
         return ResponseEntity.noContent().build();
     }
 
-    public record CreateOrganizationRequest(@NotBlank @Size(max = 160) String name) {}
+    public record CreateOrganizationRequest(
+            @NotBlank @Size(max = 160) String name,
+            @NotBlank @Size(max = 60) String districtCode,
+            @NotBlank @Size(max = 240) String address) {}
 
     public record InviteMemberRequest(
             @NotBlank @jakarta.validation.constraints.Email String email, @NotBlank String role) {}

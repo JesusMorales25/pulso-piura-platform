@@ -35,6 +35,20 @@ class PublicVenueQueryServiceTest {
     }
 
     @Test
+    void districtOptionsComeOnlyFromPublishedVenuesAndAreUnique() {
+        var piura = mock(VenueEntity.class);
+        var duplicate = mock(VenueEntity.class);
+        var castilla = mock(VenueEntity.class);
+        when(piura.districtCode()).thenReturn("PIURA");
+        when(duplicate.districtCode()).thenReturn(" piura ");
+        when(castilla.districtCode()).thenReturn("CASTILLA");
+        when(venues.findAllByStatusOrderByNameAsc(VenueStatus.PUBLISHED))
+                .thenReturn(List.of(piura, duplicate, castilla));
+        assertThat(service.districts()).containsExactly("Castilla", "Piura");
+        verify(venues).findAllByStatusOrderByNameAsc(VenueStatus.PUBLISHED);
+    }
+
+    @Test
     void buildsSlotsInOrganizationTimezoneAndAppliesExceptions() {
         var organizationId = UUID.randomUUID();
         var actorId = UUID.randomUUID();

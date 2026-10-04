@@ -35,7 +35,11 @@ public class PlatformOrganizationAdminController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID organizationId,
             @Valid @RequestBody OwnerRequest request) {
-        return organizations.addOwner(users.provision(jwt).id(), organizationId, request.email());
+        return organizations.assignResponsible(
+                users.provision(jwt).id(),
+                organizationId,
+                request.email(),
+                request.role() == null ? "OWNER" : request.role());
     }
 
     @DeleteMapping("/{organizationId}/owners/{userId}")
@@ -46,5 +50,5 @@ public class PlatformOrganizationAdminController {
         return organizations.removeOwner(users.provision(jwt).id(), organizationId, userId);
     }
 
-    public record OwnerRequest(@NotBlank @Email String email) {}
+    public record OwnerRequest(@NotBlank @Email String email, String role) {}
 }

@@ -53,3 +53,16 @@
   .header { padding-top: 16px; }
   .slots { grid-template-columns: 1fr; }
 }
+
+.backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+}
+@media (max-width: 760px) {
+  .backdrop { box-sizing: border-box; padding: 12px 10px calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .dialog { max-height: calc(100dvh - 108px - env(safe-area-inset-bottom, 0px)); border-radius: 20px; border-width: 1px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .backdrop { animation: none; }
+}

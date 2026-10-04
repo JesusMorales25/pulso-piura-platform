@@ -11,6 +11,8 @@ import {
 import { apiAssetUrl, apiRequest } from "@/lib/api";
 import { googleMapsUrl, whatsappUrl } from "@/lib/public-links";
 import { CardSkeletons } from "@/features/feedback/CardSkeletons";
+import { useLocation } from "@/features/navigation/LocationProvider";
+import { usePathname } from "next/navigation";
 
 type Business = {
   id: string;
@@ -33,9 +35,12 @@ const categoryLabels: Record<Business["category"], string> = {
 };
 
 export function ThirdTimeSection() {
+  const { district } = useLocation();
+  const pathname = usePathname();
   const [places, setPlaces] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const visiblePlaces = places.filter((place) => pathname !== "/" || !district || place.zone.trim().toLocaleLowerCase("es-PE") === district.toLocaleLowerCase("es-PE"));
 
   useEffect(() => {
     let active = true;
@@ -64,7 +69,7 @@ export function ThirdTimeSection() {
           </h2>
         </div>
         {!loading && (
-          <span className="thirdTimeCount">{places.length} lugares</span>
+          <span className="thirdTimeCount">{visiblePlaces.length} lugares</span>
         )}
       </div>
 
@@ -80,16 +85,16 @@ export function ThirdTimeSection() {
           {error}
         </p>
       )}
-      {!loading && !error && places.length === 0 && (
+      {!loading && !error && visiblePlaces.length === 0 && (
         <div className="empty thirdTimeEmpty">
           <h3>Aún no hay establecimientos publicados</h3>
           <p>Cuando el administrador publique uno, aparecerá aquí.</p>
         </div>
       )}
 
-      {places.length > 0 && (
+      {visiblePlaces.length > 0 && (
         <div className="thirdTimeRail">
-          {places.map((place) => {
+          {visiblePlaces.map((place) => {
             const Icon =
               place.category === "RESTAURANT" ? ForkKnife : BeerBottle;
             const contactHref = whatsappUrl(place.contactPhone);

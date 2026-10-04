@@ -6,6 +6,7 @@ import { X } from "@phosphor-icons/react";
 import { CardSkeletons } from "@/features/feedback/CardSkeletons";
 import { FeaturedMatchCardV2 } from "@/features/home/FeaturedMatchCardV2";
 import { apiRequest } from "@/lib/api";
+import { useLocation } from "@/features/navigation/LocationProvider";
 import type { MatchSummary } from "./types";
 
 const sports = [
@@ -27,6 +28,7 @@ const localStartHour = (isoValue: string) =>
 
 export function MatchCatalog() {
   const router = useRouter();
+  const { district } = useLocation();
   const [sport, setSport] = useState("");
   const [items, setItems] = useState<MatchSummary[]>([]);
   const [zone, setZone] = useState("");
@@ -40,11 +42,11 @@ export function MatchCatalog() {
   useEffect(() => {
     const controller = new AbortController();
     void apiRequest<MatchSummary[]>(
-      `/matches${sport ? `?sport=${sport}` : ""}`,
+      `/matches?${new URLSearchParams({ ...(sport ? { sport } : {}), ...(district ? { district } : {}) })}`,
       null,
       { signal: controller.signal },
     )
-      .then(setItems)
+      .then((result) => { if (!controller.signal.aborted) { setItems(result); setError(""); } })
       .catch((reason) => {
         if (!controller.signal.aborted) {
           setError(reason instanceof Error ? reason.message : "No pudimos cargar los partidos.");
@@ -54,7 +56,7 @@ export function MatchCatalog() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [sport]);
+  }, [sport, district]);
 
   const zones = useMemo(
     () => Array.from(new Set(items.map((item) => item.venueAddress).filter(Boolean))).sort(),

@@ -9,6 +9,7 @@ import { MatchDiscoveryPanel } from "@/features/home/MatchDiscoveryPanel";
 import { ThirdTimeSection } from "@/features/home/ThirdTimeSection";
 import { HomeVenuePreview } from "@/features/home/HomeVenuePreview";
 import { PublicVenueCatalog } from "@/features/venues/PublicVenueCatalog";
+import { useLocation } from "@/features/navigation/LocationProvider";
 
 export type HomeVenue = {
   publicSlug: string;
@@ -43,6 +44,7 @@ export function HomeDashboard({
   returnToCreate?: boolean;
 }) {
   const { accessToken } = useAuth();
+  const { district } = useLocation();
   const [mode, setMode] = useState<HomeMode>(initialMode);
   const [name, setName] = useState("");
   const [heroIndex, setHeroIndex] = useState(0);
@@ -57,11 +59,13 @@ export function HomeDashboard({
       month: "2-digit",
       day: "2-digit",
     }).format(new Date());
-    void apiRequest<VenuePage>(`/venues?size=4&date=${today}`)
-      .then((result) => setVenues(result.items))
-      .catch(() => setVenues([]))
-      .finally(() => setLoadingVenues(false));
-  }, []);
+    const controller = new AbortController();
+    void apiRequest<VenuePage>(`/venues?${new URLSearchParams({ size: "4", date: today, ...(district ? { district } : {}) })}`, null, { signal: controller.signal })
+      .then((result) => { if (!controller.signal.aborted) setVenues(result.items); })
+      .catch(() => { if (!controller.signal.aborted) setVenues([]); })
+      .finally(() => { if (!controller.signal.aborted) setLoadingVenues(false); });
+    return () => controller.abort();
+  }, [district]);
 
   useEffect(() => {
     if (!accessToken) return;

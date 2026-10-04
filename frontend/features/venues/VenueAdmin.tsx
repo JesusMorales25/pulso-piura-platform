@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check } from "@phosphor-icons/react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { FriendlyLocationPicker } from "@/components/forms/FriendlyLocationPicker";
+import { DistrictSelect } from "@/components/forms/DistrictSelect";
+import { FormSheet } from "@/components/forms/FormSheet";
 import { AvailabilityAdmin } from "@/features/venues/AvailabilityAdmin";
 import { apiRequest } from "@/lib/api";
 import { normalizeAdminRatingInput } from "@/lib/venue-rating";
@@ -121,6 +123,7 @@ export function VenueAdmin({
   const [editingSpace, setEditingSpace] = useState<SportSpace | null>(null);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
   const [setupStep, setSetupStep] = useState<SetupStep>("venue");
+  const [formOpen, setFormOpen] = useState<"venue" | "space" | null>(null);
   const [venueDraft, setVenueDraft] = useState<VenueDraft>(emptyVenueDraft);
   const [spaceDraft, setSpaceDraft] = useState<SpaceDraft>(emptySpaceDraft);
   const [draftReady, setDraftReady] = useState(false);
@@ -272,6 +275,7 @@ export function VenueAdmin({
       setSelectedVenueId(venue.id);
       setEditingVenue(null);
       setVenueDraft(emptyVenueDraft);
+      setFormOpen(null);
       setSetupStep("space");
       setMessage(
         editingVenue ? "Sede actualizada." : "Sede creada como borrador.",
@@ -315,6 +319,7 @@ export function VenueAdmin({
       setSelectedSpaceId(space.id);
       setEditingSpace(null);
       setSpaceDraft(emptySpaceDraft);
+      setFormOpen(null);
       setSetupStep("availability");
       setMessage(
         editingSpace ? "Cancha actualizada." : "Cancha creada como borrador.",
@@ -343,6 +348,7 @@ export function VenueAdmin({
   }
 
   function editVenue(venue: Venue) {
+    setFormOpen("venue");
     setEditingVenue(venue);
     setVenueDraft({
       name: venue.name,
@@ -359,6 +365,7 @@ export function VenueAdmin({
   }
 
   function editSpace(space: SportSpace) {
+    setFormOpen("space");
     setEditingSpace(space);
     setSpaceDraft({
       name: space.name,
@@ -638,6 +645,10 @@ export function VenueAdmin({
               </div>
             )}
             {canManage && (
+              <>
+              <button className="primary borderless" type="button" onClick={() => { if (editingVenue) cancelVenueEdit(); setFormOpen("venue"); }}>Nueva sede</button>
+              <FormSheet open={formOpen === "venue"} title={editingVenue ? "Editar sede" : "Nueva sede"} onClose={() => setFormOpen(null)}>
+              {error && <p role="alert" className="errorNotice">{error}</p>}
               <VenueForm
                 key={editingVenue?.id ?? "new-venue"}
                 initial={editingVenue}
@@ -649,9 +660,11 @@ export function VenueAdmin({
                 disabled={submitting}
                 onSubmit={saveVenue}
                 onCancel={
-                  editingVenue ? cancelVenueEdit : undefined
+                  () => setFormOpen(null)
                 }
               />
+              </FormSheet>
+              </>
             )}
           </div>
         )}
@@ -742,6 +755,10 @@ export function VenueAdmin({
             {canManage &&
               selectedVenue &&
               selectedVenue.status !== "ARCHIVED" && (
+                <>
+                <button className="primary borderless" type="button" onClick={() => { if (editingSpace) cancelSpaceEdit(); setFormOpen("space"); }}>Nueva cancha</button>
+                <FormSheet open={formOpen === "space"} title={editingSpace ? "Editar cancha" : "Nueva cancha"} onClose={() => setFormOpen(null)}>
+                {error && <p role="alert" className="errorNotice">{error}</p>}
                 <SpaceForm
                   key={editingSpace?.id ?? `new-space-${selectedVenue.id}`}
                   initial={editingSpace}
@@ -751,9 +768,11 @@ export function VenueAdmin({
                   disabled={submitting}
                   onSubmit={saveSpace}
                   onCancel={
-                    editingSpace ? cancelSpaceEdit : undefined
+                    () => setFormOpen(null)
                   }
                 />
+                </FormSheet>
+                </>
               )}
             <div className="venueStepActions">
               <button className="secondary" onClick={() => openStep("venue")} type="button">
@@ -857,16 +876,7 @@ function VenueForm({
           onChange({ ...value, latitude, longitude })
         }
       />
-      <label>
-        Distrito
-        <input
-          name="districtCode"
-          maxLength={60}
-          onChange={(event) => onChange({ ...value, districtCode: event.target.value })}
-          required
-          value={value.districtCode}
-        />
-      </label>
+      <DistrictSelect value={value.districtCode} onChange={(districtCode) => onChange({ ...value, districtCode })} />
       <label>
         Teléfono público
         <input

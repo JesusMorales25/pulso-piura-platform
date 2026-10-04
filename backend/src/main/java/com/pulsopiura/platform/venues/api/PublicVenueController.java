@@ -19,6 +19,11 @@ public class PublicVenueController {
         this.publicVenues = publicVenues;
     }
 
+    @GetMapping("/venues/districts")
+    List<String> districts() {
+        return publicVenues.districts();
+    }
+
     @GetMapping("/venues")
     PublicVenueViews.VenuePage search(
             @RequestParam(required = false) String district,

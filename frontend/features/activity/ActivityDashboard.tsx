@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, CalendarCheck, SoccerBall, UsersThree } from "@phosphor-icons/react";
 import { MyMatchParticipations } from "@/features/matches/MyMatchParticipations";
 import { MyReservations } from "@/features/reservations/MyReservations";
@@ -38,7 +39,11 @@ export function ActivityDashboard({
           </Link>
         </aside>
       )}
-      <div aria-label="Seleccionar actividad" className="activityModeSwitch" role="tablist">
+      <section className="hybridHero activityUnifiedHero">
+        <div className="hybridHeroCarousel" aria-hidden="true"><Image src={activeTab === "matches" ? "/images/hero-match-volleyball-night.png" : "/images/venue-football-7.png"} alt="" fill sizes="(max-width: 760px) 100vw, 1120px" className="hybridHeroImage active" priority /></div>
+        <div className="hybridHeroShade" />
+        <div className="hybridHeroContent"><p className="prototypeGreeting">Tu próxima jugada</p><h1>{activeTab === "matches" ? "Tus partidos, a un paso" : "Tu cancha te espera"}</h1>
+      <div aria-label="Seleccionar actividad" className="homeModeSwitch activityModeSwitch" role="tablist">
         {options.map(([value, label, Icon]) => (
           <button
             aria-controls={`activity-panel-${value}`}
@@ -55,10 +60,12 @@ export function ActivityDashboard({
           </button>
         ))}
       </div>
+        </div>
+      </section>
 
       <div
         aria-labelledby={`activity-tab-${activeTab}`}
-        className="activityTabPanel"
+        className="activityTabPanel hybridContent"
         id={`activity-panel-${activeTab}`}
         role="tabpanel"
       >

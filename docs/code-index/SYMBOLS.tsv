@@ -95,6 +95,7 @@ java	matches	interface	SportsMatchJpaRepository	backend/src/main/java/com/pulsop
 java	organizations	class	OrganizationController	backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java
 java	organizations	record	CreateOrganizationRequest	backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java
 java	organizations	record	InviteMemberRequest	backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java
+java	organizations	class	OrganizationOperationsController	backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationOperationsController.java
 java	organizations	class	PlatformOrganizationAdminController	backend/src/main/java/com/pulsopiura/platform/organizations/api/PlatformOrganizationAdminController.java
 java	organizations	record	OwnerRequest	backend/src/main/java/com/pulsopiura/platform/organizations/api/PlatformOrganizationAdminController.java
 java	organizations	record	InvitationView	backend/src/main/java/com/pulsopiura/platform/organizations/application/InvitationView.java
@@ -102,6 +103,9 @@ java	organizations	class	MembershipService	backend/src/main/java/com/pulsopiura/
 java	organizations	record	MemberView	backend/src/main/java/com/pulsopiura/platform/organizations/application/MemberView.java
 java	organizations	record	OrganizationAuditEvent	backend/src/main/java/com/pulsopiura/platform/organizations/application/OrganizationAuditEvent.java
 java	organizations	class	OrganizationAuthorization	backend/src/main/java/com/pulsopiura/platform/organizations/application/OrganizationAuthorization.java
+java	organizations	class	OrganizationOperationsQuery	backend/src/main/java/com/pulsopiura/platform/organizations/application/OrganizationOperationsQuery.java
+java	organizations	record	Overview	backend/src/main/java/com/pulsopiura/platform/organizations/application/OrganizationOperationsQuery.java
+java	organizations	record	Staff	backend/src/main/java/com/pulsopiura/platform/organizations/application/OrganizationOperationsQuery.java
 java	organizations	class	OrganizationService	backend/src/main/java/com/pulsopiura/platform/organizations/application/OrganizationService.java
 java	organizations	class	OrganizationSettingsQuery	backend/src/main/java/com/pulsopiura/platform/organizations/application/OrganizationSettingsQuery.java
 java	organizations	record	OrganizationView	backend/src/main/java/com/pulsopiura/platform/organizations/application/OrganizationView.java
@@ -153,6 +157,8 @@ java	reservations	record	CreateReservationRequest	backend/src/main/java/com/puls
 java	reservations	class	BookableAvailabilityService	backend/src/main/java/com/pulsopiura/platform/reservations/application/BookableAvailabilityService.java
 java	reservations	class	CreateReservationService	backend/src/main/java/com/pulsopiura/platform/reservations/application/CreateReservationService.java
 java	reservations	record	CreationResult	backend/src/main/java/com/pulsopiura/platform/reservations/application/CreateReservationService.java
+java	reservations	class	OrganizationScheduleQuery	backend/src/main/java/com/pulsopiura/platform/reservations/application/OrganizationScheduleQuery.java
+java	reservations	record	Turn	backend/src/main/java/com/pulsopiura/platform/reservations/application/OrganizationScheduleQuery.java
 java	reservations	interface	ReservationCheckInDetailsQuery	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationCheckInDetailsQuery.java
 java	reservations	record	Details	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationCheckInDetailsQuery.java
 java	reservations	interface	ReservationCheckInPassStore	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationCheckInPassStore.java
@@ -198,6 +204,7 @@ java	reservations	interface	OrganizationReservationProjection	backend/src/main/j
 java	reservations	class	ReservationStatusHistoryEntity	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/ReservationStatusHistoryEntity.java
 java	reservations	interface	ReservationStatusHistoryJpaRepository	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/ReservationStatusHistoryJpaRepository.java
 java	shared	class	ApiExceptionHandler	backend/src/main/java/com/pulsopiura/platform/shared/api/ApiExceptionHandler.java
+java	shared	class	DistrictCatalog	backend/src/main/java/com/pulsopiura/platform/shared/DistrictCatalog.java
 java	venues	class	AvailabilityController	backend/src/main/java/com/pulsopiura/platform/venues/api/AvailabilityController.java
 java	venues	record	CreateAvailabilityRuleRequest	backend/src/main/java/com/pulsopiura/platform/venues/api/AvailabilityController.java
 java	venues	record	CreateAvailabilityExceptionRequest	backend/src/main/java/com/pulsopiura/platform/venues/api/AvailabilityController.java
@@ -276,6 +283,7 @@ java	matches	class	MatchParticipantTest	backend/src/test/java/com/pulsopiura/pla
 java	matches	class	SportsMatchTest	backend/src/test/java/com/pulsopiura/platform/matches/domain/SportsMatchTest.java
 java	matches	class	MatchInvitationEntityTest	backend/src/test/java/com/pulsopiura/platform/matches/infrastructure/persistence/MatchInvitationEntityTest.java
 java	organizations	class	OrganizationAuthorizationTest	backend/src/test/java/com/pulsopiura/platform/organizations/application/OrganizationAuthorizationTest.java
+java	organizations	class	OrganizationLocationTest	backend/src/test/java/com/pulsopiura/platform/organizations/application/OrganizationLocationTest.java
 java	organizations	class	PlatformOrganizationServiceTest	backend/src/test/java/com/pulsopiura/platform/organizations/application/PlatformOrganizationServiceTest.java
 java	organizations	class	VenueOwnerAuthorizationTest	backend/src/test/java/com/pulsopiura/platform/organizations/application/VenueOwnerAuthorizationTest.java
 java	organizations	class	InvitationEntityTest	backend/src/test/java/com/pulsopiura/platform/organizations/infrastructure/persistence/InvitationEntityTest.java
@@ -286,6 +294,7 @@ java	payments	class	PaymentOrderServiceTest	backend/src/test/java/com/pulsopiura
 java	ProjectConventionsTest.java	class	ProjectConventionsTest	backend/src/test/java/com/pulsopiura/platform/ProjectConventionsTest.java
 java	reservations	class	BookableAvailabilityServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/BookableAvailabilityServiceTest.java
 java	reservations	class	CreateReservationServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/CreateReservationServiceTest.java
+java	reservations	class	OrganizationScheduleQueryTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/OrganizationScheduleQueryTest.java
 java	reservations	class	ReservationAccessTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationAccessTest.java
 java	reservations	class	ReservationCancellationPolicyTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationCancellationPolicyTest.java
 java	reservations	class	ReservationCheckInServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationCheckInServiceTest.java
@@ -294,6 +303,8 @@ java	reservations	class	ReservationPaymentConcurrencyTest	backend/src/test/java/
 java	reservations	class	ReservationTransitionServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationTransitionServiceTest.java
 java	reservations	class	ReservationTest	backend/src/test/java/com/pulsopiura/platform/reservations/domain/ReservationTest.java
 java	reservations	class	JdbcReservationCheckInPassStoreTest	backend/src/test/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationCheckInPassStoreTest.java
+java	shared	class	DistrictCatalogTest	backend/src/test/java/com/pulsopiura/platform/shared/DistrictCatalogTest.java
+java	venues	class	AvailabilityControllerTest	backend/src/test/java/com/pulsopiura/platform/venues/api/AvailabilityControllerTest.java
 java	venues	class	AvailabilityServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/AvailabilityServiceTest.java
 java	venues	class	PublicVenueQueryServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/PublicVenueQueryServiceTest.java
 java	venues	class	VenueCatalogServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/VenueCatalogServiceTest.java
@@ -329,6 +340,8 @@ typescript	plataforma	function	PlatformRequestsPage	frontend/app/plataforma/soli
 typescript	reservas-cancha	function	VenueOwnerReservationsPage	frontend/app/reservas-cancha/page.tsx
 typescript	tercer-tiempo	function	ThirdTimePage	frontend/app/tercer-tiempo/page.tsx
 typescript	-	function	FloatingNotice	frontend/components/feedback/FloatingNotice.tsx
+typescript	-	function	DistrictSelect	frontend/components/forms/DistrictSelect.tsx
+typescript	-	function	FormSheet	frontend/components/forms/FormSheet.tsx
 typescript	-	function	FriendlyLocationPicker	frontend/components/forms/FriendlyLocationPicker.tsx
 typescript	access	type	OrganizationRole	frontend/features/access/capabilities.ts
 typescript	access	type	OrganizationMembership	frontend/features/access/capabilities.ts
@@ -374,11 +387,21 @@ typescript	matches	type	MatchParticipation	frontend/features/matches/types.ts
 typescript	matches	type	MatchJoinOrder	frontend/features/matches/types.ts
 typescript	matches	type	MatchParticipantAdmin	frontend/features/matches/types.ts
 typescript	navigation	function	AppNavigation	frontend/features/navigation/AppNavigation.tsx
+typescript	navigation	function	LocationProvider	frontend/features/navigation/LocationProvider.tsx
+typescript	navigation	const	useLocation	frontend/features/navigation/LocationProvider.tsx
+typescript	navigation	function	LocationSelector	frontend/features/navigation/LocationSelector.tsx
 typescript	organizations	function	InvitationAcceptance	frontend/features/organizations/InvitationAcceptance.tsx
 typescript	organizations	function	OrganizationAdmin	frontend/features/organizations/OrganizationAdmin.tsx
 typescript	organizations	function	OrganizationWorkspace	frontend/features/organizations/OrganizationWorkspace.tsx
+typescript	organizations	function	PlatformUserDirectory	frontend/features/organizations/PlatformUserDirectory.tsx
+typescript	organizations	type	PlatformUser	frontend/features/organizations/user-directory.ts
+typescript	organizations	const	userProfiles	frontend/features/organizations/user-directory.ts
+typescript	organizations	type	UserProfile	frontend/features/organizations/user-directory.ts
+typescript	organizations	function	belongsToProfile	frontend/features/organizations/user-directory.ts
+typescript	organizations	function	filterDirectory	frontend/features/organizations/user-directory.ts
 typescript	reservations	function	MyReservations	frontend/features/reservations/MyReservations.tsx
 typescript	reservations	function	OrganizationReservations	frontend/features/reservations/OrganizationReservations.tsx
+typescript	reservations	function	OrganizationSchedule	frontend/features/reservations/OrganizationSchedule.tsx
 typescript	reservations	type	ReservationPaymentPlan	frontend/features/reservations/payment-options.ts
 typescript	reservations	function	reservationPaymentOptions	frontend/features/reservations/payment-options.ts
 typescript	reservations	const	reservationStatus	frontend/features/reservations/presentation.ts

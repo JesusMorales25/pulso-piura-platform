@@ -7,11 +7,7 @@ public interface ReservationDetailsQuery {
 
     Summary summary(UUID organizationId);
 
-    record Names(
-            String venueName,
-            String spaceName,
-            int spaceCapacity,
-            boolean matchAssociated) {}
+    record Names(String venueName, String spaceName, int spaceCapacity, boolean matchAssociated) {}
 
     record Summary(
             long total,

@@ -19,6 +19,12 @@ Regenerar todos los índices con
 rutas, módulos, símbolos públicos, controladores, migraciones, documentos o scripts. El índice
 acelera la navegación, pero no reemplaza los documentos obligatorios ni los ADR aplicables.
 
+Preferencia del usuario: mantener la indexación actualizada al cerrar cada tarea que cambie el
+código o la documentación. Usar el índice como punto de entrada del contexto y limitar las
+lecturas al alcance de la tarea para evitar consumir tokens en exploraciones repetidas.
+Reutilizar el contexto ya leído mientras siga vigente; ante discrepancias, verificar el archivo
+fuente y regenerar el índice. No indexar secretos, dependencias ni artefactos temporales.
+
 Antes de modificar código, leer `docs/product/AGENTS.template.md`, `docs/product/01_vision_y_alcance.md`, `docs/product/20_modulos_springboot.md`, `docs/product/22_plan_implementacion.md` y los ADR aplicables.
 
 Reglas invariables:

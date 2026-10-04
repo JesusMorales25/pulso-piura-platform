@@ -22,6 +22,12 @@ class PlatformOrganizationServiceTest {
                 .thenReturn(List.of(organizationId));
         when(jdbc.queryForObject(contains("select count(*)"), eq(Long.class), eq(organizationId)))
                 .thenReturn(1L);
+        when(jdbc.queryForObject(
+                        contains("select exists"),
+                        eq(Boolean.class),
+                        eq(organizationId),
+                        eq(ownerId)))
+                .thenReturn(true);
         var service = new PlatformOrganizationService(jdbc, audit);
 
         assertThatThrownBy(() -> service.removeOwner(UUID.randomUUID(), organizationId, ownerId))
@@ -32,6 +38,12 @@ class PlatformOrganizationServiceTest {
                 .query(contains("for update"), any(RowMapper.class), eq(organizationId));
         ordered.verify(jdbc)
                 .queryForObject(contains("select count(*)"), eq(Long.class), eq(organizationId));
+        ordered.verify(jdbc)
+                .queryForObject(
+                        contains("select exists"),
+                        eq(Boolean.class),
+                        eq(organizationId),
+                        eq(ownerId));
         verifyNoMoreInteractions(jdbc);
         verifyNoInteractions(audit);
     }

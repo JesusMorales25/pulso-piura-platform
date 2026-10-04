@@ -27,7 +27,11 @@ function Assert-PortAvailable {
 }
 
 # Maven y Next.js necesitan las mismas variables que Docker Compose.
-. "$PSScriptRoot\import-local-env.ps1" -AuthProvider $AuthProvider
+if ($AuthProvider) {
+    . "$PSScriptRoot\import-local-env.ps1" -AuthProvider $AuthProvider
+} else {
+    . "$PSScriptRoot\import-local-env.ps1"
+}
 $selectedAuthProvider = $env:AUTH_PROVIDER
 Write-Host "Proveedor de identidad local: $selectedAuthProvider"
 
@@ -62,7 +66,17 @@ if ($selectedAuthProvider -eq "keycloak") {
 } else {
     docker compose up -d --wait --remove-orphans postgres
     $infrastructureExitCode = $LASTEXITCODE
-    docker compose stop keycloak 2>$null | Out-Null
+    # Compose escribe el progreso en stderr; Windows PowerShell no debe
+    # interpretarlo como una excepcion antes de comprobar el codigo de salida.
+    $previousErrorPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        docker compose stop keycloak 2>$null | Out-Null
+        $keycloakStopExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorPreference
+    }
+    if ($keycloakStopExitCode -ne 0) { throw "No se pudo detener Keycloak al seleccionar Auth0." }
 }
 if ($infrastructureExitCode -ne 0) {
     if ($selectedAuthProvider -eq "keycloak") { docker compose logs keycloak --tail 160 }
@@ -82,6 +96,11 @@ Assert-PortAvailable -Port 8080 -Service "El backend"
 Assert-PortAvailable -Port 3000 -Service "El frontend"
 
 New-Item -ItemType Directory -Force "$projectRoot\.local" | Out-Null
+# Java 21 usa sockets locales para el selector de Tomcat. Una ruta temporal
+# explicita evita Invalid argument: connect en determinados entornos Windows.
+if ($env:JAVA_TOOL_OPTIONS -notmatch 'jdk\.net\.unixdomain\.tmpdir') {
+    $env:JAVA_TOOL_OPTIONS = "$($env:JAVA_TOOL_OPTIONS) -Djdk.net.unixdomain.tmpdir=`"$projectRoot\.local`"".Trim()
+}
 # Turbopack puede conservar un manifiesto de rutas anterior tras cambiar entre
 # `next build` y `next dev`. Es caché generada: se regenera al iniciar Next.
 $nextCache = Join-Path $projectRoot "frontend\.next"

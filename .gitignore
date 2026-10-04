@@ -1,6 +1,7 @@
 .env
 .env.local
 .local/
+.tmp/
 *.log
 .idea/
 .vscode/*
@@ -31,6 +32,7 @@ docs/
 docs/*
 !docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md
 !docs/VSCODE_PORT_SHARE.md
+!docs/OBSERVATIONS_OCTOBER_2026.md
 !docs/code-index/
 docs/code-index/*
 !docs/code-index/README.md

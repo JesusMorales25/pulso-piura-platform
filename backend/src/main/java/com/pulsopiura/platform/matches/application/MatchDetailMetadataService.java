@@ -25,8 +25,7 @@ public class MatchDetailMetadataService {
                         left join app.player_profiles p on p.user_id = u.id
                         where u.id = ?
                         """,
-                        (row, index) ->
-                                new Organizer(row.getString(1), row.getString(2)),
+                        (row, index) -> new Organizer(row.getString(1), row.getString(2)),
                         organizerUserId);
         var surface =
                 jdbc.queryForObject(

@@ -136,8 +136,21 @@ public class MatchService {
 
     @Transactional(readOnly = true)
     public List<MatchView> publicCatalog(String sportCode) {
+        return publicCatalog(sportCode, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MatchView> publicCatalog(String sportCode, String district) {
         var sport = normalizeOptional(sportCode);
+        var districtSpaces =
+                district == null || district.isBlank()
+                        ? null
+                        : spaces.publishedSpaceIdsInDistrict(district);
         return matches.findPublicUpcoming(clock.instant(), sport).stream()
+                .filter(
+                        match ->
+                                districtSpaces == null
+                                        || districtSpaces.contains(match.sportSpaceId()))
                 .map(match -> view(match, true, false))
                 .toList();
     }

@@ -10,6 +10,37 @@ class AvailabilityRuleEntityTest {
     private static final Instant NOW = Instant.parse("2026-09-04T12:00:00Z");
 
     @Test
+    void editingPreservesInactiveStatusAndRejectsStaleVersion() {
+        var rule = rule(60, 9000);
+        rule.deactivate(rule.version(), NOW);
+        rule.update(
+                1,
+                LocalTime.of(9, 0),
+                LocalTime.of(20, 0),
+                90,
+                10000,
+                rule.validFrom(),
+                null,
+                rule.version(),
+                NOW);
+        assertThat(rule.status()).isEqualTo("INACTIVE");
+        assertThat(rule.dayOfWeek()).isEqualTo(1);
+        assertThatThrownBy(
+                        () ->
+                                rule.update(
+                                        1,
+                                        LocalTime.of(9, 0),
+                                        LocalTime.of(20, 0),
+                                        60,
+                                        9000,
+                                        rule.validFrom(),
+                                        null,
+                                        rule.version() + 1,
+                                        NOW))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
     void createsRuleWithPenAndMinorUnits() {
         var rule = rule(60, 9000);
 

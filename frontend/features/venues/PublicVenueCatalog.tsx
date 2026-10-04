@@ -25,6 +25,7 @@ import {
   type VenueFilters,
 } from "@/lib/venue-discovery";
 import { reconcileSelectedSlots } from "@/lib/venue-availability";
+import { useLocation } from "@/features/navigation/LocationProvider";
 
 type CatalogItem = { code: string; name: string };
 type VenueCatalog = {
@@ -106,6 +107,7 @@ export function PublicVenueCatalog({
     amenities: [],
   });
   const [venues, setVenues] = useState<Venue[]>([]);
+  const { district: selectedDistrict } = useLocation();
   const [district, setDistrict] = useState("");
   const [sport, setSport] = useState("");
   const [date, setDate] = useState(localDate);
@@ -232,6 +234,7 @@ export function PublicVenueCatalog({
     setReservation(null);
     setSelectedSlots([]);
     const query = new URLSearchParams({ size: "20" });
+    if (selectedDistrict) query.set("district", selectedDistrict);
     const searchTerm = district.trim().toLocaleLowerCase("es-PE");
     const sportFromSearch = searchTerm
       ? catalog.sports.find((item) =>
@@ -321,6 +324,7 @@ export function PublicVenueCatalog({
               : localDate(),
         });
         if (requestedDistrict) initialQuery.set("district", requestedDistrict);
+        else if (selectedDistrict) initialQuery.set("district", selectedDistrict);
         if (validRequestedSport) initialQuery.set("sport", validRequestedSport);
         const venuesResult = await apiRequest<VenuePage>(
           `/venues?${initialQuery}`,
@@ -403,6 +407,18 @@ export function PublicVenueCatalog({
     // La selección se consume una vez, después de recuperar la sesión local.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading]);
+
+  useEffect(() => {
+    if (loading) return;
+    const controller = new AbortController();
+    const query = new URLSearchParams({ size: "50", date, ...(sport ? { sport } : {}), ...(selectedDistrict ? { district: selectedDistrict } : {}) });
+    void apiRequest<VenuePage>(`/venues?${query}`, null, { signal: controller.signal }).then((result) => {
+      if (!controller.signal.aborted) { setVenues(result.items); void loadVenueOffers(result.items, date, sport); }
+    }).catch((reason) => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : "No se pudo cargar la zona."); });
+    return () => controller.abort();
+    // El cambio de zona actualiza el catálogo sin desmontar el formulario de reserva.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDistrict, loading]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -754,13 +770,14 @@ export function PublicVenueCatalog({
   const filteredVenues = useMemo(
     () =>
       venues.filter((venue) => {
+        if (selectedDistrict && venue.districtCode.trim().toLocaleLowerCase("es-PE") !== selectedDistrict.toLocaleLowerCase("es-PE")) return false;
         const offer = venueOffers[venue.publicSlug];
         return matchesVenueFilters(
           offer ?? { venue, space: { indoor: false, amenityCodes: [] } },
           venueFilters,
         );
       }),
-    [venueFilters, venueOffers, venues],
+    [venueFilters, venueOffers, venues, selectedDistrict],
   );
   const listedVenues = offersLoading
     ? filteredVenues

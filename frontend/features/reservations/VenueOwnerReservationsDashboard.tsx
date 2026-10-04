@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Buildings, CalendarCheck } from "@phosphor-icons/react";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { OrganizationReservations } from "./OrganizationReservations";
+import { OrganizationSchedule } from "./OrganizationSchedule";
 
 export function VenueOwnerReservationsDashboard() {
   const { accessToken, loading: authLoading, login } = useAuth();
@@ -15,6 +17,7 @@ export function VenueOwnerReservationsDashboard() {
     (membership) => membership.role === "OWNER",
   );
   const [selectedId, setSelectedId] = useState("");
+  const [tab, setTab] = useState<"schedule" | "reservations">("schedule");
   const activeId = ownedOrganizations.some(
     (organization) => organization.id === selectedId,
   )
@@ -62,17 +65,16 @@ export function VenueOwnerReservationsDashboard() {
 
   return (
     <>
-      <header className="ownerReservationsHero">
-        <span className="ownerReservationsHeroIcon" aria-hidden="true">
-          <CalendarCheck size={28} weight="duotone" />
-        </span>
-        <div>
-          <p className="eyebrow">CONTROL DE RESERVAS</p>
+      <header className="hybridHome complexPanelHero">
+        <section className="hybridHero">
+        <div className="hybridHeroCarousel" aria-hidden="true"><Image src="/images/venue-football-7.png" alt="" fill sizes="(max-width: 760px) 100vw, 1120px" className="hybridHeroImage active" priority /></div>
+        <div className="hybridHeroShade" />
+        <div className="hybridHeroContent">
+          <p className="prototypeGreeting">CONTROL DE RESERVAS</p>
           <h1>Controla tus reservas</h1>
-          <p>
-            Revisa pagos, saldos y llegadas de cada complejo desde un solo lugar.
-          </p>
+          <div className="homeModeSwitch complexPanelSwitch" role="group" aria-label="Vista de operación"><button type="button" className={tab === "schedule" ? "active" : ""} aria-pressed={tab === "schedule"} onClick={() => setTab("schedule")}><Buildings size={20} />Malla de canchas</button><button type="button" className={tab === "reservations" ? "active" : ""} aria-pressed={tab === "reservations"} onClick={() => setTab("reservations")}><CalendarCheck size={20} />Reservas y pagos</button></div>
         </div>
+        </section>
       </header>
 
       {ownedOrganizations.length > 1 && (
@@ -91,7 +93,7 @@ export function VenueOwnerReservationsDashboard() {
         </label>
       )}
 
-      <OrganizationReservations organizationId={activeId} />
+      {tab === "schedule" ? <OrganizationSchedule key={activeId} organizationId={activeId} /> : <OrganizationReservations key={activeId} organizationId={activeId} />}
     </>
   );
 }

@@ -16,4 +16,9 @@ public class VenueCatalogController {
     VenueCatalogView get() {
         return catalogs.getActiveCatalogs();
     }
+
+    @GetMapping("/districts")
+    java.util.List<String> districts() {
+        return com.pulsopiura.platform.shared.DistrictCatalog.NAMES;
+    }
 }

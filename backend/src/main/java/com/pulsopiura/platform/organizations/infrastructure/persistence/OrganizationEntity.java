@@ -21,6 +21,25 @@ public class OrganizationEntity {
     @Column(nullable = false, length = 63)
     private String timezone;
 
+    @Column(name = "district_code", length = 60)
+    private String districtCode;
+
+    @Column(length = 240)
+    private String address;
+
+    public void setLocation(String districtCode, String address) {
+        this.districtCode = districtCode;
+        this.address = address;
+    }
+
+    public String districtCode() {
+        return districtCode;
+    }
+
+    public String address() {
+        return address;
+    }
+
     @Column(name = "created_by", nullable = false)
     private UUID createdBy;
 

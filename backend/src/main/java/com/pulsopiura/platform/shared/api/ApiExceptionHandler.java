@@ -15,6 +15,23 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    ProblemDetail validation(org.springframework.web.bind.MethodArgumentNotValidException error) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Datos incompletos",
+                "Revisa los campos obligatorios y sus valores antes de guardar.");
+    }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    ProblemDetail unreadable(
+            org.springframework.http.converter.HttpMessageNotReadableException error) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Formato inválido",
+                "Revisa las fechas, horas y números del formulario.");
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     ProblemDetail invalidInput(IllegalArgumentException error) {
         return problem(HttpStatus.BAD_REQUEST, "Entrada inválida", error.getMessage());

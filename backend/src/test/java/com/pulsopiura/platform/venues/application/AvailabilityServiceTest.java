@@ -55,6 +55,96 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    void updatesRuleWithoutTreatingItselfAsOverlap() {
+        var rule =
+                AvailabilityRuleEntity.create(
+                        organizationId,
+                        spaceId,
+                        actorId,
+                        1,
+                        LocalTime.of(8, 0),
+                        LocalTime.of(23, 0),
+                        60,
+                        12499,
+                        LocalDate.of(2026, 9, 1),
+                        null,
+                        Instant.now());
+        when(rules.findByIdAndOrganizationId(rule.id(), organizationId))
+                .thenReturn(Optional.of(rule));
+        when(rules.findAllByOrganizationIdAndSportSpaceIdOrderByDayOfWeekAscStartLocalTimeAsc(
+                        organizationId, spaceId))
+                .thenReturn(List.of(rule));
+        when(rules.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        var updated =
+                service.updateRule(
+                        actorId,
+                        organizationId,
+                        spaceId,
+                        rule.id(),
+                        1,
+                        LocalTime.of(9, 0),
+                        LocalTime.of(22, 0),
+                        90,
+                        10000,
+                        rule.validFrom(),
+                        null,
+                        rule.version());
+        org.assertj.core.api.Assertions.assertThat(updated.priceMinor()).isEqualTo(10000);
+        verify(authorization)
+                .require(actorId, organizationId, OrganizationPermission.MANAGE_ORGANIZATION);
+    }
+
+    @Test
+    void activationRejectsOverlapAndCanReactivateWhenOtherRuleIsInactive() {
+        var rule =
+                AvailabilityRuleEntity.create(
+                        organizationId,
+                        spaceId,
+                        actorId,
+                        1,
+                        LocalTime.of(8, 0),
+                        LocalTime.of(23, 0),
+                        60,
+                        9000,
+                        LocalDate.of(2026, 9, 1),
+                        null,
+                        Instant.now());
+        var other =
+                AvailabilityRuleEntity.create(
+                        organizationId,
+                        spaceId,
+                        actorId,
+                        1,
+                        LocalTime.of(9, 0),
+                        LocalTime.of(20, 0),
+                        60,
+                        9000,
+                        rule.validFrom(),
+                        null,
+                        Instant.now());
+        rule.deactivate(rule.version(), Instant.now());
+        when(rules.findByIdAndOrganizationId(rule.id(), organizationId))
+                .thenReturn(Optional.of(rule));
+        when(rules.findAllByOrganizationIdAndSportSpaceIdOrderByDayOfWeekAscStartLocalTimeAsc(
+                        organizationId, spaceId))
+                .thenReturn(List.of(rule, other));
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                        () ->
+                                service.activateRule(
+                                        actorId,
+                                        organizationId,
+                                        spaceId,
+                                        rule.id(),
+                                        rule.version()))
+                .hasMessageContaining("superpone");
+        org.assertj.core.api.Assertions.assertThat(rule.status()).isEqualTo("INACTIVE");
+        other.deactivate(other.version(), Instant.now());
+        when(rules.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        service.activateRule(actorId, organizationId, spaceId, rule.id(), rule.version());
+        org.assertj.core.api.Assertions.assertThat(rule.status()).isEqualTo("ACTIVE");
+    }
+
+    @Test
     void operatorPermissionIsEnoughForClosure() {
         service.createException(
                 actorId,

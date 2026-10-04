@@ -61,11 +61,14 @@ public class PlatformAdminQueryService {
     public List<UserView> users() {
         return jdbc.query(
                 """
-                select u.id, u.display_name, u.email, u.status,
-                       coalesce(string_agg(r.capability || ':' || r.status, ', ' order by r.capability), '') capabilities
+                select u.id, coalesce(p.preferred_display_name, u.display_name) display_name, u.email, u.status,
+                       u.avatar_url, p.home_district_code,
+                       coalesce((select string_agg(r.capability || ':' || r.status, ', ' order by r.capability)
+                         from app.capability_requests r where r.user_id = u.id), '') capabilities,
+                       exists(select 1 from app.organization_memberships m where m.user_id = u.id
+                         and m.role = 'OWNER' and m.status = 'ACTIVE') owner
                 from app.users u
-                left join app.capability_requests r on r.user_id = u.id
-                group by u.id, u.display_name, u.email, u.status, u.created_at
+                left join app.player_profiles p on p.user_id = u.id
                 order by u.created_at desc
                 """,
                 (rs, row) ->
@@ -74,7 +77,10 @@ public class PlatformAdminQueryService {
                                 rs.getString("display_name"),
                                 rs.getString("email"),
                                 rs.getString("status"),
-                                rs.getString("capabilities")));
+                                rs.getString("capabilities"),
+                                rs.getString("avatar_url"),
+                                rs.getString("home_district_code"),
+                                rs.getBoolean("owner")));
     }
 
     private long count(String sql) {
@@ -97,5 +103,12 @@ public class PlatformAdminQueryService {
             Instant reviewedAt) {}
 
     public record UserView(
-            UUID id, String displayName, String email, String status, String capabilities) {}
+            UUID id,
+            String displayName,
+            String email,
+            String status,
+            String capabilities,
+            String avatarUrl,
+            String districtCode,
+            boolean owner) {}
 }
