@@ -25,14 +25,17 @@ export async function apiRequest<T>(
   accessToken: string | null = null,
   init: RequestInit = {},
 ): Promise<T> {
-  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
+  const isFormData =
+    typeof FormData !== "undefined" && init.body instanceof FormData;
   const send = (token: string | null) =>
     fetch(`${apiBase}${path}`, {
       ...init,
       signal: init.signal ?? AbortSignal.timeout(15_000),
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(init.body && !isFormData ? { "Content-Type": "application/json" } : {}),
+        ...(init.body && !isFormData
+          ? { "Content-Type": "application/json" }
+          : {}),
         ...init.headers,
       },
     });
@@ -87,6 +90,8 @@ export async function apiRequest<T>(
     );
   }
   if (response.status === 204) return undefined as T;
+  if (response.headers.get("Content-Type")?.startsWith("image/"))
+    return (await response.blob()) as T;
   return response.json() as Promise<T>;
 }
 

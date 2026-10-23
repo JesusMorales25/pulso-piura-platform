@@ -8,5 +8,7 @@ export function sortUpcomingMatches<T extends { startsAt: string }>(
       return Number.isFinite(startsAt) && startsAt > now;
     })
     .slice()
-    .sort((left, right) => Date.parse(left.startsAt) - Date.parse(right.startsAt));
+    .sort(
+      (left, right) => Date.parse(left.startsAt) - Date.parse(right.startsAt),
+    );
 }

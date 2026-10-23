@@ -1,0 +1,38 @@
+.panel {
+  min-width: 0;
+  width: 100%;
+  overflow-wrap: anywhere;
+  display: grid;
+  gap: 12px;
+}
+.panel form {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.panel label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.panel input:not([type="checkbox"]),
+.panel select,
+.panel textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.panel article {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  margin-top: 14px;
+}
+.panel img {
+  width: 100%;
+  height: auto;
+  max-height: 70dvh;
+  object-fit: contain;
+}
+.panel button {
+  white-space: normal;
+}

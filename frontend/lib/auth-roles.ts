@@ -1,7 +1,10 @@
 import type { User } from "oidc-client-ts";
 
 type RealmAccess = { roles?: unknown };
-type TokenClaims = Record<string, unknown> & { realm_access?: RealmAccess; roles?: unknown };
+type TokenClaims = Record<string, unknown> & {
+  realm_access?: RealmAccess;
+  roles?: unknown;
+};
 
 const configuredRolesClaim =
   process.env.NEXT_PUBLIC_OIDC_ROLES_CLAIM ?? "https://pulsopiura.app/roles";

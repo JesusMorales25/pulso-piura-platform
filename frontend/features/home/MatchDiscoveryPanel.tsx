@@ -16,7 +16,10 @@ import { sortUpcomingMatches } from "@/lib/match-discovery";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { FeaturedMatchCardV2 } from "./FeaturedMatchCardV2";
 import { NextMatchCard } from "./NextMatchCard";
-import type { MatchParticipation, MatchSummary } from "@/features/matches/types";
+import type {
+  MatchParticipation,
+  MatchSummary,
+} from "@/features/matches/types";
 
 const sports = [
   { name: "Fútbol", code: "FOOTBALL", Icon: SoccerBall },
@@ -34,7 +37,9 @@ export function MatchDiscoveryPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
-  const [participation, setParticipation] = useState<MatchParticipation | null>(null);
+  const [participation, setParticipation] = useState<MatchParticipation | null>(
+    null,
+  );
   const selectedSport = sports.find((item) => item.name === sport)!;
   const featured = matches[0];
   useEffect(() => {
@@ -45,7 +50,8 @@ export function MatchDiscoveryPanel() {
       { signal: controller.signal },
     )
       .then((result) => {
-        if (!controller.signal.aborted) setMatches(sortUpcomingMatches(result, Date.now()));
+        if (!controller.signal.aborted)
+          setMatches(sortUpcomingMatches(result, Date.now()));
       })
       .catch((reason) => {
         if (controller.signal.aborted) return;
@@ -62,10 +68,15 @@ export function MatchDiscoveryPanel() {
     return () => controller.abort();
   }, [selectedSport.code, retry, district]);
   useEffect(() => {
-    if (!accessToken || !featured) { return; }
+    if (!accessToken || !featured) {
+      return;
+    }
     void apiRequest<MatchParticipation | undefined>(
-      `/matches/${featured.publicSlug}/participants/me`, accessToken,
-    ).then((current) => setParticipation(current ?? null)).catch(() => setParticipation(null));
+      `/matches/${featured.publicSlug}/participants/me`,
+      accessToken,
+    )
+      .then((current) => setParticipation(current ?? null))
+      .catch(() => setParticipation(null));
   }, [accessToken, featured]);
   function selectSport(next: string) {
     if (next === sport) return;

@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: 96e406394d48c2a9
-- Archivos indexados: 594
+- Huella del inventario: e34df85777bbe84f
+- Archivos indexados: 635
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -43,7 +43,7 @@
 | Organizaciones | frontend/features/organizations, frontend/app/admin | organizations | docs/product/11_matriz_roles_permisos.md |
 | Complejos y canchas | frontend/features/venues | venues | docs/product/27_panel_complejos.md, docs/ITERATION_3_VENUES_PLAN.md |
 | Reservas | frontend/features/reservations, PublicVenueCatalog.tsx | reservations | docs/product/25_reglas_reservas.md, docs/RESERVATIONS_PAYMENTS.md |
-| Pagos | ReservationCheckout.tsx | payments | docs/product/32_pagos_yape_plin.md, docs/adr/ADR-005-pagos-desacoplados.md |
+| Pagos | frontend/features/payments, ReservationCheckout.tsx | payments, ExternalMatchPaymentService | docs/EXTERNAL_PAYMENTS.md, docs/openapi-external-payments.yaml, docs/adr/ADR-007-pagos-externos-comprobantes-privados.md |
 | Partidos | frontend/features/matches, frontend/app/partidos | matches | docs/product/26_reglas_partidos.md |
 | Infraestructura | frontend/lib | foundation, shared | README.md, compose.yaml, docs/IDENTITY_LOCAL_SETUP.md |
 
@@ -56,6 +56,7 @@
 - /auth/callback -> frontend/app/auth/callback/page.tsx
 - /canchas -> frontend/app/canchas/page.tsx
 - /crear -> frontend/app/crear/page.tsx
+- /informacion/[section] -> frontend/app/informacion/[section]/page.tsx
 - /invitaciones/[invitationId] -> frontend/app/invitaciones/[invitationId]/page.tsx
 - /organizaciones -> frontend/app/organizaciones/page.tsx
 - /organizador -> frontend/app/organizador/page.tsx
@@ -83,7 +84,8 @@
 - matches (16): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, draft.ts, MatchBuilder.tsx, MatchCatalog.tsx, MatchCheckInScanner.tsx, MatchCreationWorkspace.tsx, MatchDetail.tsx, MatchInvitationAcceptance.tsx, MatchOrganizerDashboard.tsx, MatchQrPass.tsx, mobile-checkout.ts, MobileMatchCheckout.tsx, MyMatchParticipations.tsx, presentation.ts, types.ts
 - navigation (3): AppNavigation.tsx, LocationProvider.tsx, LocationSelector.tsx
 - organizations (5): InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx, PlatformUserDirectory.tsx, user-directory.ts
-- reservations (10): MyReservations.tsx, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationQrPass.tsx, types.ts, VenueOwnerReservationsDashboard.tsx
+- payments (3): ExternalPaymentPanel.module.css, ExternalPaymentPanel.tsx, proof-validation.ts
+- reservations (11): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationQrPass.tsx, types.ts, VenueOwnerReservationsDashboard.tsx
 - venues (7): AvailabilityAdmin.tsx, PublicVenueCatalog.tsx, VenueAdmin.tsx, VenueBookingCard.module.css, VenueBookingCard.tsx, VenueScheduleDialog.module.css, VenueScheduleDialog.tsx
 
 ### Compartido
@@ -99,13 +101,13 @@
 ### Modulos
 
 - audit: 6 clases, 0 pruebas.
-- foundation: 5 clases, 2 pruebas.
-- identity: 13 clases, 3 pruebas.
-- matches: 42 clases, 10 pruebas.
-- organizations: 22 clases, 6 pruebas.
+- foundation: 8 clases, 4 pruebas.
+- identity: 13 clases, 4 pruebas.
+- matches: 43 clases, 12 pruebas.
+- organizations: 22 clases, 7 pruebas.
 - partners: 2 clases, 2 pruebas.
-- payments: 11 clases, 1 pruebas.
-- profiles: 6 clases, 0 pruebas.
+- payments: 22 clases, 7 pruebas.
+- profiles: 7 clases, 1 pruebas.
 - reservations: 41 clases, 11 pruebas.
 - shared: 2 clases, 1 pruebas.
 - venues: 44 clases, 9 pruebas.
@@ -119,7 +121,9 @@
 - /api/v1/organizations | backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java | POST; GET; GET /{organizationId}; POST /{organizationId}/invitations; POST /invitations/{invitationId}/accept; GET /{organizationId}/members; DELETE /{organizationId}/members/{userId}
 - /api/v1/organizations/{organizationId} | backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationOperationsController.java | GET /overview; GET /staff; GET /schedule
 - /api/v1/platform/organizations | backend/src/main/java/com/pulsopiura/platform/organizations/api/PlatformOrganizationAdminController.java | GET; POST /{organizationId}/owners; DELETE /{organizationId}/owners/{userId}
-- sin prefijo | backend/src/main/java/com/pulsopiura/platform/partners/api/PartnerBusinessController.java | GET /api/v1/businesses; GET /api/v1/businesses/{businessId}/image; GET /api/v1/platform/businesses; POST /api/v1/platform/businesses; PUT /api/v1/platform/businesses/{businessId}; PUT
+- sin prefijo | backend/src/main/java/com/pulsopiura/platform/partners/api/PartnerBusinessController.java | GET /api/v1/businesses; GET /api/v1/businesses/{businessId}/image; GET /api/v1/platform/businesses; GET /api/v1/platform/businesses/{businessId}/image; POST /api/v1/platform/businesses; PUT /api/v1/platform/businesses/{businessId}; PUT
+- /api/v1/external-payments | backend/src/main/java/com/pulsopiura/platform/payments/api/ExternalPaymentController.java | GET /capabilities; GET /destination; POST /prepare; PUT /destination; GET; POST; POST /{proofId}/decision; GET
+- /api/v1/organizations/{organizationId}/external-payment-destination | backend/src/main/java/com/pulsopiura/platform/payments/api/OrganizationExternalPaymentController.java | GET; PUT
 - /api/v1/payment-orders | backend/src/main/java/com/pulsopiura/platform/payments/api/PaymentOrderController.java | GET /capabilities; GET; GET /{orderId}; POST; POST /{orderId}/simulate
 - /api/v1/spaces/{spaceId}/bookable-slots | backend/src/main/java/com/pulsopiura/platform/reservations/api/BookableAvailabilityController.java | GET
 - /api/v1/me/reservations | backend/src/main/java/com/pulsopiura/platform/reservations/api/MyReservationController.java | GET
@@ -168,6 +172,8 @@
 - backend/src/main/resources/db/migration/V32__add_admin_venue_rating.sql
 - backend/src/main/resources/db/migration/V33__organization_location_identity.sql
 - backend/src/main/resources/db/migration/V34__canonical_piura_districts.sql
+- backend/src/main/resources/db/migration/V35__shared_write_rate_limits.sql
+- backend/src/main/resources/db/migration/V36__external_manual_payments.sql
 
 ## Operacion y validacion
 

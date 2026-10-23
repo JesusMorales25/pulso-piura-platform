@@ -130,9 +130,19 @@ public class PartnerBusinessService {
 
     @Transactional(readOnly = true)
     public BusinessImage image(UUID id) {
+        return readImage(id, true);
+    }
+
+    @Transactional(readOnly = true)
+    public BusinessImage previewImage(UUID id) {
+        return readImage(id, false);
+    }
+
+    private BusinessImage readImage(UUID id, boolean publishedOnly) {
         return jdbc
                 .query(
-                        "select image_content, image_content_type from app.partner_businesses where id = ? and image_content is not null",
+                        "select image_content, image_content_type from app.partner_businesses where id = ? and image_content is not null"
+                                + (publishedOnly ? " and status = 'PUBLISHED'" : ""),
                         (rs, row) ->
                                 new BusinessImage(
                                         rs.getBytes("image_content"),

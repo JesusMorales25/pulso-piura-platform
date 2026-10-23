@@ -13,9 +13,15 @@ export default function ThirdTimePage() {
             directamente al local o abre su ubicación exacta en Google Maps.
           </p>
           <div className="thirdTimeHeroFacts">
-            <span><MapPin aria-hidden="true" /> Ubicaciones verificables</span>
-            <span><UsersThree aria-hidden="true" /> Planes para el equipo</span>
-            <span><Ticket aria-hidden="true" /> Beneficios próximamente</span>
+            <span>
+              <MapPin aria-hidden="true" /> Ubicaciones verificables
+            </span>
+            <span>
+              <UsersThree aria-hidden="true" /> Planes para el equipo
+            </span>
+            <span>
+              <Ticket aria-hidden="true" /> Beneficios próximamente
+            </span>
           </div>
         </div>
       </section>

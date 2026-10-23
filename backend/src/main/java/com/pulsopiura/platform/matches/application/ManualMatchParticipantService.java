@@ -3,6 +3,7 @@ package com.pulsopiura.platform.matches.application;
 import com.pulsopiura.platform.matches.domain.ManualMatchParticipant;
 import com.pulsopiura.platform.matches.domain.MatchParticipantStatus;
 import com.pulsopiura.platform.matches.domain.MatchStatus;
+import com.pulsopiura.platform.matches.infrastructure.persistence.MatchJoinOrderRepository;
 import java.time.Clock;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -19,14 +20,16 @@ public class ManualMatchParticipantService {
     private final ManualMatchParticipantStore manualParticipants;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final MatchJoinOrderRepository joinOrders;
 
     @Autowired
     public ManualMatchParticipantService(
             MatchStore matches,
             MatchParticipantStore participants,
             ManualMatchParticipantStore manualParticipants,
-            ApplicationEventPublisher events) {
-        this(matches, participants, manualParticipants, events, Clock.systemUTC());
+            ApplicationEventPublisher events,
+            MatchJoinOrderRepository joinOrders) {
+        this(matches, participants, manualParticipants, events, joinOrders, Clock.systemUTC());
     }
 
     ManualMatchParticipantService(
@@ -34,12 +37,14 @@ public class ManualMatchParticipantService {
             MatchParticipantStore participants,
             ManualMatchParticipantStore manualParticipants,
             ApplicationEventPublisher events,
+            MatchJoinOrderRepository joinOrders,
             Clock clock) {
         this.matches = matches;
         this.participants = participants;
         this.manualParticipants = manualParticipants;
         this.events = events;
         this.clock = clock;
+        this.joinOrders = joinOrders;
     }
 
     @Transactional
@@ -57,7 +62,19 @@ public class ManualMatchParticipantService {
         var occupied =
                 participants.countByMatchAndStatus(match.id(), MatchParticipantStatus.JOINED)
                         + (match.organizerCounts() ? 1 : 0);
-        if (occupied >= match.maxPlayers())
+        long held =
+                joinOrders.findAllByMatchIdOrderByCreatedAtAsc(match.id()).stream()
+                        .filter(
+                                order ->
+                                        "PENDING".equals(order.status())
+                                                && now.isBefore(order.expiresAt()))
+                        .filter(
+                                order ->
+                                        !match.organizerCounts()
+                                                || !order.payerUserId()
+                                                        .equals(match.organizerUserId()))
+                        .count();
+        if (occupied + held >= match.maxPlayers())
             throw new IllegalStateException("El partido ya no tiene cupos disponibles");
         var saved =
                 manualParticipants.save(

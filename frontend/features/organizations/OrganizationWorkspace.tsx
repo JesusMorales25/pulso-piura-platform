@@ -23,7 +23,15 @@ type Organization = {
   address: string | null;
 };
 
-type Overview = { venues: number; spaces: number; members: number; matchesToday: number; reservationsToday: number; expectedMinor: number; locations: string | null };
+type Overview = {
+  venues: number;
+  spaces: number;
+  members: number;
+  matchesToday: number;
+  reservationsToday: number;
+  expectedMinor: number;
+  locations: string | null;
+};
 
 export function OrganizationWorkspace() {
   const { accessToken, loading: authLoading, login } = useAuth();
@@ -51,11 +59,22 @@ export function OrganizationWorkspace() {
     let active = true;
     void fetchOrganizations()
       .then((result) => {
-        if (active) { setOrganizations(result); if (new URLSearchParams(window.location.search).get("create") === "1") setShowCreate(true); }
-        return Promise.all(result.map(async (organization) => {
-          const overview = await apiRequest<Overview>(`/organizations/${organization.id}/overview`, accessToken);
-          return [organization.id, overview] as const;
-        })).then((entries) => { if (active) setOverviews(Object.fromEntries(entries)); });
+        if (active) {
+          setOrganizations(result);
+          if (new URLSearchParams(window.location.search).get("create") === "1")
+            setShowCreate(true);
+        }
+        return Promise.all(
+          result.map(async (organization) => {
+            const overview = await apiRequest<Overview>(
+              `/organizations/${organization.id}/overview`,
+              accessToken,
+            );
+            return [organization.id, overview] as const;
+          }),
+        ).then((entries) => {
+          if (active) setOverviews(Object.fromEntries(entries));
+        });
       })
       .catch((requestError: unknown) => {
         if (!active) return;
@@ -78,7 +97,11 @@ export function OrganizationWorkspace() {
     if (!accessToken) return;
     const form = event.currentTarget;
     const values = new FormData(form);
-    if (!["name", "districtCode", "address"].every((field) => String(values.get(field) || "").trim())) {
+    if (
+      !["name", "districtCode", "address"].every((field) =>
+        String(values.get(field) || "").trim(),
+      )
+    ) {
       setError("Completa el nombre, distrito y dirección del complejo.");
       return;
     }
@@ -90,7 +113,11 @@ export function OrganizationWorkspace() {
         accessToken,
         {
           method: "POST",
-          body: JSON.stringify({ name: values.get("name"), districtCode: values.get("districtCode"), address: values.get("address") }),
+          body: JSON.stringify({
+            name: values.get("name"),
+            districtCode: values.get("districtCode"),
+            address: values.get("address"),
+          }),
         },
       );
       setOrganizations((current) => [...current, created]);
@@ -125,13 +152,71 @@ export function OrganizationWorkspace() {
 
   return (
     <>
-      <header className="ownerWorkspaceHero"><div><p className="eyebrow">MI CANCHA</p><h1>Gestiona tu complejo</h1><p>Configura tus sedes y revisa la operación de hoy.</p></div>{capabilities.canManageOrganizations && <button className="primary borderless" onClick={() => setShowCreate((current) => !current)} type="button"><Plus /> Crear complejo</button>}</header>
+      <header className="ownerWorkspaceHero">
+        <div>
+          <p className="eyebrow">MI CANCHA</p>
+          <h1>Gestiona tu complejo</h1>
+          <p>Configura tus sedes y revisa la operación de hoy.</p>
+        </div>
+        {capabilities.canManageOrganizations && (
+          <button
+            className="primary borderless"
+            onClick={() => setShowCreate((current) => !current)}
+            type="button"
+          >
+            <Plus /> Crear complejo
+          </button>
+        )}
+      </header>
       <div className="ownerOverviewMetrics" aria-label="Resumen de complejos">
-        {[["Complejos", organizations.length], ["Canchas habilitadas", Object.values(overviews).reduce((sum, item) => sum + item.spaces, 0)], ["Partidos hoy", Object.values(overviews).reduce((sum, item) => sum + item.matchesToday, 0)], ["Recaudación estimada hoy", new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(Object.values(overviews).reduce((sum, item) => sum + item.expectedMinor, 0) / 100)]].map(([label, value]) => <article key={label}><small>{label}</small><strong>{Object.keys(overviews).length === organizations.length ? value : "—"}</strong></article>)}
+        {[
+          ["Complejos", organizations.length],
+          [
+            "Canchas habilitadas",
+            Object.values(overviews).reduce(
+              (sum, item) => sum + item.spaces,
+              0,
+            ),
+          ],
+          [
+            "Partidos hoy",
+            Object.values(overviews).reduce(
+              (sum, item) => sum + item.matchesToday,
+              0,
+            ),
+          ],
+          [
+            "Recaudación estimada hoy",
+            new Intl.NumberFormat("es-PE", {
+              style: "currency",
+              currency: "PEN",
+            }).format(
+              Object.values(overviews).reduce(
+                (sum, item) => sum + item.expectedMinor,
+                0,
+              ) / 100,
+            ),
+          ],
+        ].map(([label, value]) => (
+          <article key={label}>
+            <small>{label}</small>
+            <strong>
+              {Object.keys(overviews).length === organizations.length
+                ? value
+                : "—"}
+            </strong>
+          </article>
+        ))}
       </div>
-      <p className="muted">Estimación basada en las reservas confirmadas de hoy; no equivale a dinero cobrado.</p>
+      <p className="muted">
+        Estimación basada en las reservas confirmadas de hoy; no equivale a
+        dinero cobrado.
+      </p>
 
-      <section className="workspaceGrid ownerComplexWorkspace" aria-label="Organizaciones deportivas">
+      <section
+        className="workspaceGrid ownerComplexWorkspace"
+        aria-label="Organizaciones deportivas"
+      >
         <div>
           <div className="sectionTitle workspaceTitle">
             <div>
@@ -159,11 +244,34 @@ export function OrganizationWorkspace() {
                     <span className="pill">
                       {organizationRoleLabel(organization.role)}
                     </span>
-                    <span className="ownerComplexVisual" aria-hidden="true"><Buildings size={38} /></span>
+                    <span className="ownerComplexVisual" aria-hidden="true">
+                      <Buildings size={38} />
+                    </span>
                     <h3>{organization.name}</h3>
-                    <p><MapPin size={16} /> {organization.address || overviews[organization.id]?.locations || "Ubicación pendiente de configurar"}{organization.districtCode ? ` · ${organization.districtCode}` : ""}</p>
+                    <p>
+                      <MapPin size={16} />{" "}
+                      {organization.address ||
+                        overviews[organization.id]?.locations ||
+                        "Ubicación pendiente de configurar"}
+                      {organization.districtCode
+                        ? ` · ${organization.districtCode}`
+                        : ""}
+                    </p>
                     <p>{organizationStatusLabel(organization.status)}</p>
-                    <div className="ownerComplexFacts"><span>{overviews[organization.id]?.spaces ?? "—"} canchas habilitadas</span><span>{overviews[organization.id]?.members ?? "—"} colaboradores</span><span>{overviews[organization.id]?.reservationsToday ?? "—"} reservas hoy</span></div>
+                    <div className="ownerComplexFacts">
+                      <span>
+                        {overviews[organization.id]?.spaces ?? "—"} canchas
+                        habilitadas
+                      </span>
+                      <span>
+                        {overviews[organization.id]?.members ?? "—"}{" "}
+                        colaboradores
+                      </span>
+                      <span>
+                        {overviews[organization.id]?.reservationsToday ?? "—"}{" "}
+                        reservas hoy
+                      </span>
+                    </div>
                   </div>
                   <Link className="primary" href={`/admin/${organization.id}`}>
                     Abrir panel <ArrowRight />
@@ -175,35 +283,71 @@ export function OrganizationWorkspace() {
         </div>
 
         {capabilities.canManageOrganizations && showCreate ? (
-          <dialog ref={createDialog} className="createComplexDialog" aria-labelledby="create-complex-title" onCancel={() => setShowCreate(false)} onClose={() => setShowCreate(false)}>
-          <form
-            className="card adminForm createOrganization"
-            noValidate
-            onSubmit={createOrganization}
+          <dialog
+            ref={createDialog}
+            className="createComplexDialog"
+            aria-labelledby="create-complex-title"
+            onCancel={() => setShowCreate(false)}
+            onClose={() => setShowCreate(false)}
           >
-            <p className="eyebrow">NUEVO COMPLEJO</p>
-            <div className="createComplexDialogHeading"><h2 id="create-complex-title">Crear complejo</h2><button type="button" className="secondary" aria-label="Cerrar formulario" onClick={() => setShowCreate(false)}>×</button></div>
-            <p className="muted">
-              Serás propietario y podrás invitar administradores u operadores.
-            </p>
-            <label>
-              Nombre comercial
-              <input
-                name="name"
-                maxLength={160}
-                placeholder="Ej. Arena Norte"
-                autoComplete="organization"
-                required
-              />
-            </label>
-            <DistrictSelect />
-            <label>Dirección de la sede<input name="address" maxLength={240} placeholder="Av. y número o referencia de ubicación" autoComplete="street-address" required /></label>
-            {error && <p className="errorNotice" role="alert">{error}</p>}
-            <button className="primary borderless" disabled={creating}>
-              {creating ? "Creando…" : "Crear complejo"}
-            </button>
-            <button type="button" className="secondary" disabled={creating} onClick={() => setShowCreate(false)}>Cancelar</button>
-          </form>
+            <form
+              className="card adminForm createOrganization"
+              noValidate
+              onSubmit={createOrganization}
+            >
+              <p className="eyebrow">NUEVO COMPLEJO</p>
+              <div className="createComplexDialogHeading">
+                <h2 id="create-complex-title">Crear complejo</h2>
+                <button
+                  type="button"
+                  className="secondary"
+                  aria-label="Cerrar formulario"
+                  onClick={() => setShowCreate(false)}
+                >
+                  ×
+                </button>
+              </div>
+              <p className="muted">
+                Serás propietario y podrás invitar administradores u operadores.
+              </p>
+              <label>
+                Nombre comercial
+                <input
+                  name="name"
+                  maxLength={160}
+                  placeholder="Ej. Arena Norte"
+                  autoComplete="organization"
+                  required
+                />
+              </label>
+              <DistrictSelect />
+              <label>
+                Dirección de la sede
+                <input
+                  name="address"
+                  maxLength={240}
+                  placeholder="Av. y número o referencia de ubicación"
+                  autoComplete="street-address"
+                  required
+                />
+              </label>
+              {error && (
+                <p className="errorNotice" role="alert">
+                  {error}
+                </p>
+              )}
+              <button className="primary borderless" disabled={creating}>
+                {creating ? "Creando…" : "Crear complejo"}
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                disabled={creating}
+                onClick={() => setShowCreate(false)}
+              >
+                Cancelar
+              </button>
+            </form>
           </dialog>
         ) : !capabilities.canManageOrganizations ? (
           <aside className="card adminForm createOrganization">
@@ -219,7 +363,11 @@ export function OrganizationWorkspace() {
           </aside>
         ) : null}
       </section>
-      <FloatingNotice message={error || ""} tone="error" onDismiss={() => setError(null)} />
+      <FloatingNotice
+        message={error || ""}
+        tone="error"
+        onDismiss={() => setError(null)}
+      />
     </>
   );
 }

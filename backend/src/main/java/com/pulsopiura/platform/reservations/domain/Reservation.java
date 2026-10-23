@@ -170,6 +170,19 @@ public final class Reservation {
         return true;
     }
 
+    public void holdForExternalReview(Instant now, Instant deadline) {
+        if ((status != ReservationStatus.HOLD && status != ReservationStatus.PENDING_PAYMENT)
+                || expiresAt == null
+                || !now.isBefore(expiresAt)
+                || !now.isBefore(deadline)
+                || deadline.isAfter(timeRange.startsAt())) {
+            throw new IllegalStateException("La retención de la reserva ya no está disponible");
+        }
+        status = ReservationStatus.PENDING_PAYMENT;
+        expiresAt = deadline;
+        updatedAt = now;
+    }
+
     public boolean confirmPaid(Instant now) {
         if (status == ReservationStatus.CONFIRMED) return false;
         requireStatus(ReservationStatus.PENDING_PAYMENT, "El pago no está pendiente");

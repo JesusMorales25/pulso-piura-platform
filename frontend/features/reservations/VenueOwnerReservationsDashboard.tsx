@@ -8,11 +8,15 @@ import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { OrganizationReservations } from "./OrganizationReservations";
 import { OrganizationSchedule } from "./OrganizationSchedule";
+import { ExternalPaymentPanel } from "@/features/payments/ExternalPaymentPanel";
 
 export function VenueOwnerReservationsDashboard() {
   const { accessToken, loading: authLoading, login } = useAuth();
-  const { capabilities, memberships, loading: capabilitiesLoading } =
-    useUserCapabilities();
+  const {
+    capabilities,
+    memberships,
+    loading: capabilitiesLoading,
+  } = useUserCapabilities();
   const ownedOrganizations = memberships.filter(
     (membership) => membership.role === "OWNER",
   );
@@ -67,13 +71,45 @@ export function VenueOwnerReservationsDashboard() {
     <>
       <header className="hybridHome complexPanelHero">
         <section className="hybridHero">
-        <div className="hybridHeroCarousel" aria-hidden="true"><Image src="/images/venue-football-7.png" alt="" fill sizes="(max-width: 760px) 100vw, 1120px" className="hybridHeroImage active" priority /></div>
-        <div className="hybridHeroShade" />
-        <div className="hybridHeroContent">
-          <p className="prototypeGreeting">CONTROL DE RESERVAS</p>
-          <h1>Controla tus reservas</h1>
-          <div className="homeModeSwitch complexPanelSwitch" role="group" aria-label="Vista de operación"><button type="button" className={tab === "schedule" ? "active" : ""} aria-pressed={tab === "schedule"} onClick={() => setTab("schedule")}><Buildings size={20} />Malla de canchas</button><button type="button" className={tab === "reservations" ? "active" : ""} aria-pressed={tab === "reservations"} onClick={() => setTab("reservations")}><CalendarCheck size={20} />Reservas y pagos</button></div>
-        </div>
+          <div className="hybridHeroCarousel" aria-hidden="true">
+            <Image
+              src="/images/court-reference.svg"
+              alt=""
+              fill
+              sizes="(max-width: 760px) 100vw, 1120px"
+              className="hybridHeroImage active"
+              priority
+            />
+          </div>
+          <div className="hybridHeroShade" />
+          <div className="hybridHeroContent">
+            <p className="prototypeGreeting">CONTROL DE RESERVAS</p>
+            <h1>Controla tus reservas</h1>
+            <div
+              className="homeModeSwitch complexPanelSwitch"
+              role="group"
+              aria-label="Vista de operación"
+            >
+              <button
+                type="button"
+                className={tab === "schedule" ? "active" : ""}
+                aria-pressed={tab === "schedule"}
+                onClick={() => setTab("schedule")}
+              >
+                <Buildings size={20} />
+                Malla de canchas
+              </button>
+              <button
+                type="button"
+                className={tab === "reservations" ? "active" : ""}
+                aria-pressed={tab === "reservations"}
+                onClick={() => setTab("reservations")}
+              >
+                <CalendarCheck size={20} />
+                Reservas y pagos
+              </button>
+            </div>
+          </div>
         </section>
       </header>
 
@@ -93,7 +129,20 @@ export function VenueOwnerReservationsDashboard() {
         </label>
       )}
 
-      {tab === "schedule" ? <OrganizationSchedule key={activeId} organizationId={activeId} /> : <OrganizationReservations key={activeId} organizationId={activeId} />}
+      <ExternalPaymentPanel
+        key={`destination:${activeId}`}
+        accessToken={accessToken}
+        targetType="RESERVATION"
+        targetId={activeId}
+        reviewer
+        allowUpload={false}
+        organizationSettings
+      />
+      {tab === "schedule" ? (
+        <OrganizationSchedule key={activeId} organizationId={activeId} />
+      ) : (
+        <OrganizationReservations key={activeId} organizationId={activeId} />
+      )}
     </>
   );
 }

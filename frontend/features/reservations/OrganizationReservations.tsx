@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api";
+import { ExternalPaymentPanel } from "@/features/payments/ExternalPaymentPanel";
+import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import {
   money,
@@ -10,6 +12,7 @@ import {
 } from "./presentation";
 import type { Reservation } from "./types";
 import { ReservationCheckInScanner } from "./ReservationCheckInScanner";
+import styles from "./OrganizationReservations.module.css";
 type Item = Reservation & {
   spaceName: string;
   venueName: string;
@@ -31,6 +34,11 @@ function Dashboard({
   organizationId: string;
   accessToken: string;
 }) {
+  const { memberships } = useUserCapabilities();
+  const canReviewPayments = memberships.some(
+    (membership) =>
+      membership.id === organizationId && membership.role === "OWNER",
+  );
   const [items, setItems] = useState<Item[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [total, setTotal] = useState(0);
@@ -126,8 +134,9 @@ function Dashboard({
         <span className="pill">{total} registradas</span>
       </div>
       <p className="notice">
-        Modo de pruebas · No hay cobros reales. Solo puedes cancelar reservas
-        sin pagos registrados.
+        Los pagos de simulación anteriores no acreditan dinero recibido; revisa
+        los comprobantes confirmados. Solo puedes cancelar reservas sin pagos
+        registrados.
       </p>
       <ReservationCheckInScanner
         organizationId={organizationId}
@@ -140,7 +149,7 @@ function Dashboard({
             ["Confirmadas", summary.confirmed],
             ["Pendientes vigentes", summary.pending],
             ["Canceladas", summary.cancelled],
-            ["Pagado en pruebas", money(summary.paidMinor)],
+            ["Pagos registrados", money(summary.paidMinor)],
             ["Saldo por cobrar", money(summary.balanceMinor)],
             ["Retenido sin devolución", money(summary.retainedMinor)],
           ].map(([label, value]) => (
@@ -163,7 +172,10 @@ function Dashboard({
       ) : (
         <div className="reservationDashboardList">
           {items.map((item) => (
-            <article className="card reservationDashboardCard" key={item.id}>
+            <article
+              className={`card reservationDashboardCard ${styles.card}`}
+              key={item.id}
+            >
               <div>
                 <span className="reservationStatus">
                   {reservationStatus[item.status]}
@@ -176,6 +188,16 @@ function Dashboard({
                 {reservationTime(item.startsAt)} –{" "}
                 {reservationTime(item.endsAt)}
               </p>
+              {canReviewPayments && (
+                <ExternalPaymentPanel
+                  accessToken={accessToken}
+                  targetType="RESERVATION"
+                  targetId={item.id}
+                  reviewer
+                  allowUpload={false}
+                  onChange={() => setRefresh((value) => value + 1)}
+                />
+              )}
               <p>Cliente: {item.customerEmail ?? "Cliente registrado"}</p>
               <dl className="reservationSummary">
                 <div>
@@ -183,7 +205,7 @@ function Dashboard({
                   <dd>{money(item.totalMinor)}</dd>
                 </div>
                 <div>
-                  <dt>Pagado en pruebas</dt>
+                  <dt>Pagos registrados</dt>
                   <dd>{money(item.paidMinor)}</dd>
                 </div>
                 <div>

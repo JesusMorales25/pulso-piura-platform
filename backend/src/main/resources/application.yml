@@ -4,7 +4,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 5MB
-      max-request-size: 5MB
+      max-request-size: 6MB
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/pulso_piura}
     username: ${POSTGRES_USER:pulso_app}
@@ -31,6 +31,7 @@ app:
     claims-namespace: ${OIDC_CLAIMS_NAMESPACE:https://pulsopiura.app}
     roles-claim: ${OIDC_ROLES_CLAIM:https://pulsopiura.app/roles}
     platform-admin-email: ${PLATFORM_ADMIN_EMAIL:}
+    write-limit-per-minute: ${API_WRITE_LIMIT_PER_MINUTE:60}
   web:
     allowed-origin: ${WEB_ALLOWED_ORIGIN:http://localhost:3000}
   reservations:
@@ -38,6 +39,9 @@ app:
     max-active-temporary-per-customer: ${RESERVATION_MAX_ACTIVE_TEMPORARY_PER_CUSTOMER:3}
   payments:
     mode: ${PAYMENTS_MODE:disabled}
+    proof-directory: ${PAYMENT_PROOF_DIRECTORY:.local/payment-proofs}
+    review-minutes: ${EXTERNAL_PAYMENT_REVIEW_MINUTES:30}
+    proof-retention-days: ${PAYMENT_PROOF_RETENTION_DAYS:90}
 management:
   endpoints:
     web:

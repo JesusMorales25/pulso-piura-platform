@@ -37,7 +37,12 @@ export default function PlatformRequestsPage() {
       "/platform/capability-requests",
       accessToken,
     )
-      .then((items) => { setRequests(items); setSelectedUser(new URLSearchParams(window.location.search).get("user")); })
+      .then((items) => {
+        setRequests(items);
+        setSelectedUser(
+          new URLSearchParams(window.location.search).get("user"),
+        );
+      })
       .catch((error: Error) => setMessage(error.message));
   }, [accessToken, capabilities.canManagePlatform]);
 
@@ -55,10 +60,16 @@ export default function PlatformRequestsPage() {
         },
       );
       setRequests((current) =>
-        current.map((request) => (request.id === updated.id ? updated : request)),
+        current.map((request) =>
+          request.id === updated.id ? updated : request,
+        ),
       );
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "No se pudo revisar la solicitud.");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "No se pudo revisar la solicitud.",
+      );
     } finally {
       setReviewing(null);
     }
@@ -70,12 +81,26 @@ export default function PlatformRequestsPage() {
     setMessage("");
     try {
       const updated = await apiRequest<CapabilityRequest>(
-        `/platform/capability-requests/${requestId}/revoke`, accessToken,
-        { method: "POST", body: JSON.stringify({ note: "Acceso retirado desde la consola de plataforma." }) },
+        `/platform/capability-requests/${requestId}/revoke`,
+        accessToken,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            note: "Acceso retirado desde la consola de plataforma.",
+          }),
+        },
       );
-      setRequests((current) => current.map((request) => request.id === updated.id ? updated : request));
+      setRequests((current) =>
+        current.map((request) =>
+          request.id === updated.id ? updated : request,
+        ),
+      );
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "No se pudo retirar el acceso.");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "No se pudo retirar el acceso.",
+      );
     } finally {
       setReviewing(null);
     }
@@ -93,23 +118,40 @@ export default function PlatformRequestsPage() {
       <main className="section">
         <p className="eyebrow">PLATAFORMA</p>
         <h1>Inicia sesión para continuar</h1>
-        <button className="primary borderless" onClick={() => void login(false)} type="button">
+        <button
+          className="primary borderless"
+          onClick={() => void login(false)}
+          type="button"
+        >
           Iniciar sesión
         </button>
       </main>
     );
 
   if (!capabilities.canManagePlatform)
-    return <main className="section accessDeniedPage"><h1>Acceso restringido</h1><p>Esta sección requiere el rol de administrador de plataforma.</p></main>;
+    return (
+      <main className="section accessDeniedPage">
+        <h1>Acceso restringido</h1>
+        <p>Esta sección requiere el rol de administrador de plataforma.</p>
+      </main>
+    );
 
   return (
     <main className="section">
       <p className="eyebrow">ADMINISTRACIÓN DE PLATAFORMA</p>
       <h1>Solicitudes de perfil</h1>
-      {selectedUser && <p className="notice">Gestionando la cuenta seleccionada. <Link href="/plataforma">Ver todas las cuentas</Link></p>}
-      <Link className="platformBackLink" href="/plataforma">← Volver a la consola</Link>
+      {selectedUser && (
+        <p className="notice">
+          Gestionando la cuenta seleccionada.{" "}
+          <Link href="/plataforma">Ver todas las cuentas</Link>
+        </p>
+      )}
+      <Link className="platformBackLink" href="/plataforma">
+        ← Volver a la consola
+      </Link>
       <p className="pageLead">
-        Revisa solicitudes antes de habilitar capacidades. Cada decisión queda auditada.
+        Revisa solicitudes antes de habilitar capacidades. Cada decisión queda
+        auditada.
       </p>
       {message && (
         <p className="notice" role="alert">
@@ -117,45 +159,64 @@ export default function PlatformRequestsPage() {
         </p>
       )}
       <div className="platformRequestList">
-        {requests.filter((request) => !selectedUser || request.userId === selectedUser).length === 0 && !message ? (
-          <p className="empty">{selectedUser ? "Esta cuenta no tiene solicitudes de privilegios. El usuario debe solicitar el acceso desde su perfil." : "No hay solicitudes para revisar."}</p>
+        {requests.filter(
+          (request) => !selectedUser || request.userId === selectedUser,
+        ).length === 0 && !message ? (
+          <p className="empty">
+            {selectedUser
+              ? "Esta cuenta no tiene solicitudes de privilegios. El usuario debe solicitar el acceso desde su perfil."
+              : "No hay solicitudes para revisar."}
+          </p>
         ) : (
-          requests.filter((request) => !selectedUser || request.userId === selectedUser).map((request) => (
-            <article className="platformRequestCard" key={request.id}>
-              <div>
-                <span className="pill">{request.status}</span>
-                <h2>{capabilityLabel[request.capability]}</h2>
-                <p><strong>{request.displayName}</strong></p>
-                <p className="muted">{request.email}</p>
-                {request.reason && <p>{request.reason}</p>}
-              </div>
-              {request.status === "PENDING" && (
-                <div className="platformRequestActions">
-                  <button
-                    className="primary borderless"
-                    disabled={reviewing === request.id}
-                    onClick={() => void review(request.id, "APPROVED")}
-                    type="button"
-                  >
-                    Aprobar
-                  </button>
-                  <button
-                    className="secondary"
-                    disabled={reviewing === request.id}
-                    onClick={() => void review(request.id, "REJECTED")}
-                    type="button"
-                  >
-                    Rechazar
-                  </button>
+          requests
+            .filter(
+              (request) => !selectedUser || request.userId === selectedUser,
+            )
+            .map((request) => (
+              <article className="platformRequestCard" key={request.id}>
+                <div>
+                  <span className="pill">{request.status}</span>
+                  <h2>{capabilityLabel[request.capability]}</h2>
+                  <p>
+                    <strong>{request.displayName}</strong>
+                  </p>
+                  <p className="muted">{request.email}</p>
+                  {request.reason && <p>{request.reason}</p>}
                 </div>
-              )}
-              {request.status === "APPROVED" && (
-                <div className="platformRequestActions">
-                  <button className="secondary" disabled={reviewing === request.id} onClick={() => void revoke(request.id)} type="button">Retirar acceso</button>
-                </div>
-              )}
-            </article>
-          ))
+                {request.status === "PENDING" && (
+                  <div className="platformRequestActions">
+                    <button
+                      className="primary borderless"
+                      disabled={reviewing === request.id}
+                      onClick={() => void review(request.id, "APPROVED")}
+                      type="button"
+                    >
+                      Aprobar
+                    </button>
+                    <button
+                      className="secondary"
+                      disabled={reviewing === request.id}
+                      onClick={() => void review(request.id, "REJECTED")}
+                      type="button"
+                    >
+                      Rechazar
+                    </button>
+                  </div>
+                )}
+                {request.status === "APPROVED" && (
+                  <div className="platformRequestActions">
+                    <button
+                      className="secondary"
+                      disabled={reviewing === request.id}
+                      onClick={() => void revoke(request.id)}
+                      type="button"
+                    >
+                      Retirar acceso
+                    </button>
+                  </div>
+                )}
+              </article>
+            ))
         )}
       </div>
     </main>

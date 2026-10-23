@@ -41,7 +41,8 @@ function remainder(data: number[]) {
 
 function encode(payload: string) {
   const bytes = Array.from(new TextEncoder().encode(payload));
-  if (bytes.length > 78) throw new Error("El pase QR excede la capacidad admitida");
+  if (bytes.length > 78)
+    throw new Error("El pase QR excede la capacidad admitida");
   const bits: number[] = [0, 1, 0, 0];
   for (let i = 7; i >= 0; i -= 1) bits.push((bytes.length >>> i) & 1);
   for (const value of bytes)
@@ -58,8 +59,12 @@ function encode(payload: string) {
 }
 
 export function createQrMatrix(payload: string) {
-  const modules = Array.from({ length: SIZE }, () => Array<boolean>(SIZE).fill(false));
-  const functions = Array.from({ length: SIZE }, () => Array<boolean>(SIZE).fill(false));
+  const modules = Array.from({ length: SIZE }, () =>
+    Array<boolean>(SIZE).fill(false),
+  );
+  const functions = Array.from({ length: SIZE }, () =>
+    Array<boolean>(SIZE).fill(false),
+  );
   const setFunction = (x: number, y: number, dark: boolean) => {
     if (x >= 0 && y >= 0 && x < SIZE && y < SIZE) {
       modules[y][x] = dark;
@@ -70,7 +75,11 @@ export function createQrMatrix(payload: string) {
     for (let dy = -4; dy <= 4; dy += 1)
       for (let dx = -4; dx <= 4; dx += 1) {
         const distance = Math.max(Math.abs(dx), Math.abs(dy));
-        setFunction(centerX + dx, centerY + dy, distance !== 2 && distance !== 4);
+        setFunction(
+          centerX + dx,
+          centerY + dy,
+          distance !== 2 && distance !== 4,
+        );
       }
   };
   finder(3, 3);

@@ -2,6 +2,7 @@ openapi: 3.1.0
 info:
   title: Pulso Piura API
   version: 0.8.0
+  description: API de demostración. Las escrituras autenticadas comparten límite por sujeto/emisor (60 por minuto por defecto); 429 incluye Retry-After. Sin pagos reales.
 servers:
   - url: http://localhost:8080/api/v1
 paths:
@@ -22,6 +23,19 @@ paths:
     patch:
       summary: Actualiza perfil y consentimiento de onboarding
       security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                homeDistrictCode: {type: string, maxLength: 60, description: Opcional}
+                bio: {type: string, maxLength: 500}
+                visibility: {type: string, enum: [PRIVATE, PARTICIPANTS, PUBLIC]}
+                preferredDisplayName: {type: string, maxLength: 120}
+                termsVersion: {type: string, enum: ["", "2026-10-09-demo"]}
+                privacyVersion: {type: string, enum: ["", "2026-10-09-demo"], description: Reconocimiento de lectura del aviso, sin consentimiento de marketing}
       responses:
         "200": {description: Perfil actualizado}
         "400": {description: Entrada inválida}
@@ -745,6 +759,40 @@ paths:
         "200": {description: Negocio actualizado}
         "400": {$ref: "#/components/responses/BadRequest"}
         "403": {description: Requiere PLATFORM_ADMIN}
+  /businesses/{businessId}/image:
+    parameters:
+      - {in: path, name: businessId, required: true, schema: {type: string, format: uuid}}
+    get:
+      summary: Imagen binaria únicamente de negocio publicado
+      responses:
+        "200": {description: JPEG, PNG o WebP}
+        "404": {description: Imagen inexistente o negocio no publicado}
+  /platform/businesses/{businessId}/image:
+    parameters:
+      - {in: path, name: businessId, required: true, schema: {type: string, format: uuid}}
+    get:
+      summary: Vista previa privada de imagen, sin almacenamiento en caché
+      security: [{bearerAuth: []}]
+      responses:
+        "200": {description: Imagen binaria}
+        "403": {description: Requiere administrador de plataforma y cuenta activa}
+    put:
+      summary: Sube imagen raster validada, máximo 5 MB
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image: {type: string, format: binary}
+      responses:
+        "200": {description: Negocio actualizado}
+        "400": {description: Formato o contenido inválido}
+        "413": {description: Imagen supera el límite}
+        "403": {description: Requiere administrador de plataforma y cuenta activa}
 components:
   securitySchemes:
     bearerAuth:

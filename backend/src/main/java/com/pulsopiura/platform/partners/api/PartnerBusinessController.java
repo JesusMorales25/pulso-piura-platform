@@ -46,8 +46,21 @@ public class PartnerBusinessController {
 
     @GetMapping("/api/v1/platform/businesses")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    List<PartnerBusinessService.BusinessView> all() {
+    List<PartnerBusinessService.BusinessView> all(@AuthenticationPrincipal Jwt jwt) {
+        users.provision(jwt);
         return businesses.all();
+    }
+
+    @GetMapping("/api/v1/platform/businesses/{businessId}/image")
+    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
+    ResponseEntity<byte[]> previewImage(
+            @AuthenticationPrincipal Jwt jwt, @PathVariable UUID businessId) {
+        users.provision(jwt);
+        var image = businesses.previewImage(businessId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(image.contentType()))
+                .cacheControl(CacheControl.noStore())
+                .body(image.content());
     }
 
     @PostMapping("/api/v1/platform/businesses")

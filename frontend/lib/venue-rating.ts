@@ -14,7 +14,9 @@ export function normalizeAdminRatingInput(
     return { adminRating: null, adminRatingCount: null };
   }
   if (!ratingText || !countText) {
-    throw new Error("La calificación y la cantidad de valoraciones deben completarse juntas.");
+    throw new Error(
+      "La calificación y la cantidad de valoraciones deben completarse juntas.",
+    );
   }
 
   const adminRating = Number(ratingText);
@@ -23,7 +25,9 @@ export function normalizeAdminRatingInput(
     throw new Error("La calificación debe estar entre 0 y 5.");
   }
   if (!Number.isInteger(adminRatingCount) || adminRatingCount < 0) {
-    throw new Error("La cantidad de valoraciones debe ser un entero positivo o cero.");
+    throw new Error(
+      "La cantidad de valoraciones debe ser un entero positivo o cero.",
+    );
   }
 
   return { adminRating, adminRatingCount };

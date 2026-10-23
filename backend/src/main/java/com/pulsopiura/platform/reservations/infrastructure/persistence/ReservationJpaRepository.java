@@ -44,6 +44,11 @@ interface ReservationJpaRepository extends JpaRepository<ReservationJpaEntity, U
                   select payment.id from PaymentOrderEntity payment
                   where payment.reservationId = reservation.id and payment.status = :paidStatus
                 )
+                or exists (
+                  select proof.id from ExternalPaymentProofIndex proof
+                  where proof.targetType = 'RESERVATION' and proof.targetId = reservation.id
+                    and proof.payerUserId = :customerUserId
+                )
               )
             order by reservation.createdAt desc
             """)
@@ -64,6 +69,11 @@ interface ReservationJpaRepository extends JpaRepository<ReservationJpaEntity, U
                 or exists (
                   select payment.id from PaymentOrderEntity payment
                   where payment.reservationId = reservation.id and payment.status = :paidStatus
+                )
+                or exists (
+                  select proof.id from ExternalPaymentProofIndex proof
+                  where proof.targetType = 'RESERVATION' and proof.targetId = reservation.id
+                    and proof.payerUserId = :customerUserId
                 )
               )
             """)

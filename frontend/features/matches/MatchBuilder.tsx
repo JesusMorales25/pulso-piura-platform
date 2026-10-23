@@ -19,7 +19,10 @@ import {
 } from "@phosphor-icons/react";
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { useAuth } from "@/features/auth/AuthProvider";
-import type { Reservation, ReservationPage } from "@/features/reservations/types";
+import type {
+  Reservation,
+  ReservationPage,
+} from "@/features/reservations/types";
 import { apiRequest } from "@/lib/api";
 import { defaultMatchDraft } from "./draft";
 import type { MatchSummary } from "./types";
@@ -47,8 +50,18 @@ const visibilityOptions: Array<{
   description: string;
   Icon: typeof Eye;
 }> = [
-  { value: "PUBLIC", label: "Público", description: "Aparece en Buscar partido", Icon: Eye },
-  { value: "PRIVATE", label: "Privado", description: "Solo acceden con el enlace", Icon: LockKey },
+  {
+    value: "PUBLIC",
+    label: "Público",
+    description: "Aparece en Buscar partido",
+    Icon: Eye,
+  },
+  {
+    value: "PRIVATE",
+    label: "Privado",
+    description: "Solo acceden con el enlace",
+    Icon: LockKey,
+  },
 ];
 
 function friendlyPublishError(reason: unknown) {
@@ -60,7 +73,9 @@ function friendlyPublishError(reason: unknown) {
   return reason.message || fallback;
 }
 
-export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {}) {
+export function MatchBuilder({
+  onPublished,
+}: { onPublished?: () => void } = {}) {
   const Root = "div";
   const [previewOpen, setPreviewOpen] = useState(false);
   const { accessToken, login, user } = useAuth();
@@ -99,15 +114,26 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
             setSelectedReservationId(draft.selectedReservationId);
           }
           if (draft.title !== undefined) setTitle(draft.title);
-          if (draft.visibility === "PUBLIC" || draft.visibility === "PRIVATE") setVisibility(draft.visibility);
+          if (draft.visibility === "PUBLIC" || draft.visibility === "PRIVATE")
+            setVisibility(draft.visibility);
           if (draft.skillLevel) setSkillLevel(draft.skillLevel);
           if (draft.price !== undefined) setPrice(draft.price);
           if (draft.minPlayers !== undefined) setMinPlayers(draft.minPlayers);
           if (draft.maxPlayers !== undefined) setMaxPlayers(draft.maxPlayers);
-          if (draft.organizerCounts !== undefined) setOrganizerCounts(draft.organizerCounts);
-          if (draft.cancellationPolicy !== undefined) setCancellationPolicy(draft.cancellationPolicy);
+          if (draft.organizerCounts !== undefined)
+            setOrganizerCounts(draft.organizerCounts);
+          if (draft.cancellationPolicy !== undefined)
+            setCancellationPolicy(draft.cancellationPolicy);
           if ([1, 2, 3, 4].includes(Number(draft.activeStep))) {
-            setActiveStep(draft.flowVersion === 2 ? (Number(draft.activeStep) === 2 ? 2 : 1) : (Number(draft.activeStep) === 4 ? 2 : 1));
+            setActiveStep(
+              draft.flowVersion === 2
+                ? Number(draft.activeStep) === 2
+                  ? 2
+                  : 1
+                : Number(draft.activeStep) === 4
+                  ? 2
+                  : 1,
+            );
           }
         }
       } catch {
@@ -135,14 +161,32 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
       cancellationPolicy,
     };
     window.sessionStorage.setItem(draftStorageKey, JSON.stringify(draft));
-  }, [activeStep, cancellationPolicy, created, draftReady, draftStorageKey, maxPlayers, minPlayers, organizerCounts, price, selectedReservationId, skillLevel, title, visibility]);
+  }, [
+    activeStep,
+    cancellationPolicy,
+    created,
+    draftReady,
+    draftStorageKey,
+    maxPlayers,
+    minPlayers,
+    organizerCounts,
+    price,
+    selectedReservationId,
+    skillLevel,
+    title,
+    visibility,
+  ]);
 
   useEffect(() => {
     if (!accessToken) return;
     const controller = new AbortController();
-    void apiRequest<ReservationPage>("/me/reservations?size=50&page=0", accessToken, {
-      signal: controller.signal,
-    })
+    void apiRequest<ReservationPage>(
+      "/me/reservations?size=50&page=0",
+      accessToken,
+      {
+        signal: controller.signal,
+      },
+    )
       .then((page) => {
         const available = page.items.filter(
           (item) =>
@@ -158,7 +202,9 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
       .catch((reason) => {
         if (!controller.signal.aborted) {
           setLoadError(
-            reason instanceof Error ? reason.message : "No pudimos cargar tus reservas.",
+            reason instanceof Error
+              ? reason.message
+              : "No pudimos cargar tus reservas.",
           );
         }
       })
@@ -173,24 +219,34 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
     [reservations, selectedReservationId],
   );
   const selectedCapacity = selectedReservation?.spaceCapacity || 0;
-  const matchStart = selectedReservation ? new Date(selectedReservation.startsAt) : null;
+  const matchStart = selectedReservation
+    ? new Date(selectedReservation.startsAt)
+    : null;
   const numericPrice = Number(price.replace(",", ".")) || 0;
   const numericMaximum = Number(maxPlayers) || 0;
   const numericMinimum = Number(minPlayers) || 0;
   const compatibleReservations = useMemo(
-    () => reservations.filter((item) => !item.spaceCapacity || item.spaceCapacity >= numericMaximum),
+    () =>
+      reservations.filter(
+        (item) => !item.spaceCapacity || item.spaceCapacity >= numericMaximum,
+      ),
     [numericMaximum, reservations],
   );
 
   function stepError(step: BuilderStep) {
     if (step === 1) {
-      if (title.trim().length < 3) return "Escribe un nombre de al menos 3 caracteres.";
-      if (!Number.isFinite(Number(price.replace(",", "."))) || numericPrice < 0) {
+      if (title.trim().length < 3)
+        return "Escribe un nombre de al menos 3 caracteres.";
+      if (
+        !Number.isFinite(Number(price.replace(",", "."))) ||
+        numericPrice < 0
+      ) {
         return "Ingresa una cuota válida para el partido.";
       }
     }
     if (step === 1) {
-      if (numericMinimum < 2) return "El mínimo debe ser de al menos 2 jugadores.";
+      if (numericMinimum < 2)
+        return "El mínimo debe ser de al menos 2 jugadores.";
       if (numericMaximum < numericMinimum) {
         return "Los cupos máximos deben ser iguales o mayores al mínimo de jugadores.";
       }
@@ -199,7 +255,8 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
       return "Describe brevemente la política de cancelación.";
     }
     if (step === 2) {
-      if (!selectedReservationId) return "Selecciona una cancha confirmada para publicar.";
+      if (!selectedReservationId)
+        return "Selecciona una cancha confirmada para publicar.";
       if (selectedCapacity && numericMaximum > selectedCapacity) {
         return `Esta cancha admite como máximo ${selectedCapacity} jugadores.`;
       }
@@ -219,7 +276,9 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
       setNoticeTone("error");
       setNotice("");
       setActiveStep(target);
-    document.querySelector(".compactMatchBuilder .matchStepTabs")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      document
+        .querySelector(".compactMatchBuilder .matchStepTabs")
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       return;
     }
     const firstIncomplete = ([1, 2] as BuilderStep[]).find(
@@ -245,7 +304,9 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
       await login(false, "/crear");
       return;
     }
-    const firstInvalidStep = ([1, 2] as BuilderStep[]).find((step) => stepError(step));
+    const firstInvalidStep = ([1, 2] as BuilderStep[]).find((step) =>
+      stepError(step),
+    );
     if (firstInvalidStep) {
       setNoticeTone("error");
       setNotice(stepError(firstInvalidStep));
@@ -297,10 +358,14 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
     try {
       await navigator.clipboard.writeText(url);
       setNoticeTone("success");
-      setNotice("Enlace del partido copiado. Ya puedes compartirlo con los jugadores.");
+      setNotice(
+        "Enlace del partido copiado. Ya puedes compartirlo con los jugadores.",
+      );
     } catch {
       setNoticeTone("error");
-      setNotice("No pudimos copiar el enlace. Ábrelo y compártelo desde el navegador.");
+      setNotice(
+        "No pudimos copiar el enlace. Ábrelo y compártelo desde el navegador.",
+      );
     }
   }
 
@@ -308,8 +373,14 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
     return (
       <Root className="section accessDeniedPage">
         <h1>Organiza un partido</h1>
-        <p className="pageLead">Inicia sesión para reservar una cancha y publicar el evento.</p>
-        <button className="primary" onClick={() => void login(false, "/crear")} type="button">
+        <p className="pageLead">
+          Inicia sesión para reservar una cancha y publicar el evento.
+        </p>
+        <button
+          className="primary"
+          onClick={() => void login(false, "/crear")}
+          type="button"
+        >
           Iniciar sesión
         </button>
       </Root>
@@ -319,8 +390,13 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
   if (loading) {
     return (
       <Root className="section createMatchPage compactMatchBuilder">
-        <div className="matchComposerSkeleton" aria-label="Preparando el formulario">
-          <i /><i /><i />
+        <div
+          className="matchComposerSkeleton"
+          aria-label="Preparando el formulario"
+        >
+          <i />
+          <i />
+          <i />
         </div>
       </Root>
     );
@@ -340,14 +416,26 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
               : "no aparece en Explorar; comparte su enlace con quienes quieras invitar."}
           </p>
           <div className="buttonRow">
-            <Link className="primary" href={`/partidos/${created.publicSlug}`}>Ver publicación</Link>
-            <button className="secondary" onClick={() => void copyCreatedLink()} type="button">
+            <Link className="primary" href={`/partidos/${created.publicSlug}`}>
+              Ver publicación
+            </Link>
+            <button
+              className="secondary"
+              onClick={() => void copyCreatedLink()}
+              type="button"
+            >
               <ShareNetwork aria-hidden="true" size={19} /> Compartir enlace
             </button>
-            <Link className="secondary" href="/organizador">Administrar jugadores</Link>
+            <Link className="secondary" href="/organizador">
+              Administrar jugadores
+            </Link>
           </div>
         </div>
-        <FloatingNotice message={notice} onDismiss={() => setNotice("")} tone={noticeTone} />
+        <FloatingNotice
+          message={notice}
+          onDismiss={() => setNotice("")}
+          tone={noticeTone}
+        />
       </Root>
     );
   }
@@ -359,7 +447,8 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
           <p className="eyebrow">ARMAR NUEVA PICHANGA</p>
           <h1>Convoca jugadores sin volver al grupo de WhatsApp</h1>
           <p className="pageLead">
-            Define primero el partido y sus cupos. Al final elige una cancha compatible y publícalo.
+            Define primero el partido y sus cupos. Al final elige una cancha
+            compatible y publícalo.
           </p>
         </div>
         <ol aria-label="Pasos de publicación" className="matchStepTabs">
@@ -368,7 +457,10 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
             const unlocked = step <= activeStep || canOpenStep(step);
             const completed = step < activeStep && !stepError(step);
             return (
-              <li className={`${step === activeStep ? "active" : ""} ${completed ? "completed" : ""}`} key={step}>
+              <li
+                className={`${step === activeStep ? "active" : ""} ${completed ? "completed" : ""}`}
+                key={step}
+              >
                 <button
                   aria-current={step === activeStep ? "step" : undefined}
                   disabled={!unlocked}
@@ -384,19 +476,36 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
         </ol>
       </header>
 
-      {loadError && <p className="inlineAlert errorNotice" role="alert">{loadError}</p>}
+      {loadError && (
+        <p className="inlineAlert errorNotice" role="alert">
+          {loadError}
+        </p>
+      )}
+      <p className="muted">
+        Tu nombre y foto públicos se muestran según la visibilidad que elegiste
+        en tu perfil.
+      </p>
 
       <div className="matchComposerShell">
-          <form className="matchBuilderForm" noValidate onSubmit={submit}>
-            {activeStep === 1 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-1-title">
+        <form className="matchBuilderForm" noValidate onSubmit={submit}>
+          {activeStep === 1 && (
+            <section
+              className="matchFormSection matchStepPanel"
+              aria-labelledby="match-step-1-title"
+            >
               <div className="matchFormSectionTitle">
                 <span>1</span>
-                <div><h2 id="match-step-1-title">Datos del partido</h2><p>Describe la pichanga antes de elegir dónde jugar.</p></div>
+                <div>
+                  <h2 id="match-step-1-title">Datos del partido</h2>
+                  <p>Describe la pichanga antes de elegir dónde jugar.</p>
+                </div>
               </div>
               <label>
                 <span>Nombre de la pichanga</span>
                 <input
-                  aria-describedby={titleError ? "match-title-error" : undefined}
+                  aria-describedby={
+                    titleError ? "match-title-error" : undefined
+                  }
                   aria-invalid={titleError ? "true" : undefined}
                   autoCapitalize="sentences"
                   enterKeyHint="next"
@@ -412,12 +521,24 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
                   type="text"
                   value={title}
                 />
-                {titleError && <small className="matchFieldError" id="match-title-error" role="alert">{titleError}</small>}
+                {titleError && (
+                  <small
+                    className="matchFieldError"
+                    id="match-title-error"
+                    role="alert"
+                  >
+                    {titleError}
+                  </small>
+                )}
               </label>
               <div className="formPair">
                 <label>
                   <span>Nivel</span>
-                  <select name="skillLevel" onChange={(event) => setSkillLevel(event.target.value)} value={skillLevel}>
+                  <select
+                    name="skillLevel"
+                    onChange={(event) => setSkillLevel(event.target.value)}
+                    value={skillLevel}
+                  >
                     <option value="BEGINNER">Principiante</option>
                     <option value="INTERMEDIATE">Intermedio</option>
                     <option value="ADVANCED">Avanzado</option>
@@ -426,20 +547,54 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
                 </label>
                 <label>
                   <span>Cuota por persona (S/)</span>
-                  <input enterKeyHint="next" inputMode="decimal" min="0" name="price" onChange={(event) => setPrice(event.target.value)} required step="0.01" type="number" value={price} />
+                  <input
+                    enterKeyHint="next"
+                    inputMode="decimal"
+                    min="0"
+                    name="price"
+                    onChange={(event) => setPrice(event.target.value)}
+                    required
+                    step="0.01"
+                    type="number"
+                    value={price}
+                  />
                 </label>
               </div>
-            </section>}
+            </section>
+          )}
 
-            {activeStep === 1 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-2-title">
+          {activeStep === 1 && (
+            <section
+              className="matchFormSection matchStepPanel"
+              aria-labelledby="match-step-2-title"
+            >
               <div className="matchFormSectionTitle">
-                <span><UsersThree size={18} /></span>
-                <div><h2 id="match-step-2-title">Cupos y convocatoria</h2><p>Define cuándo el partido está listo y cuántos podrán inscribirse.</p></div>
+                <span>
+                  <UsersThree size={18} />
+                </span>
+                <div>
+                  <h2 id="match-step-2-title">Cupos y convocatoria</h2>
+                  <p>
+                    Define cuándo el partido está listo y cuántos podrán
+                    inscribirse.
+                  </p>
+                </div>
               </div>
               <div className="formPair">
                 <label>
-                  <span><UsersThree size={18} /> Mínimo para jugar</span>
-                  <input enterKeyHint="next" inputMode="numeric" min="2" name="minPlayers" onChange={(event) => setMinPlayers(event.target.value)} required type="number" value={minPlayers} />
+                  <span>
+                    <UsersThree size={18} /> Mínimo para jugar
+                  </span>
+                  <input
+                    enterKeyHint="next"
+                    inputMode="numeric"
+                    min="2"
+                    name="minPlayers"
+                    onChange={(event) => setMinPlayers(event.target.value)}
+                    required
+                    type="number"
+                    value={minPlayers}
+                  />
                 </label>
                 <label>
                   <span>Cupos máximos</span>
@@ -452,7 +607,10 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
                     onChange={(event) => {
                       const nextValue = event.target.value;
                       setMaxPlayers(nextValue);
-                      if (selectedCapacity && Number(nextValue) > selectedCapacity) {
+                      if (
+                        selectedCapacity &&
+                        Number(nextValue) > selectedCapacity
+                      ) {
                         setSelectedReservationId("");
                       }
                     }}
@@ -460,132 +618,322 @@ export function MatchBuilder({ onPublished }: { onPublished?: () => void } = {})
                     type="number"
                     value={maxPlayers}
                   />
-                  <small id="max-players-help">Lo validaremos contra la capacidad al elegir la cancha.</small>
+                  <small id="max-players-help">
+                    Lo validaremos contra la capacidad al elegir la cancha.
+                  </small>
                 </label>
               </div>
               <label className="policyCheck organizerCountCheck">
-                <input checked={organizerCounts} name="organizerCounts" onChange={(event) => setOrganizerCounts(event.target.checked)} type="checkbox" />
-                <span><b>Yo también juego</b>Contarme como participante desde la publicación.</span>
+                <input
+                  checked={organizerCounts}
+                  name="organizerCounts"
+                  onChange={(event) => setOrganizerCounts(event.target.checked)}
+                  type="checkbox"
+                />
+                <span>
+                  <b>Yo también juego</b>Contarme como participante desde la
+                  publicación.
+                </span>
               </label>
-            </section>}
+            </section>
+          )}
 
-            {activeStep === 1 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-3-title">
+          {activeStep === 1 && (
+            <section
+              className="matchFormSection matchStepPanel"
+              aria-labelledby="match-step-3-title"
+            >
               <div className="matchFormSectionTitle">
-                <span><Eye size={18} /></span>
-                <div><h2 id="match-step-3-title">Publicación</h2><p>Elige quién podrá encontrar el partido y deja claras sus reglas.</p></div>
+                <span>
+                  <Eye size={18} />
+                </span>
+                <div>
+                  <h2 id="match-step-3-title">Publicación</h2>
+                  <p>
+                    Elige quién podrá encontrar el partido y deja claras sus
+                    reglas.
+                  </p>
+                </div>
               </div>
               <fieldset className="visibilityChoice visibilityChoiceTwo">
                 <legend>Visibilidad del partido</legend>
                 <div>
-                  {visibilityOptions.map(({ value, label, description, Icon }) => (
-                    <label className={visibility === value ? "selected" : ""} key={value}>
-                      <input checked={visibility === value} name="visibility" onChange={() => setVisibility(value)} type="radio" value={value} />
-                      <Icon aria-hidden="true" size={20} />
-                      <span><b>{label}</b><small>{description}</small></span>
-                    </label>
-                  ))}
+                  {visibilityOptions.map(
+                    ({ value, label, description, Icon }) => (
+                      <label
+                        className={visibility === value ? "selected" : ""}
+                        key={value}
+                      >
+                        <input
+                          checked={visibility === value}
+                          name="visibility"
+                          onChange={() => setVisibility(value)}
+                          type="radio"
+                          value={value}
+                        />
+                        <Icon aria-hidden="true" size={20} />
+                        <span>
+                          <b>{label}</b>
+                          <small>{description}</small>
+                        </span>
+                      </label>
+                    ),
+                  )}
                 </div>
               </fieldset>
               <div className="matchShareHint">
                 <ShareNetwork aria-hidden="true" size={21} />
-                <p><b>Siempre tendrás un enlace para compartir.</b><span>Los jugadores podrán abrirlo e inscribirse; los partidos privados no aparecerán en Explorar.</span></p>
+                <p>
+                  <b>Siempre tendrás un enlace para compartir.</b>
+                  <span>
+                    Los jugadores podrán abrirlo e inscribirse; los partidos
+                    privados no aparecerán en Explorar.
+                  </span>
+                </p>
               </div>
               <label>
                 <span>Política del evento</span>
-                <textarea autoCapitalize="sentences" className="resize-none" inputMode="text" maxLength={500} name="cancellationPolicy" onChange={(event) => setCancellationPolicy(event.target.value)} required value={cancellationPolicy} />
+                <textarea
+                  autoCapitalize="sentences"
+                  className="resize-none"
+                  inputMode="text"
+                  maxLength={500}
+                  name="cancellationPolicy"
+                  onChange={(event) =>
+                    setCancellationPolicy(event.target.value)
+                  }
+                  required
+                  value={cancellationPolicy}
+                />
               </label>
-            </section>}
+            </section>
+          )}
 
-            {activeStep === 2 && <section className="matchFormSection matchStepPanel" aria-labelledby="match-step-4-title">
+          {activeStep === 2 && (
+            <section
+              className="matchFormSection matchStepPanel"
+              aria-labelledby="match-step-4-title"
+            >
               <div className="matchFormSectionTitle">
                 <span>2</span>
-                <div><h2 id="match-step-4-title">Cancha y horario</h2><p>Selecciona al final una reserva que admita todos los cupos.</p></div>
+                <div>
+                  <h2 id="match-step-4-title">Cancha y horario</h2>
+                  <p>
+                    Selecciona al final una reserva que admita todos los cupos.
+                  </p>
+                </div>
               </div>
               {!compatibleReservations.length ? (
                 <div className="matchCourtEmpty">
                   <CalendarDots aria-hidden="true" size={34} />
                   <div>
                     <h3>No tienes una cancha compatible</h3>
-                    <p>Reserva una cancha futura con capacidad para {numericMaximum || "los"} jugadores y vuelve a este paso.</p>
+                    <p>
+                      Reserva una cancha futura con capacidad para{" "}
+                      {numericMaximum || "los"} jugadores y vuelve a este paso.
+                    </p>
                   </div>
-                  <Link className="secondary" href="/?mode=venues&from=create">Reservar cancha</Link>
+                  <Link className="secondary" href="/?mode=venues&from=create">
+                    Reservar cancha
+                  </Link>
                 </div>
               ) : (
                 <>
                   <label>
-                    <span><CalendarDots size={18} /> Reserva confirmada</span>
-                    <select name="reservationId" onChange={(event) => setSelectedReservationId(event.target.value)} required value={selectedReservationId}>
+                    <span>
+                      <CalendarDots size={18} /> Reserva confirmada
+                    </span>
+                    <select
+                      name="reservationId"
+                      onChange={(event) =>
+                        setSelectedReservationId(event.target.value)
+                      }
+                      required
+                      value={selectedReservationId}
+                    >
                       <option value="">Selecciona una cancha</option>
                       {compatibleReservations.map((item) => (
-                        <option key={item.id} value={item.id}>{item.spaceName || item.venueName || "Cancha reservada"}</option>
+                        <option key={item.id} value={item.id}>
+                          {item.spaceName ||
+                            item.venueName ||
+                            "Cancha reservada"}
+                        </option>
                       ))}
                     </select>
                   </label>
                   {selectedReservation && (
                     <div className="selectedCourtSummary">
-                      <span><SoccerBall weight="fill" /></span>
-                      <div><strong>{selectedReservation.venueName}</strong><small>{selectedReservation.spaceName} · capacidad {selectedCapacity || "por confirmar"}</small></div>
+                      <span>
+                        <SoccerBall weight="fill" />
+                      </span>
                       <div>
-                        <strong>{matchStart?.toLocaleTimeString("es-PE", { hour: "numeric", minute: "2-digit" })}</strong>
-                        <small>{matchStart?.toLocaleDateString("es-PE", { weekday: "short", day: "numeric", month: "short" })}</small>
+                        <strong>{selectedReservation.venueName}</strong>
+                        <small>
+                          {selectedReservation.spaceName} · capacidad{" "}
+                          {selectedCapacity || "por confirmar"}
+                        </small>
+                      </div>
+                      <div>
+                        <strong>
+                          {matchStart?.toLocaleTimeString("es-PE", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                        </strong>
+                        <small>
+                          {matchStart?.toLocaleDateString("es-PE", {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                          })}
+                        </small>
                       </div>
                     </div>
                   )}
                 </>
               )}
-            </section>}
+            </section>
+          )}
 
-            <button className="secondary" type="button" onClick={() => setPreviewOpen(true)}><Eye size={18} /> Ver vista previa</button>
-            <div className="matchStepActions">
-              {activeStep > 1 && (
-                <button className="secondary" onClick={() => goToStep((activeStep - 1) as BuilderStep)} type="button">
-                  Volver
-                </button>
-              )}
-              {activeStep < 2 ? (
-                <button className="primary matchNextButton" onClick={continueToNextStep} type="button">
-                  <span>Siguiente</span>
-                  <ArrowRight aria-hidden="true" size={20} weight="bold" />
-                </button>
-              ) : (
-                <button aria-busy={busy} className="primary publishMatchButton" disabled={busy} type="submit">
-                  <span>{busy ? "Publicando…" : "Publicar partido"}</span>
-                  <ArrowRight aria-hidden="true" size={21} weight="bold" />
-                </button>
-              )}
+          <button
+            className="secondary"
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+          >
+            <Eye size={18} /> Ver vista previa
+          </button>
+          <div className="matchStepActions">
+            {activeStep > 1 && (
+              <button
+                className="secondary"
+                onClick={() => goToStep((activeStep - 1) as BuilderStep)}
+                type="button"
+              >
+                Volver
+              </button>
+            )}
+            {activeStep < 2 ? (
+              <button
+                className="primary matchNextButton"
+                onClick={continueToNextStep}
+                type="button"
+              >
+                <span>Siguiente</span>
+                <ArrowRight aria-hidden="true" size={20} weight="bold" />
+              </button>
+            ) : (
+              <button
+                aria-busy={busy}
+                className="primary publishMatchButton"
+                disabled={busy}
+                type="submit"
+              >
+                <span>{busy ? "Publicando…" : "Publicar partido"}</span>
+                <ArrowRight aria-hidden="true" size={21} weight="bold" />
+              </button>
+            )}
+          </div>
+        </form>
+
+        <FormSheet
+          open={previewOpen}
+          title="Vista previa del partido"
+          onClose={() => setPreviewOpen(false)}
+        >
+          <aside
+            className="matchComposerPreview"
+            aria-label="Vista previa de la pichanga"
+          >
+            <div className="matchPreviewTopline">
+              <span>VISTA PREVIA</span>
+              <b>
+                {
+                  visibilityOptions.find((item) => item.value === visibility)
+                    ?.label
+                }
+              </b>
             </div>
-          </form>
-
-          <FormSheet open={previewOpen} title="Vista previa del partido" onClose={() => setPreviewOpen(false)}>
-          <aside className="matchComposerPreview" aria-label="Vista previa de la pichanga">
-            <div className="matchPreviewTopline"><span>VISTA PREVIA</span><b>{visibilityOptions.find((item) => item.value === visibility)?.label}</b></div>
             <div className="matchPreviewIdentity">
-              <span><SoccerBall size={28} weight="fill" /></span>
+              <span>
+                <SoccerBall size={28} weight="fill" />
+              </span>
               <div>
                 <small>PARTIDO CON CANCHA CONFIRMADA</small>
                 <h2>{title || "Tu nueva pichanga"}</h2>
-                <p><MapPin weight="fill" /> {selectedReservation?.venueName || "Complejo por elegir"}</p>
+                <p>
+                  <MapPin weight="fill" />{" "}
+                  {selectedReservation?.venueName || "Complejo por elegir"}
+                </p>
               </div>
             </div>
             <div className="matchPreviewFacts">
-              <span><CalendarDots /><b>{matchStart?.toLocaleDateString("es-PE", { day: "2-digit", month: "short" }) || "Fecha"}</b><small>{matchStart?.toLocaleTimeString("es-PE", { hour: "numeric", minute: "2-digit" }) || "Hora"}</small></span>
-              <span><UsersThree /><b>{numericMaximum || 0}</b><small>cupos</small></span>
-              <span><CurrencyCircleDollar /><b>{new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN", maximumFractionDigits: numericPrice % 1 ? 2 : 0 }).format(numericPrice)}</b><small>por persona</small></span>
+              <span>
+                <CalendarDots />
+                <b>
+                  {matchStart?.toLocaleDateString("es-PE", {
+                    day: "2-digit",
+                    month: "short",
+                  }) || "Fecha"}
+                </b>
+                <small>
+                  {matchStart?.toLocaleTimeString("es-PE", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }) || "Hora"}
+                </small>
+              </span>
+              <span>
+                <UsersThree />
+                <b>{numericMaximum || 0}</b>
+                <small>cupos</small>
+              </span>
+              <span>
+                <CurrencyCircleDollar />
+                <b>
+                  {new Intl.NumberFormat("es-PE", {
+                    style: "currency",
+                    currency: "PEN",
+                    maximumFractionDigits: numericPrice % 1 ? 2 : 0,
+                  }).format(numericPrice)}
+                </b>
+                <small>por persona</small>
+              </span>
             </div>
             <div className="matchPreviewCourt">
               <ShieldCheck size={21} weight="fill" />
-              <span><b>{selectedReservation?.spaceName || "Cancha"}</b><small>Reserva confirmada</small></span>
+              <span>
+                <b>{selectedReservation?.spaceName || "Cancha"}</b>
+                <small>Reserva confirmada</small>
+              </span>
             </div>
             <div className="matchPreviewProgress">
-              <span><b>Listos para convocar</b><small>Mínimo {numericMinimum || 0} jugadores</small></span>
-              <div><i style={{ width: organizerCounts && numericMaximum ? `${Math.max(8, 100 / numericMaximum)}%` : "0%" }} /></div>
+              <span>
+                <b>Listos para convocar</b>
+                <small>Mínimo {numericMinimum || 0} jugadores</small>
+              </span>
+              <div>
+                <i
+                  style={{
+                    width:
+                      organizerCounts && numericMaximum
+                        ? `${Math.max(8, 100 / numericMaximum)}%`
+                        : "0%",
+                  }}
+                />
+              </div>
             </div>
-            <p><Clock /> Horario y precio visibles antes de que alguien se una.</p>
+            <p>
+              <Clock /> Horario y precio visibles antes de que alguien se una.
+            </p>
           </aside>
-          </FormSheet>
+        </FormSheet>
       </div>
 
-      <FloatingNotice message={notice} onDismiss={() => setNotice("")} tone={noticeTone} />
+      <FloatingNotice
+        message={notice}
+        onDismiss={() => setNotice("")}
+        tone={noticeTone}
+      />
     </Root>
   );
 }

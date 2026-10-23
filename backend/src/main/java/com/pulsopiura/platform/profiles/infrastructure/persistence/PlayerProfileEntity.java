@@ -50,8 +50,7 @@ public class PlayerProfileEntity {
         if (visibility != null) this.visibility = visibility;
         this.preferredDisplayName = blankToNull(preferredDisplayName);
         this.avatarUrl = blankToNull(avatarUrl);
-        this.onboardingStatus =
-                this.homeDistrictCode != null && consentComplete ? "COMPLETE" : "PENDING";
+        this.onboardingStatus = consentComplete ? "COMPLETE" : "PENDING";
     }
 
     private static String blankToNull(String value) {

@@ -10,7 +10,8 @@ import {
 
 export function useUserCapabilities() {
   const { accessToken, loading: authLoading, user } = useAuth();
-  const subject = typeof user?.profile?.sub === "string" ? user.profile.sub : null;
+  const subject =
+    typeof user?.profile?.sub === "string" ? user.profile.sub : null;
   const [membershipState, setMembershipState] = useState<{
     subject: string | null;
     items: OrganizationMembership[];
@@ -94,7 +95,8 @@ export function useUserCapabilities() {
     loading:
       authLoading ||
       Boolean(
-        accessToken && subject &&
+        accessToken &&
+        subject &&
         (membershipState.subject !== subject ||
           requestState.subject !== subject),
       ),

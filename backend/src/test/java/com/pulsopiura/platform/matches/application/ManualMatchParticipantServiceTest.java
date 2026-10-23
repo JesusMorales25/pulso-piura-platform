@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.pulsopiura.platform.matches.domain.*;
+import com.pulsopiura.platform.matches.infrastructure.persistence.*;
 import java.time.*;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +24,7 @@ class ManualMatchParticipantServiceTest {
     @Mock MatchParticipantStore participants;
     @Mock ManualMatchParticipantStore manualParticipants;
     @Mock ApplicationEventPublisher events;
+    @Mock MatchJoinOrderRepository joinOrders;
 
     private final Instant now = Instant.parse("2026-09-22T15:00:00Z");
     private final UUID organizer = UUID.randomUUID();
@@ -62,6 +64,7 @@ class ManualMatchParticipantServiceTest {
                         participants,
                         manualParticipants,
                         events,
+                        joinOrders,
                         Clock.fixed(now, ZoneOffset.UTC));
     }
 
@@ -100,6 +103,63 @@ class ManualMatchParticipantServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("no tiene cupos");
         verify(manualParticipants, never()).save(any());
+    }
+
+    @Test
+    void manualEntryCannotStealAPlaceHeldBeforeExternalTransfer() {
+        when(matches.findByIdForUpdate(match.id())).thenReturn(Optional.of(match));
+        when(participants.countByMatchAndStatus(match.id(), MatchParticipantStatus.JOINED))
+                .thenReturn(8L);
+        var hold =
+                MatchJoinOrderEntity.pending(
+                        match.organizationId(),
+                        match.id(),
+                        UUID.randomUUID(),
+                        1200,
+                        MatchPaymentMethod.YAPE,
+                        "prepared-hold",
+                        now.plusSeconds(300),
+                        now);
+        hold.markExternal();
+        when(joinOrders.findAllByMatchIdOrderByCreatedAtAsc(match.id()))
+                .thenReturn(java.util.List.of(hold));
+        assertThatThrownBy(() -> service.add(organizer, match.id(), "Manual player", null, false))
+                .hasMessageContaining("no tiene cupos");
+        verify(manualParticipants, never()).save(any());
+    }
+
+    @Test
+    void expiredAndPlayingOrganizerHoldsDoNotConsumeAdditionalManualCapacity() {
+        when(matches.findByIdForUpdate(match.id())).thenReturn(Optional.of(match));
+        when(participants.countByMatchAndStatus(match.id(), MatchParticipantStatus.JOINED))
+                .thenReturn(8L);
+        var organizerHold =
+                MatchJoinOrderEntity.pending(
+                        match.organizationId(),
+                        match.id(),
+                        organizer,
+                        1200,
+                        MatchPaymentMethod.YAPE,
+                        "organizer-hold",
+                        now.plusSeconds(300),
+                        now);
+        organizerHold.markExternal();
+        var expired =
+                MatchJoinOrderEntity.pending(
+                        match.organizationId(),
+                        match.id(),
+                        UUID.randomUUID(),
+                        1200,
+                        MatchPaymentMethod.YAPE,
+                        "expired-hold",
+                        now.minusSeconds(1),
+                        now.minusSeconds(301));
+        expired.markExternal();
+        when(joinOrders.findAllByMatchIdOrderByCreatedAtAsc(match.id()))
+                .thenReturn(java.util.List.of(organizerHold, expired));
+        when(manualParticipants.save(any())).thenAnswer(call -> call.getArgument(0));
+        assertThat(service.add(organizer, match.id(), "Manual player", null, false).displayName())
+                .isEqualTo("Manual player");
     }
 
     @Test

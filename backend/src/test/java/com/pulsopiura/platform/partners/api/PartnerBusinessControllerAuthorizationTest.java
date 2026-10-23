@@ -9,7 +9,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 class PartnerBusinessControllerAuthorizationTest {
     @Test
     void everyAdministrativeOperationRequiresPlatformAdministratorRole() {
-        assertPlatformAdminOnly(method("all"));
+        assertPlatformAdminOnly(method("all", org.springframework.security.oauth2.jwt.Jwt.class));
+        assertPlatformAdminOnly(
+                method(
+                        "previewImage",
+                        org.springframework.security.oauth2.jwt.Jwt.class,
+                        java.util.UUID.class));
         assertPlatformAdminOnly(
                 method(
                         "create",

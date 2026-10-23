@@ -20,12 +20,14 @@ public class MatchDetailMetadataService {
                 jdbc.queryForObject(
                         """
                         select coalesce(nullif(p.preferred_display_name, ''), u.display_name),
-                               coalesce(nullif(p.avatar_url, ''), u.avatar_url)
+                               coalesce(nullif(p.avatar_url, ''), u.avatar_url), p.visibility
                         from app.users u
                         left join app.player_profiles p on p.user_id = u.id
                         where u.id = ?
                         """,
-                        (row, index) -> new Organizer(row.getString(1), row.getString(2)),
+                        (row, index) ->
+                                publicOrganizer(
+                                        row.getString(1), row.getString(2), row.getString(3)),
                         organizerUserId);
         var surface =
                 jdbc.queryForObject(
@@ -64,5 +66,11 @@ public class MatchDetailMetadataService {
             String surfaceName,
             List<String> amenityNames) {}
 
-    private record Organizer(String displayName, String avatarUrl) {}
+    static Organizer publicOrganizer(String displayName, String avatarUrl, String visibility) {
+        return "PUBLIC".equals(visibility)
+                ? new Organizer(displayName, avatarUrl)
+                : new Organizer("Organizador", null);
+    }
+
+    record Organizer(String displayName, String avatarUrl) {}
 }

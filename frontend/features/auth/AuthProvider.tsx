@@ -67,7 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               currentUser.current?.access_token !== value.access_token
             )
               return;
-            setAvatarUrl(profile.avatarUrl || account.avatarUrl || tokenPicture);
+            setAvatarUrl(
+              profile.avatarUrl || account.avatarUrl || tokenPicture,
+            );
             setPlatformAdmin(Boolean(account.platformAdmin));
           })
           .catch(() => {
@@ -176,8 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
       accessToken: user && !user.expired ? user.access_token : null,
-      isPlatformAdmin:
-        platformAdmin || hasRealmRole(user, "PLATFORM_ADMIN"),
+      isPlatformAdmin: platformAdmin || hasRealmRole(user, "PLATFORM_ADMIN"),
       googleLoginEnabled,
       avatarUrl,
       setProfileAvatarUrl: setAvatarUrl,

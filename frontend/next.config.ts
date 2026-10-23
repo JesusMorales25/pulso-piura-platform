@@ -8,7 +8,10 @@ function origin(value: string | undefined, fallback: string): string {
   }
 }
 
-const apiOrigin = origin(process.env.NEXT_PUBLIC_API_BASE_URL, "http://localhost:8080");
+const apiOrigin = origin(
+  process.env.NEXT_PUBLIC_API_BASE_URL,
+  "http://localhost:8080",
+);
 const identityOrigin = origin(
   process.env.NEXT_PUBLIC_OIDC_ISSUER,
   "http://localhost:8180",

@@ -51,6 +51,9 @@ public class PaymentOrderEntity {
     @Column(name = "paid_at")
     private Instant paidAt;
 
+    @Column(nullable = false)
+    private boolean simulated = true;
+
     @Version private long version;
 
     protected PaymentOrderEntity() {}
@@ -78,6 +81,14 @@ public class PaymentOrderEntity {
         order.createdAt = now;
         order.updatedAt = now;
         return order;
+    }
+
+    public boolean simulated() {
+        return simulated;
+    }
+
+    public void markExternal() {
+        simulated = false;
     }
 
     public UUID id() {

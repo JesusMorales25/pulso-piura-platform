@@ -33,7 +33,9 @@ export function summarizeMatchFinances(
   );
   const pending = confirmed.filter(
     (participant) =>
-      !["PAID", "PAID_DIRECT", "NOT_REQUIRED"].includes(participant.paymentStatus),
+      !["PAID", "PAID_DIRECT", "NOT_REQUIRED"].includes(
+        participant.paymentStatus,
+      ),
   );
   const chargeable = confirmed.filter(
     (participant) => participant.paymentStatus !== "NOT_REQUIRED",
@@ -59,6 +61,8 @@ export function summarizeMatchFinances(
   };
 }
 
-export function isProtectedOrganizerRow(participant: MatchParticipantAdmin): boolean {
+export function isProtectedOrganizerRow(
+  participant: MatchParticipantAdmin,
+): boolean {
   return participant.source === "ORGANIZER";
 }

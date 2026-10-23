@@ -51,7 +51,9 @@ public class MeController {
     }
 
     @PatchMapping("/profile")
-    Object update(@AuthenticationPrincipal Jwt jwt, @RequestBody UpdateProfileRequest request) {
+    Object update(
+            @AuthenticationPrincipal Jwt jwt,
+            @jakarta.validation.Valid @RequestBody UpdateProfileRequest request) {
         var user = users.provision(jwt);
         return profiles.update(
                 user.id(),
@@ -97,12 +99,12 @@ public class MeController {
             boolean platformAdmin) {}
 
     public record UpdateProfileRequest(
-            String homeDistrictCode,
-            String bio,
-            String visibility,
-            String preferredDisplayName,
-            String termsVersion,
-            String privacyVersion) {}
+            @jakarta.validation.constraints.Size(max = 60) String homeDistrictCode,
+            @jakarta.validation.constraints.Size(max = 500) String bio,
+            @jakarta.validation.constraints.Size(max = 30) String visibility,
+            @jakarta.validation.constraints.Size(max = 120) String preferredDisplayName,
+            @jakarta.validation.constraints.Size(max = 30) String termsVersion,
+            @jakarta.validation.constraints.Size(max = 30) String privacyVersion) {}
 
     public record CapabilityRequestRequest(String capability, String reason) {}
 }

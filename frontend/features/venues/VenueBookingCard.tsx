@@ -78,12 +78,13 @@ export function VenueBookingCard({
 }: Props) {
   const visibleSlots = slots.slice(0, 5);
   const selectedSlot =
-    visibleSlots.find((slot) => slot.startsAt === selectedStartsAt) ?? visibleSlots[0];
+    visibleSlots.find((slot) => slot.startsAt === selectedStartsAt) ??
+    visibleSlots[0];
   const { venue, space } = offer;
   const ratingLabel =
     venue.adminRating === null || venue.adminRating === undefined
       ? "Sin calificación"
-      : `${venue.adminRating.toFixed(1)} (${venue.adminRatingCount ?? 0})`;
+      : `${venue.adminRating.toFixed(1)} · Informada por el complejo`;
   const mapsHref = googleMapsUrl({
     latitude: venue.latitude,
     longitude: venue.longitude,
@@ -97,7 +98,10 @@ export function VenueBookingCard({
   });
 
   return (
-    <article className={styles.card} aria-label={`Disponibilidad de ${venue.name}`}>
+    <article
+      className={styles.card}
+      aria-label={`Disponibilidad de ${venue.name}`}
+    >
       <header className={styles.header}>
         <Image
           alt={`Cancha deportiva en ${venue.name}`}
@@ -109,33 +113,60 @@ export function VenueBookingCard({
         />
         <div className={styles.identity}>
           <h2>{venue.name}</h2>
-          <p><MapPin aria-hidden="true" size={13} weight="fill" /> {venue.address} · {venue.districtCode}</p>
+          <p>
+            <MapPin aria-hidden="true" size={13} weight="fill" />{" "}
+            {venue.address} · {venue.districtCode}
+          </p>
           <div className={styles.chips}>
-            <span><SoccerBall aria-hidden="true" size={13} /> {space.formatCode.replaceAll("_", " ")}</span>
+            <span>
+              <SoccerBall aria-hidden="true" size={13} />{" "}
+              {space.formatCode.replaceAll("_", " ")}
+            </span>
             {space.indoor && <span>Techada</span>}
-            {priorityAmenities.slice(0, 3).map((name) => <span key={name}>{name}</span>)}
+            {priorityAmenities.slice(0, 3).map((name) => (
+              <span key={name}>{name}</span>
+            ))}
           </div>
         </div>
         <div className={styles.price}>
           <small>Tarifa por hora</small>
           <strong>Desde {selectedSlot ? money(selectedSlot) : "—"}</strong>
-          <span title={venue.adminRating === null || venue.adminRating === undefined ? undefined : "Calificación informada por el complejo"}>
+          <span
+            title={
+              venue.adminRating === null || venue.adminRating === undefined
+                ? undefined
+                : "Calificación informada por el complejo"
+            }
+          >
             <Star aria-hidden="true" size={14} weight="fill" /> {ratingLabel}
           </span>
         </div>
       </header>
 
       <div className={styles.links}>
-        {whatsappHref && <a href={whatsappHref} rel="noreferrer" target="_blank"><WhatsappLogo aria-hidden="true" size={15} /> Contactar</a>}
-        <a href={mapsHref} rel="noreferrer" target="_blank"><MapPin aria-hidden="true" size={15} /> Cómo llegar</a>
+        {whatsappHref && (
+          <a href={whatsappHref} rel="noreferrer" target="_blank">
+            <WhatsappLogo aria-hidden="true" size={15} /> Contactar
+          </a>
+        )}
+        <a href={mapsHref} rel="noreferrer" target="_blank">
+          <MapPin aria-hidden="true" size={15} /> Cómo llegar
+        </a>
       </div>
 
-      <section className={styles.availability} aria-label={`Turnos disponibles en ${space.name}`}>
+      <section
+        className={styles.availability}
+        aria-label={`Turnos disponibles en ${space.name}`}
+      >
         <div className={styles.availabilityHeading}>
           <strong>Turnos disponibles</strong>
           <small>{space.name}</small>
         </div>
-        <div className={styles.slots} role="group" aria-label="Elige un turno disponible">
+        <div
+          className={styles.slots}
+          role="group"
+          aria-label="Elige un turno disponible"
+        >
           {visibleSlots.map((slot) => {
             const selected = slot.startsAt === selectedSlot?.startsAt;
             return (
@@ -161,13 +192,35 @@ export function VenueBookingCard({
           <CalendarBlank aria-hidden="true" size={17} />
           <span>
             <small>Turno seleccionado</small>
-            <strong>{selectedSlot ? `${time(selectedSlot.startsAt)} – ${time(selectedSlot.endsAt)}` : "Elige un horario"}</strong>
+            <strong>
+              {selectedSlot
+                ? `${time(selectedSlot.startsAt)} – ${time(selectedSlot.endsAt)}`
+                : "Elige un horario"}
+            </strong>
           </span>
         </div>
         <div className={styles.actions}>
-          <button disabled={busy || !selectedSlot} onClick={() => onReserve("DEPOSIT")} type="button">Reservar con 20 %</button>
-          <button disabled={busy || !selectedSlot} onClick={() => onReserve("FULL")} type="button">Pagar completo</button>
-          <button className={styles.secondary} onClick={onOpenSchedules} type="button">Otros horarios</button>
+          <button
+            disabled={busy || !selectedSlot}
+            onClick={() => onReserve("DEPOSIT")}
+            type="button"
+          >
+            Reservar con 20 %
+          </button>
+          <button
+            disabled={busy || !selectedSlot}
+            onClick={() => onReserve("FULL")}
+            type="button"
+          >
+            Pagar completo
+          </button>
+          <button
+            className={styles.secondary}
+            onClick={onOpenSchedules}
+            type="button"
+          >
+            Otros horarios
+          </button>
         </div>
       </footer>
     </article>

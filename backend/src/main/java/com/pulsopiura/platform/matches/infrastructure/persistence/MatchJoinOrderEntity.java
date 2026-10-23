@@ -50,6 +50,9 @@ public class MatchJoinOrderEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(nullable = false)
+    private boolean simulated = true;
+
     @Version private long version;
 
     protected MatchJoinOrderEntity() {}
@@ -85,6 +88,16 @@ public class MatchJoinOrderEntity {
         updatedAt = now;
     }
 
+    public void extendExternalReview(Instant now, Instant deadline) {
+        if (simulated
+                || !"PENDING".equals(status)
+                || !now.isBefore(expiresAt)
+                || !now.isBefore(deadline))
+            throw new IllegalStateException("La retención del cupo venció");
+        if (deadline.isAfter(expiresAt)) expiresAt = deadline;
+        updatedAt = now;
+    }
+
     public void markPaid(String reference, Instant now) {
         if ("PAID".equals(status)) return;
         if (!"PENDING".equals(status) || !now.isBefore(expiresAt))
@@ -93,6 +106,14 @@ public class MatchJoinOrderEntity {
         providerReference = reference;
         paidAt = now;
         updatedAt = now;
+    }
+
+    public boolean simulated() {
+        return simulated;
+    }
+
+    public void markExternal() {
+        simulated = false;
     }
 
     public UUID id() {

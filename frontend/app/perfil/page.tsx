@@ -12,6 +12,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { apiRequest } from "@/lib/api";
+import { LEGAL_VERSION } from "@/lib/legal";
 type Me = {
   id: string;
   email: string;
@@ -59,13 +60,8 @@ const statusLabel: Record<CapabilityRequest["status"], string> = {
   REVOKED: "Solicitud revocada",
 };
 export default function ProfilePage() {
-  const {
-    accessToken,
-    loading,
-    login,
-    logout,
-    setProfileAvatarUrl,
-  } = useAuth();
+  const { accessToken, loading, login, logout, setProfileAvatarUrl } =
+    useAuth();
   const { capabilities } = useUserCapabilities();
   const [me, setMe] = useState<Me | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -113,8 +109,8 @@ export default function ProfilePage() {
           bio: form.get("bio"),
           visibility: form.get("visibility"),
           preferredDisplayName: form.get("displayName"),
-          termsVersion: form.get("accept") ? "2026-09" : "",
-          privacyVersion: form.get("accept") ? "2026-09" : "",
+          termsVersion: form.get("accept") ? LEGAL_VERSION : "",
+          privacyVersion: form.get("accept") ? LEGAL_VERSION : "",
         }),
       });
       setProfile(updated);
@@ -222,36 +218,57 @@ export default function ProfilePage() {
       <nav className="profileRoleNavigation" aria-label="Accesos de mi cuenta">
         <Link href="/actividad">
           <CalendarDots aria-hidden="true" size={21} />
-          <span><strong>Mi actividad</strong><small>Partidos y reservas</small></span>
+          <span>
+            <strong>Mi actividad</strong>
+            <small>Partidos y reservas</small>
+          </span>
         </Link>
         {capabilities.canCreateMatches && (
           <Link href="/organizador">
             <SoccerBall aria-hidden="true" size={21} />
-            <span><strong>Mis pichangas</strong><small>Publicaciones y jugadores</small></span>
+            <span>
+              <strong>Mis pichangas</strong>
+              <small>Publicaciones y jugadores</small>
+            </span>
           </Link>
         )}
         {capabilities.isVenueOwner && (
           <>
             <Link href="/organizaciones">
               <Buildings aria-hidden="true" size={21} />
-              <span><strong>Mis canchas</strong><small>Crear complejo, canchas y horarios</small></span>
+              <span>
+                <strong>Mis canchas</strong>
+                <small>Crear complejo, canchas y horarios</small>
+              </span>
             </Link>
-            <Link href="/organizaciones?create=1"><Buildings aria-hidden="true" size={21} /><span><strong>Crear complejo</strong><small>Registrar una nueva sede</small></span></Link>
+            <Link href="/organizaciones?create=1">
+              <Buildings aria-hidden="true" size={21} />
+              <span>
+                <strong>Crear complejo</strong>
+                <small>Registrar una nueva sede</small>
+              </span>
+            </Link>
             <Link href="/reservas-cancha">
               <CalendarCheck aria-hidden="true" size={21} />
-              <span><strong>Reservas</strong><small>Pagos y llegadas</small></span>
+              <span>
+                <strong>Reservas</strong>
+                <small>Pagos y llegadas</small>
+              </span>
             </Link>
           </>
         )}
         {capabilities.canManagePlatform && (
           <Link href="/plataforma">
             <GearSix aria-hidden="true" size={21} />
-            <span><strong>Administración</strong><small>Consola de plataforma</small></span>
+            <span>
+              <strong>Administración</strong>
+              <small>Consola de plataforma</small>
+            </span>
           </Link>
         )}
       </nav>
       {profile && (
-        <form className="profileForm" noValidate onSubmit={save}>
+        <form className="profileForm" onSubmit={save}>
           <label>
             Nombre visible
             <input
@@ -265,13 +282,12 @@ export default function ProfilePage() {
             />
           </label>
           <label>
-            Distrito
+            Distrito (opcional)
             <input
               name="district"
               defaultValue={profile.homeDistrictCode ?? ""}
               maxLength={30}
               placeholder="Ej. PIURA"
-              required
             />
           </label>
           <label>
@@ -292,12 +308,35 @@ export default function ProfilePage() {
               <option value="PUBLIC">Público</option>
             </select>
           </label>
-          {profile.onboardingStatus !== "COMPLETE" && (
-            <label className="check">
-              <input type="checkbox" name="accept" required />
-              Acepto los términos y la política de privacidad vigentes.
-            </label>
-          )}
+          <label className="check">
+            <input
+              type="checkbox"
+              name="accept"
+              required={profile.onboardingStatus !== "COMPLETE"}
+            />
+            <span>
+              {profile.onboardingStatus === "COMPLETE"
+                ? "Actualizar mi aceptación (opcional): "
+                : ""}
+              Acepto las{" "}
+              <Link
+                href="/informacion/terminos"
+                target="_blank"
+                rel="noreferrer"
+              >
+                condiciones de la demo
+              </Link>{" "}
+              y confirmo que leí el{" "}
+              <Link
+                href="/informacion/privacidad"
+                target="_blank"
+                rel="noreferrer"
+              >
+                aviso de privacidad
+              </Link>
+              . No incluye consentimiento de publicidad.
+            </span>
+          </label>
           <button
             className="primary borderless"
             disabled={saving}
@@ -307,7 +346,11 @@ export default function ProfilePage() {
           </button>
         </form>
       )}
-      <section className="capabilitySection" id="capacidades" aria-labelledby="capability-title">
+      <section
+        className="capabilitySection"
+        id="capacidades"
+        aria-labelledby="capability-title"
+      >
         <p className="eyebrow">NUEVAS POSIBILIDADES</p>
         <h2 id="capability-title">También puedes darle forma al juego</h2>
         <p className="pageLead">

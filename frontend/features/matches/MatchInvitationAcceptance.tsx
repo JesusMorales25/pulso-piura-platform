@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { CheckCircle, EnvelopeSimple, ShieldCheck } from "@phosphor-icons/react";
+import {
+  CheckCircle,
+  EnvelopeSimple,
+  ShieldCheck,
+} from "@phosphor-icons/react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
 
@@ -12,7 +16,11 @@ type Acceptance = {
   status: "ACCEPTED";
 };
 
-export function MatchInvitationAcceptance({ invitationId }: { invitationId: string }) {
+export function MatchInvitationAcceptance({
+  invitationId,
+}: {
+  invitationId: string;
+}) {
   const { accessToken, loading, login, user } = useAuth();
   const [accepted, setAccepted] = useState<Acceptance | null>(null);
   const [busy, setBusy] = useState(false);
@@ -69,10 +77,23 @@ export function MatchInvitationAcceptance({ invitationId }: { invitationId: stri
       {typeof user?.profile.email === "string" && (
         <span className="pill">Sesión: {user.profile.email}</span>
       )}
-      {error && <p className="inlineAlert errorNotice" role="alert">{error}</p>}
-      <button className="primary" disabled={busy} onClick={() => void accept()} type="button">
+      {error && (
+        <p className="inlineAlert errorNotice" role="alert">
+          {error}
+        </p>
+      )}
+      <button
+        className="primary"
+        disabled={busy}
+        onClick={() => void accept()}
+        type="button"
+      >
         <ShieldCheck size={20} />
-        {busy ? "Aceptando…" : accessToken ? "Aceptar invitación" : "Ingresar para aceptar"}
+        {busy
+          ? "Aceptando…"
+          : accessToken
+            ? "Aceptar invitación"
+            : "Ingresar para aceptar"}
       </button>
     </section>
   );

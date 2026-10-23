@@ -58,7 +58,15 @@ public class PlayerProfileService {
         }
         boolean supplied =
                 terms != null && !terms.isBlank() && privacy != null && !privacy.isBlank();
-        if (supplied && !consents.existsByUserId(userId))
+        boolean anyVersion =
+                (terms != null && !terms.isBlank()) || (privacy != null && !privacy.isBlank());
+        if (anyVersion
+                && (!LegalDocuments.CURRENT_VERSION.equals(terms)
+                        || !LegalDocuments.CURRENT_VERSION.equals(privacy)))
+            throw new IllegalArgumentException(
+                    "Lee y acepta la versión vigente de las condiciones de la demo y del aviso de privacidad");
+        if (supplied
+                && !consents.existsByUserIdAndTermsVersionAndPrivacyVersion(userId, terms, privacy))
             consents.save(
                     UserConsentEntity.create(
                             userId, terms.trim(), privacy.trim(), clock.instant()));

@@ -54,7 +54,11 @@ public class MembershipService {
     }
 
     @Transactional
-    public MemberView accept(UUID actorId, String actorEmail, UUID invitationId) {
+    public MemberView accept(
+            UUID actorId, String actorEmail, boolean emailVerified, UUID invitationId) {
+        if (!emailVerified)
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Verifica tu correo antes de aceptar un acceso al complejo");
         var invitation =
                 invitations
                         .findById(invitationId)

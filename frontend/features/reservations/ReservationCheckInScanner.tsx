@@ -70,7 +70,9 @@ export function ReservationCheckInScanner({
       setResult(value);
     } catch (reason) {
       setResult(null);
-      setError(reason instanceof Error ? reason.message : "No se pudo leer el QR.");
+      setError(
+        reason instanceof Error ? reason.message : "No se pudo leer el QR.",
+      );
     } finally {
       setBusy(false);
     }
@@ -80,16 +82,27 @@ export function ReservationCheckInScanner({
     setError("");
     setResult(null);
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError("Este navegador no permite usar la cámara. Ingresa el código manualmente.");
+      setError(
+        "Este navegador no permite usar la cámara. Ingresa el código manualmente.",
+      );
       return;
     }
-    const DetectorClass = (window as typeof window & { BarcodeDetector?: new (options: { formats: string[] }) => Detector }).BarcodeDetector;
+    const DetectorClass = (
+      window as typeof window & {
+        BarcodeDetector?: new (options: { formats: string[] }) => Detector;
+      }
+    ).BarcodeDetector;
     if (!DetectorClass) {
-      setError("El lector automático no está disponible en este navegador. Ingresa el código manualmente.");
+      setError(
+        "El lector automático no está disponible en este navegador. Ingresa el código manualmente.",
+      );
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
       streamRef.current = stream;
       if (!videoRef.current) return;
       videoRef.current.srcObject = stream;
@@ -98,14 +111,19 @@ export function ReservationCheckInScanner({
       const detector = new DetectorClass({ formats: ["qr_code"] });
       timerRef.current = window.setInterval(() => {
         if (!videoRef.current) return;
-        void detector.detect(videoRef.current).then((codes) => {
-          const value = codes[0]?.rawValue;
-          if (value) void preview(value);
-        }).catch(() => undefined);
+        void detector
+          .detect(videoRef.current)
+          .then((codes) => {
+            const value = codes[0]?.rawValue;
+            if (value) void preview(value);
+          })
+          .catch(() => undefined);
       }, 450);
     } catch {
       stopCamera();
-      setError("No se pudo acceder a la cámara. Revisa el permiso o ingresa el código manualmente.");
+      setError(
+        "No se pudo acceder a la cámara. Revisa el permiso o ingresa el código manualmente.",
+      );
     }
   }
 
@@ -126,7 +144,11 @@ export function ReservationCheckInScanner({
       setResult(checked);
       onCheckedIn();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "No se pudo confirmar la llegada.");
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "No se pudo confirmar la llegada.",
+      );
     } finally {
       setBusy(false);
     }
@@ -151,9 +173,19 @@ export function ReservationCheckInScanner({
         <div>
           <p className="eyebrow">CONTROL DE LLEGADA</p>
           <h2 id="check-in-title">Escanear reserva</h2>
-          <p className="muted">Verifica al jugador, su cancha y el estado del pago antes de cerrar la atención.</p>
+          <p className="muted">
+            Verifica al jugador, su cancha y el estado del pago antes de cerrar
+            la atención.
+          </p>
         </div>
-        <button className="primary" type="button" onClick={() => { setOpen((value) => !value); reset(); }}>
+        <button
+          className="primary"
+          type="button"
+          onClick={() => {
+            setOpen((value) => !value);
+            reset();
+          }}
+        >
           {open ? <X size={20} /> : <QrCode size={20} />}
           {open ? "Cerrar lector" : "Leer QR"}
         </button>
@@ -163,17 +195,39 @@ export function ReservationCheckInScanner({
           {!result && (
             <div className="scannerColumn">
               <div className={`cameraFrame${scanning ? " active" : ""}`}>
-                <video ref={videoRef} playsInline muted aria-label="Vista de la cámara para leer el QR" />
+                <video
+                  ref={videoRef}
+                  playsInline
+                  muted
+                  aria-label="Vista de la cámara para leer el QR"
+                />
                 <span>Centra el QR dentro del recuadro</span>
               </div>
-              <button className="secondary" type="button" disabled={busy || scanning} onClick={() => void startCamera()}>
-                <Camera size={20} /> {scanning ? "Buscando QR…" : "Activar cámara"}
+              <button
+                className="secondary"
+                type="button"
+                disabled={busy || scanning}
+                onClick={() => void startCamera()}
+              >
+                <Camera size={20} />{" "}
+                {scanning ? "Buscando QR…" : "Activar cámara"}
               </button>
               <form className="manualQr" noValidate onSubmit={submitManual}>
                 <label htmlFor="manual-qr">Código manual</label>
                 <div>
-                  <input id="manual-qr" value={manual} onChange={(event) => setManual(event.target.value)} placeholder="PULSO-CHECKIN:…" autoComplete="off" />
-                  <button className="secondary" disabled={busy || !manual.trim()}>Verificar</button>
+                  <input
+                    id="manual-qr"
+                    value={manual}
+                    onChange={(event) => setManual(event.target.value)}
+                    placeholder="PULSO-CHECKIN:…"
+                    autoComplete="off"
+                  />
+                  <button
+                    className="secondary"
+                    disabled={busy || !manual.trim()}
+                  >
+                    Verificar
+                  </button>
                 </div>
               </form>
             </div>
@@ -181,31 +235,92 @@ export function ReservationCheckInScanner({
           {result && (
             <article className="checkInResult">
               <div className="checkInIdentity">
-                <span className="reservationStatus">{result.reservationStatus === "COMPLETED" ? "ATENCIÓN CERRADA" : "RESERVA VÁLIDA"}</span>
+                <span className="reservationStatus">
+                  {result.reservationStatus === "COMPLETED"
+                    ? "ATENCIÓN CERRADA"
+                    : "RESERVA VÁLIDA"}
+                </span>
                 <h3>{result.customerName}</h3>
                 <p>{result.customerEmail ?? "Jugador registrado"}</p>
               </div>
               <dl className="reservationSummary">
-                <div><dt>Complejo</dt><dd>{result.venueName}</dd></div>
-                <div><dt>Cancha</dt><dd>{result.spaceName}</dd></div>
-                <div><dt>Fecha</dt><dd>{reservationDate(result.startsAt)}</dd></div>
-                <div><dt>Horario</dt><dd>{reservationTime(result.startsAt)} – {reservationTime(result.endsAt)}</dd></div>
-                <div><dt>Pagado</dt><dd>{money(result.paidMinor)}</dd></div>
-                <div><dt>Saldo pendiente</dt><dd>{money(result.balanceMinor)}</dd></div>
+                <div>
+                  <dt>Complejo</dt>
+                  <dd>{result.venueName}</dd>
+                </div>
+                <div>
+                  <dt>Cancha</dt>
+                  <dd>{result.spaceName}</dd>
+                </div>
+                <div>
+                  <dt>Fecha</dt>
+                  <dd>{reservationDate(result.startsAt)}</dd>
+                </div>
+                <div>
+                  <dt>Horario</dt>
+                  <dd>
+                    {reservationTime(result.startsAt)} –{" "}
+                    {reservationTime(result.endsAt)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Pagado</dt>
+                  <dd>{money(result.paidMinor)}</dd>
+                </div>
+                <div>
+                  <dt>Saldo pendiente</dt>
+                  <dd>{money(result.balanceMinor)}</dd>
+                </div>
               </dl>
-              <div className={`paymentVerification ${result.balanceMinor === 0 ? "paid" : "pending"}`}>
-                {result.balanceMinor === 0 ? <CheckCircle size={22} weight="fill" /> : <QrCode size={22} />}
-                <span><strong>{result.balanceMinor === 0 ? "Pago completo" : "Pago parcial"}</strong>{result.balanceMinor === 0 ? "No tiene saldo pendiente." : `Falta cancelar ${money(result.balanceMinor)}.`}</span>
+              <div
+                className={`paymentVerification ${result.balanceMinor === 0 ? "paid" : "pending"}`}
+              >
+                {result.balanceMinor === 0 ? (
+                  <CheckCircle size={22} weight="fill" />
+                ) : (
+                  <QrCode size={22} />
+                )}
+                <span>
+                  <strong>
+                    {result.balanceMinor === 0
+                      ? "Pago completo"
+                      : "Pago parcial"}
+                  </strong>
+                  {result.balanceMinor === 0
+                    ? "No tiene saldo pendiente."
+                    : `Falta cancelar ${money(result.balanceMinor)}.`}
+                </span>
               </div>
               {result.reservationStatus === "COMPLETED" ? (
-                <p className="successNotice"><CheckCircle size={20} /> Llegada registrada y servicio cerrado.</p>
+                <p className="successNotice">
+                  <CheckCircle size={20} /> Llegada registrada y servicio
+                  cerrado.
+                </p>
               ) : (
-                <button className="primary" type="button" disabled={busy} onClick={() => void confirm()}>{busy ? "Confirmando…" : "Confirmar llegada y cerrar reserva"}</button>
+                <button
+                  className="primary"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void confirm()}
+                >
+                  {busy ? "Confirmando…" : "Confirmar llegada y cerrar reserva"}
+                </button>
               )}
-              <button className="secondary" type="button" disabled={busy} onClick={reset}>Escanear otra reserva</button>
+              <button
+                className="secondary"
+                type="button"
+                disabled={busy}
+                onClick={reset}
+              >
+                Escanear otra reserva
+              </button>
             </article>
           )}
-          {error && <p className="inlineAlert errorNotice" role="alert">{error}</p>}
+          {error && (
+            <p className="inlineAlert errorNotice" role="alert">
+              {error}
+            </p>
+          )}
         </div>
       )}
     </section>

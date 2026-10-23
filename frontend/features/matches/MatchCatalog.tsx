@@ -46,10 +46,19 @@ export function MatchCatalog() {
       null,
       { signal: controller.signal },
     )
-      .then((result) => { if (!controller.signal.aborted) { setItems(result); setError(""); } })
+      .then((result) => {
+        if (!controller.signal.aborted) {
+          setItems(result);
+          setError("");
+        }
+      })
       .catch((reason) => {
         if (!controller.signal.aborted) {
-          setError(reason instanceof Error ? reason.message : "No pudimos cargar los partidos.");
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : "No pudimos cargar los partidos.",
+          );
         }
       })
       .finally(() => {
@@ -59,11 +68,17 @@ export function MatchCatalog() {
   }, [sport, district]);
 
   const zones = useMemo(
-    () => Array.from(new Set(items.map((item) => item.venueAddress).filter(Boolean))).sort(),
+    () =>
+      Array.from(
+        new Set(items.map((item) => item.venueAddress).filter(Boolean)),
+      ).sort(),
     [items],
   );
   const teamSizes = useMemo(
-    () => Array.from(new Set(items.map((item) => item.maxPlayers))).sort((left, right) => left - right),
+    () =>
+      Array.from(new Set(items.map((item) => item.maxPlayers))).sort(
+        (left, right) => left - right,
+      ),
     [items],
   );
   const filteredItems = items.filter((item) => {
@@ -99,7 +114,9 @@ export function MatchCatalog() {
     <main className="section matchCatalogPage">
       <p className="eyebrow">PARTIDOS ABIERTOS</p>
       <h1>Encuentra tu próximo partido</h1>
-      <p className="pageLead">Eventos publicados con cancha confirmada, cupos y precio visible.</p>
+      <p className="pageLead">
+        Eventos publicados con cancha confirmada, cupos y precio visible.
+      </p>
 
       <div className="sportChips matchCatalogFilters">
         {sports.map((item) => (
@@ -122,28 +139,52 @@ export function MatchCatalog() {
         <section className="catalogRefinements" aria-label="Afinar resultados">
           <label>
             <span>Zona</span>
-            <select value={zone} onChange={(event) => setZone(event.target.value)}>
+            <select
+              value={zone}
+              onChange={(event) => setZone(event.target.value)}
+            >
               <option value="">Todas las zonas</option>
-              {zones.map((item) => <option key={item} value={item}>{item}</option>)}
+              {zones.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
             </select>
           </label>
           <label>
             <span>Cupos que necesitas</span>
-            <select value={minimumPlayers} onChange={(event) => setMinimumPlayers(event.target.value)}>
+            <select
+              value={minimumPlayers}
+              onChange={(event) => setMinimumPlayers(event.target.value)}
+            >
               <option value="">Cualquier cantidad</option>
-              {[1, 2, 3, 5].map((amount) => <option key={amount} value={amount}>{amount} o más</option>)}
+              {[1, 2, 3, 5].map((amount) => (
+                <option key={amount} value={amount}>
+                  {amount} o más
+                </option>
+              ))}
             </select>
           </label>
           <label>
             <span>Tamaño del partido</span>
-            <select value={teamSize} onChange={(event) => setTeamSize(event.target.value)}>
+            <select
+              value={teamSize}
+              onChange={(event) => setTeamSize(event.target.value)}
+            >
               <option value="">Cualquier tamaño</option>
-              {teamSizes.map((size) => <option key={size} value={size}>{size} jugadores</option>)}
+              {teamSizes.map((size) => (
+                <option key={size} value={size}>
+                  {size} jugadores
+                </option>
+              ))}
             </select>
           </label>
           <label>
             <span>Horario</span>
-            <select value={timeRange} onChange={(event) => setTimeRange(event.target.value)}>
+            <select
+              value={timeRange}
+              onChange={(event) => setTimeRange(event.target.value)}
+            >
               <option value="">Cualquier horario</option>
               <option value="EARLY">Antes de 8 p. m.</option>
               <option value="PRIME">8 a 10 p. m.</option>
@@ -152,9 +193,16 @@ export function MatchCatalog() {
           </label>
           <label>
             <span>Precio máximo</span>
-            <select value={maximumPrice} onChange={(event) => setMaximumPrice(event.target.value)}>
+            <select
+              value={maximumPrice}
+              onChange={(event) => setMaximumPrice(event.target.value)}
+            >
               <option value="">Cualquier precio</option>
-              {[10, 15, 20, 30].map((price) => <option key={price} value={price}>S/ {price}</option>)}
+              {[10, 15, 20, 30].map((price) => (
+                <option key={price} value={price}>
+                  S/ {price}
+                </option>
+              ))}
             </select>
           </label>
           {hasLocalFilters && (
@@ -165,13 +213,21 @@ export function MatchCatalog() {
         </section>
       )}
 
-      {loading && <CardSkeletons count={3} label="Buscando partidos disponibles" />}
+      {loading && (
+        <CardSkeletons count={3} label="Buscando partidos disponibles" />
+      )}
       {error && <p className="inlineAlert errorNotice">{error}</p>}
       {!loading && items.length === 0 && (
-        <div className="empty"><h2>No hay partidos disponibles</h2><p>Prueba otro deporte o vuelve más tarde.</p></div>
+        <div className="empty">
+          <h2>No hay partidos disponibles</h2>
+          <p>Prueba otro deporte o vuelve más tarde.</p>
+        </div>
       )}
       {!loading && items.length > 0 && filteredItems.length === 0 && (
-        <div className="empty"><h2>No encontramos coincidencias</h2><p>Amplía la zona, los cupos, el horario o el precio máximo.</p></div>
+        <div className="empty">
+          <h2>No encontramos coincidencias</h2>
+          <p>Amplía la zona, los cupos, el horario o el precio máximo.</p>
+        </div>
       )}
 
       <div className="matchCatalogGrid matchCatalogFeaturedGrid">

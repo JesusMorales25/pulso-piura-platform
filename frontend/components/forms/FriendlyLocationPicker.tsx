@@ -117,8 +117,18 @@ export function FriendlyLocationPicker({
           </small>
         </label>
       )}
-      <input defaultValue={latitude ?? ""} name="latitude" ref={latitudeInput} type="hidden" />
-      <input defaultValue={longitude ?? ""} name="longitude" ref={longitudeInput} type="hidden" />
+      <input
+        defaultValue={latitude ?? ""}
+        name="latitude"
+        ref={latitudeInput}
+        type="hidden"
+      />
+      <input
+        defaultValue={longitude ?? ""}
+        name="longitude"
+        ref={longitudeInput}
+        type="hidden"
+      />
       <div>
         <button
           className="locationPreviewButton"

@@ -112,6 +112,11 @@ services:
       RESERVATION_HOLD_DURATION: PT5M
       RESERVATION_MAX_ACTIVE_TEMPORARY_PER_CUSTOMER: "3"
       PAYMENTS_MODE: ${PAYMENTS_MODE:-disabled}
+      PAYMENT_PROOF_DIRECTORY: /srv/pulso/private/payment-proofs
+      EXTERNAL_PAYMENT_REVIEW_MINUTES: ${EXTERNAL_PAYMENT_REVIEW_MINUTES:-30}
+      PAYMENT_PROOF_RETENTION_DAYS: ${PAYMENT_PROOF_RETENTION_DAYS:-90}
+    volumes:
+      - payment_proofs:/srv/pulso/private/payment-proofs
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health | grep -q UP"]
       interval: 15s
@@ -142,5 +147,6 @@ services:
     mem_limit: 1g
 
 volumes:
+  payment_proofs:
   app_postgres:
   identity_postgres:

@@ -234,6 +234,20 @@ class MatchJoinPaymentServiceTest {
         verifyNoInteractions(participation);
     }
 
+    @Test
+    void externalPendingOrderCannotBypassReviewAfterSwitchingToSimulationMode() {
+        var order = pendingOrder(match, actor, "external-pending");
+        order.markExternal();
+        when(orders.matchIdForOrder(order.id())).thenReturn(Optional.of(match.id()));
+        when(matches.findByIdForUpdate(match.id())).thenReturn(Optional.of(match));
+        when(orders.findByIdForUpdate(order.id())).thenReturn(Optional.of(order));
+        assertThatThrownBy(() -> service.simulate(actor, order.id()))
+                .hasMessageContaining("requieren revisión");
+        verify(provider, never()).simulateConfirmedPayment(any());
+        verifyNoInteractions(participation);
+        assertThat(order.status()).isEqualTo("PENDING");
+    }
+
     private MatchJoinOrderEntity pendingOrder(SportsMatch target, UUID payer, String key) {
         return MatchJoinOrderEntity.pending(
                 target.organizationId(),

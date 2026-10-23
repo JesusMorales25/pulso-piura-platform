@@ -46,4 +46,4 @@ También deben cambiarse el issuer OIDC, el origen web y las redirecciones del c
 
 ## Sesión web actual
 
-La beta usa Authorization Code + PKCE. El token de acceso permanece en memoria y se pierde al recargar; `sessionStorage` conserva únicamente estado transitorio del redirect. No se usa `localStorage`. La evolución prevista es un BFF con cookie `HttpOnly` y almacenamiento de sesión servidor.
+La beta usa Authorization Code + PKCE. El token de acceso se conserva en sessionStorage durante la sesión de la pestaña; `sessionStorage` conserva también el estado transitorio del redirect. Los tokens no se guardan en localStorage; el filtro de distrito sí usa localStorage. La evolución prevista es un BFF con cookie `HttpOnly` y almacenamiento de sesión servidor.

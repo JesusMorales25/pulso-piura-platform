@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { CheckCircle, X } from "@phosphor-icons/react";
 import {
   mobileCheckoutStatus,
@@ -59,11 +60,18 @@ export function MobileMatchCheckout({
             <small>CONFIRMA TU CUPO</small>
             <h2 id="mobile-checkout-title">Completa tu reserva</h2>
           </div>
-          <button aria-label="Cerrar confirmación" onClick={onClose} type="button">
+          <button
+            aria-label="Cerrar confirmación"
+            onClick={onClose}
+            type="button"
+          >
             <X aria-hidden="true" size={21} weight="bold" />
           </button>
         </header>
-        <p className="mobileCheckoutPrice"><span>Total por cupo</span><strong>{price}</strong></p>
+        <p className="mobileCheckoutPrice">
+          <span>Total por cupo</span>
+          <strong>{price}</strong>
+        </p>
         <fieldset className="mobileCheckoutMethods">
           <legend>Método de pago</legend>
           {(["YAPE", "PLIN"] as const).map((item) => (
@@ -84,9 +92,24 @@ export function MobileMatchCheckout({
             onChange={(event) => onAcceptedChange(event.target.checked)}
             type="checkbox"
           />
-          <span>Acepto la cuota y la política del evento.</span>
+          <span>
+            Acepto la cuota y la política del evento.{" "}
+            <Link
+              href="/informacion/cancelaciones"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Pagos y cancelaciones
+            </Link>
+            .
+          </span>
         </label>
-        <p aria-live="polite" className={status.ready ? "mobileCheckoutReady" : "mobileCheckoutHint"}>
+        <p
+          aria-live="polite"
+          className={
+            status.ready ? "mobileCheckoutReady" : "mobileCheckoutHint"
+          }
+        >
           {status.ready && <CheckCircle aria-hidden="true" weight="fill" />}
           {status.message}
         </p>

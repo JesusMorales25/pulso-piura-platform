@@ -1,6 +1,11 @@
 "use client";
 
-import { CheckCircle, CopySimple, QrCode, ShieldCheck } from "@phosphor-icons/react";
+import {
+  CheckCircle,
+  CopySimple,
+  QrCode,
+  ShieldCheck,
+} from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { apiRequest } from "@/lib/api";
@@ -92,7 +97,10 @@ export function ReservationQrPass({
 
   const matrix = pass ? createQrMatrix(pass.payload) : null;
   return (
-    <section className="reservationPass" aria-labelledby={`pass-${reservationId}`}>
+    <section
+      className="reservationPass"
+      aria-labelledby={`pass-${reservationId}`}
+    >
       <div>
         <p className="eyebrow">PASE DE LLEGADA</p>
         <h4 id={`pass-${reservationId}`}>Tu QR de reserva</h4>
@@ -109,35 +117,69 @@ export function ReservationQrPass({
             aria-label="Código QR único de esta reserva"
             shapeRendering="crispEdges"
           >
-            <rect x="-4" y="-4" width={matrix.length + 8} height={matrix.length + 8} fill="#fff" />
+            <rect
+              x="-4"
+              y="-4"
+              width={matrix.length + 8}
+              height={matrix.length + 8}
+              fill="#fff"
+            />
             {matrix.map((row, y) =>
               row.map((dark, x) =>
-                dark ? <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill="#001622" /> : null,
+                dark ? (
+                  <rect
+                    key={`${x}-${y}`}
+                    x={x}
+                    y={y}
+                    width="1"
+                    height="1"
+                    fill="#001622"
+                  />
+                ) : null,
               ),
             )}
           </svg>
           <div>
-            <span className="qrVerifiedLabel"><ShieldCheck weight="fill" /> Pase único y verificado</span>
+            <span className="qrVerifiedLabel">
+              <ShieldCheck weight="fill" /> Pase único y verificado
+            </span>
             <strong>Reserva #{reservationId.slice(0, 8).toUpperCase()}</strong>
-            <small>Válido hasta {new Date(pass.validUntil).toLocaleString("es-PE")}</small>
+            <small>
+              Válido hasta {new Date(pass.validUntil).toLocaleString("es-PE")}
+            </small>
             <button
               className="secondary"
               type="button"
               onClick={() => {
-                void navigator.clipboard.writeText(pass.payload)
+                void navigator.clipboard
+                  .writeText(pass.payload)
                   .then(() => setNotice("Código manual copiado."))
-                  .catch(() => setError("No se pudo copiar el código. Inténtalo nuevamente."));
+                  .catch(() =>
+                    setError(
+                      "No se pudo copiar el código. Inténtalo nuevamente.",
+                    ),
+                  );
               }}
             >
               <CopySimple aria-hidden="true" size={18} /> Copiar código manual
             </button>
-            <button className="secondary" type="button" disabled={busy} onClick={() => void showPass()}>
+            <button
+              className="secondary"
+              type="button"
+              disabled={busy}
+              onClick={() => void showPass()}
+            >
               {busy ? "Generando…" : "Regenerar QR"}
             </button>
           </div>
         </div>
       ) : (
-        <button className="primary" type="button" disabled={busy} onClick={() => void showPass()}>
+        <button
+          className="primary"
+          type="button"
+          disabled={busy}
+          onClick={() => void showPass()}
+        >
           <QrCode size={20} aria-hidden="true" />
           {busy ? "Generando QR…" : "Mostrar mi QR"}
         </button>

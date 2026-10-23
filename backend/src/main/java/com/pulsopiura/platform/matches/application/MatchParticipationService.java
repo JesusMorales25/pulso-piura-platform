@@ -57,7 +57,7 @@ public class MatchParticipationService {
         return enroll(match, actorId, now);
     }
 
-    MatchParticipationView confirmPaidJoin(SportsMatch match, UUID actorId, Instant now) {
+    public MatchParticipationView confirmPaidJoin(SportsMatch match, UUID actorId, Instant now) {
         if (!now.isBefore(match.startsAt())) {
             throw new IllegalStateException("El partido ya inició");
         }

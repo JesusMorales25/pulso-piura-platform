@@ -26,7 +26,9 @@ public class PlatformOrganizationAdminController {
     }
 
     @GetMapping
-    List<PlatformOrganizationService.OrganizationAdminView> organizations() {
+    List<PlatformOrganizationService.OrganizationAdminView> organizations(
+            @AuthenticationPrincipal Jwt jwt) {
+        users.provision(jwt);
         return organizations.organizations();
     }
 

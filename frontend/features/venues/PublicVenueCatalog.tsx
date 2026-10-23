@@ -85,8 +85,8 @@ const localDate = () =>
 const hasExpired = (value: string) => Date.parse(value) <= Date.now();
 
 const venueImages = [
-  "/images/venue-football-7.png",
-  "/images/venue-volleyball.png",
+  "/images/court-reference.svg",
+  "/images/volleyball-reference.svg",
 ];
 
 type DiscoveryMode = "all" | "venues" | "matches";
@@ -142,7 +142,9 @@ export function PublicVenueCatalog({
     spaceName: "",
   });
   const [reservationBusy, setReservationBusy] = useState(false);
-  const [initialPaymentPlan, setInitialPaymentPlan] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
+  const [initialPaymentPlan, setInitialPaymentPlan] = useState<
+    "DEPOSIT" | "FULL"
+  >("DEPOSIT");
   const [preparingCheckout, setPreparingCheckout] = useState(
     preparingDirectBooking,
   );
@@ -324,7 +326,8 @@ export function PublicVenueCatalog({
               : localDate(),
         });
         if (requestedDistrict) initialQuery.set("district", requestedDistrict);
-        else if (selectedDistrict) initialQuery.set("district", selectedDistrict);
+        else if (selectedDistrict)
+          initialQuery.set("district", selectedDistrict);
         if (validRequestedSport) initialQuery.set("sport", validRequestedSport);
         const venuesResult = await apiRequest<VenuePage>(
           `/venues?${initialQuery}`,
@@ -411,10 +414,29 @@ export function PublicVenueCatalog({
   useEffect(() => {
     if (loading) return;
     const controller = new AbortController();
-    const query = new URLSearchParams({ size: "50", date, ...(sport ? { sport } : {}), ...(selectedDistrict ? { district: selectedDistrict } : {}) });
-    void apiRequest<VenuePage>(`/venues?${query}`, null, { signal: controller.signal }).then((result) => {
-      if (!controller.signal.aborted) { setVenues(result.items); void loadVenueOffers(result.items, date, sport); }
-    }).catch((reason) => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : "No se pudo cargar la zona."); });
+    const query = new URLSearchParams({
+      size: "50",
+      date,
+      ...(sport ? { sport } : {}),
+      ...(selectedDistrict ? { district: selectedDistrict } : {}),
+    });
+    void apiRequest<VenuePage>(`/venues?${query}`, null, {
+      signal: controller.signal,
+    })
+      .then((result) => {
+        if (!controller.signal.aborted) {
+          setVenues(result.items);
+          void loadVenueOffers(result.items, date, sport);
+        }
+      })
+      .catch((reason) => {
+        if (!controller.signal.aborted)
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : "No se pudo cargar la zona.",
+          );
+      });
     return () => controller.abort();
     // El cambio de zona actualiza el catálogo sin desmontar el formulario de reserva.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -649,7 +671,9 @@ export function PublicVenueCatalog({
         },
       );
       setReservation(createdReservation);
-      const activityQuery = new URLSearchParams({ reservation: createdReservation.id });
+      const activityQuery = new URLSearchParams({
+        reservation: createdReservation.id,
+      });
       if (returnToCreate) activityQuery.set("from", "create");
       router.push(`/actividad?${activityQuery}`);
     } catch (reason) {
@@ -700,7 +724,7 @@ export function PublicVenueCatalog({
     const slot =
       selectedVenue?.publicSlug === offer.venue.publicSlug &&
       selectedSpace?.id === offer.space.id
-        ? selectedSlots[0] ?? offer.slot
+        ? (selectedSlots[0] ?? offer.slot)
         : offer.slot;
     setInitialPaymentPlan(plan);
     selectOfferSlot(offer, slot);
@@ -770,7 +794,12 @@ export function PublicVenueCatalog({
   const filteredVenues = useMemo(
     () =>
       venues.filter((venue) => {
-        if (selectedDistrict && venue.districtCode.trim().toLocaleLowerCase("es-PE") !== selectedDistrict.toLocaleLowerCase("es-PE")) return false;
+        if (
+          selectedDistrict &&
+          venue.districtCode.trim().toLocaleLowerCase("es-PE") !==
+            selectedDistrict.toLocaleLowerCase("es-PE")
+        )
+          return false;
         const offer = venueOffers[venue.publicSlug];
         return matchesVenueFilters(
           offer ?? { venue, space: { indoor: false, amenityCodes: [] } },
@@ -971,8 +1000,16 @@ export function PublicVenueCatalog({
             const offer = venueOffers[venue.publicSlug];
             if (!offer) {
               return (
-                <section className="exploreFeaturedSheet" id={venue.publicSlug} key={venue.publicSlug}>
-                  <p className="notice">{offersLoading ? "Consultando horarios…" : "La disponibilidad acaba de cambiar."}</p>
+                <section
+                  className="exploreFeaturedSheet"
+                  id={venue.publicSlug}
+                  key={venue.publicSlug}
+                >
+                  <p className="notice">
+                    {offersLoading
+                      ? "Consultando horarios…"
+                      : "La disponibilidad acaba de cambiar."}
+                  </p>
                 </section>
               );
             }
@@ -980,7 +1017,8 @@ export function PublicVenueCatalog({
               new Set([...venue.amenityCodes, ...offer.space.amenityCodes]),
             ).map((code) => names.get(code) ?? code);
             const selectedStartsAt =
-              selectedVenue?.publicSlug === venue.publicSlug && selectedSpace?.id === offer.space.id
+              selectedVenue?.publicSlug === venue.publicSlug &&
+              selectedSpace?.id === offer.space.id
                 ? selectedSlots[0]?.startsAt
                 : undefined;
             return (
@@ -1059,11 +1097,20 @@ export function PublicVenueCatalog({
               <h3>Aún no hay opciones para esta búsqueda</h3>
               <p>Prueba otra fecha, deporte o distrito.</p>
             </div>
-          ) : !offersLoading && listedVenues.length === 0 && attributeFiltersActive ? (
+          ) : !offersLoading &&
+            listedVenues.length === 0 &&
+            attributeFiltersActive ? (
             <div className="empty">
               <h3>No encontramos canchas con esos filtros</h3>
-              <p>Prueba otra zona o quita algún atributo. Conservaremos la fecha y el deporte.</p>
-              <button className="secondary" onClick={clearVenueFilters} type="button">
+              <p>
+                Prueba otra zona o quita algún atributo. Conservaremos la fecha
+                y el deporte.
+              </p>
+              <button
+                className="secondary"
+                onClick={clearVenueFilters}
+                type="button"
+              >
                 Limpiar filtros
               </button>
             </div>

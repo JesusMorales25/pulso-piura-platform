@@ -72,6 +72,17 @@ class PaymentOrderServiceTest {
     }
 
     @Test
+    void externalOrderCannotBeConfirmedThroughSimulationAfterModeChange() {
+        enable("PENDING_PAYMENT", 9000);
+        var external = order(PaymentPlan.FULL, 9000);
+        external.markExternal();
+        assertThatThrownBy(() -> service.simulate(actor, external.id(), "mode-change"))
+                .hasMessageContaining("requieren revisión");
+        verify(provider, never()).simulateConfirmedPayment(any());
+        assertThat(external.status()).isEqualTo("PENDING");
+    }
+
+    @Test
     void disabledModeNeverCreatesOrSimulatesPayment() {
         assertThatThrownBy(
                         () ->

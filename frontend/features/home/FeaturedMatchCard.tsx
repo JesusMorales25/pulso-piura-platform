@@ -39,18 +39,18 @@ export function FeaturedMatchCard({
     FOOTBALL: {
       label: "Fútbol",
       Icon: SoccerBall,
-      image: "/images/hero-match-football-mixed-night.png",
+      image: "/images/court-reference.svg",
     },
     VOLLEYBALL: {
       label: "Vóley",
       Icon: Volleyball,
-      image: "/images/hero-match-volleyball-night.png",
+      image: "/images/volleyball-reference.svg",
     },
     BASKETBALL: { label: "Básquet", Icon: Basketball, image: "" },
     PADEL: {
       label: "Pádel",
       Icon: TennisBall,
-      image: "/images/hero-venue-padel-night.png",
+      image: "/images/court-reference.svg",
     },
     FRONTON: { label: "Frontón", Icon: Target, image: "" },
   };
@@ -115,7 +115,9 @@ export function FeaturedMatchCard({
                   minute: "2-digit",
                 }).format(date)}
               </small>
-              {nextUpcoming && <em className={styles.nextBadge}>Próximo por horario</em>}
+              {nextUpcoming && (
+                <em className={styles.nextBadge}>Próximo por horario</em>
+              )}
             </span>
           </div>
           <div>

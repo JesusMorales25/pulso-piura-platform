@@ -18,22 +18,36 @@ public class MatchActivityQueryService {
     public List<ActivityView> forPlayer(UUID actor) {
         return jdbc.query(
                 """
+            with player_matches as (
+              select match_id from app.match_participants where user_id = ? and status <> 'WITHDRAWN'
+              union
+              select target_id from app.external_payment_proofs where target_type = 'MATCH' and payer_user_id = ?
+            )
             select m.id, m.public_slug, m.title, m.sport_code, m.format_code,
                    s.name space_name, v.name venue_name, v.address venue_address,
-                   m.starts_at, m.ends_at, p.status participation_status,
-                   coalesce(o.status, case when m.price_minor = 0 then 'NOT_REQUIRED' else 'UNPAID' end) payment_status,
-                   coalesce(o.amount_minor, 0) paid_minor, m.currency, pass.consumed_at checked_in_at
-            from app.match_participants p
-            join app.sports_matches m on m.id = p.match_id
+                   m.starts_at, m.ends_at,
+                   coalesce(p.status, case when m.organizer_user_id = ? and m.organizer_counts then 'JOINED' else 'PENDING_REVIEW' end) participation_status,
+                   case when o.status = 'PAID' then 'PAID'
+                     else coalesce(case when proof.status = 'PENDING_REVIEW' and proof.review_expires_at <= now() then 'NEEDS_RESOLUTION' else proof.status end,
+                       o.status, case when m.price_minor = 0 then 'NOT_REQUIRED' else 'UNPAID' end) end payment_status,
+                   case when o.status = 'PAID' then o.amount_minor else 0 end paid_minor,
+                   m.currency, pass.consumed_at checked_in_at
+            from player_matches pm
+            join app.sports_matches m on m.id = pm.match_id
             join app.sport_spaces s on s.id = m.sport_space_id
             join app.venues v on v.id = s.venue_id
+            left join app.match_participants p on p.match_id = m.id and p.user_id = ? and p.status <> 'WITHDRAWN'
             left join lateral (
               select status, amount_minor from app.match_join_orders jo
-              where jo.match_id = p.match_id and jo.payer_user_id = p.user_id
+              where jo.match_id = m.id and jo.payer_user_id = ?
               order by (jo.status = 'PAID') desc, jo.created_at desc limit 1
             ) o on true
+            left join lateral (
+              select status, review_expires_at from app.external_payment_proofs ep
+              where ep.target_type = 'MATCH' and ep.target_id = m.id and ep.payer_user_id = ?
+              order by ep.created_at desc limit 1
+            ) proof on true
             left join app.match_check_in_passes pass on pass.participant_id = p.id
-            where p.user_id = ? and p.status <> 'WITHDRAWN'
             order by m.starts_at desc
             """,
                 (rs, row) ->
@@ -53,6 +67,11 @@ public class MatchActivityQueryService {
                                 rs.getLong("paid_minor"),
                                 rs.getString("currency"),
                                 timestamp(rs, "checked_in_at")),
+                actor,
+                actor,
+                actor,
+                actor,
+                actor,
                 actor);
     }
 

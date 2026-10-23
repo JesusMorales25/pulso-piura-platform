@@ -1,4 +1,5 @@
 "use client";
+import { ExternalPaymentPanel } from "@/features/payments/ExternalPaymentPanel";
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -19,7 +20,10 @@ import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
-import { isProtectedOrganizerRow, summarizeMatchFinances } from "./presentation";
+import {
+  isProtectedOrganizerRow,
+  summarizeMatchFinances,
+} from "./presentation";
 import type {
   MatchInvitation,
   MatchParticipantAdmin,
@@ -27,13 +31,20 @@ import type {
 } from "./types";
 import { MatchCheckInScanner } from "./MatchCheckInScanner";
 
-export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedded?: boolean; onCreate?: () => void } = {}) {
+export function MatchOrganizerDashboard({
+  embedded = false,
+  onCreate,
+}: { embedded?: boolean; onCreate?: () => void } = {}) {
   const Root = embedded ? "div" : "main";
   const { accessToken, login } = useAuth();
   const { capabilities, loading: capabilitiesLoading } = useUserCapabilities();
   const [matches, setMatches] = useState<MatchSummary[]>([]);
-  const [people, setPeople] = useState<Record<string, MatchParticipantAdmin[]>>({});
-  const [invitations, setInvitations] = useState<Record<string, MatchInvitation[]>>({});
+  const [people, setPeople] = useState<Record<string, MatchParticipantAdmin[]>>(
+    {},
+  );
+  const [invitations, setInvitations] = useState<
+    Record<string, MatchInvitation[]>
+  >({});
   const [inviteEmails, setInviteEmails] = useState<Record<string, string>>({});
   const [inviting, setInviting] = useState("");
   const [loading, setLoading] = useState(true);
@@ -67,16 +78,22 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
         if (!active) return;
         setMatches(result);
         setPeople(
-          Object.fromEntries(entries.map(([matchId, roster]) => [matchId, roster])),
+          Object.fromEntries(
+            entries.map(([matchId, roster]) => [matchId, roster]),
+          ),
         );
         setInvitations(
-          Object.fromEntries(entries.map(([matchId, , invites]) => [matchId, invites])),
+          Object.fromEntries(
+            entries.map(([matchId, , invites]) => [matchId, invites]),
+          ),
         );
       })
       .catch((reason) => {
         if (active) {
           setError(
-            reason instanceof Error ? reason.message : "No pudimos cargar el panel.",
+            reason instanceof Error
+              ? reason.message
+              : "No pudimos cargar el panel.",
           );
         }
       })
@@ -91,10 +108,13 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
 
   const totals = useMemo(() => Object.values(people).flat(), [people]);
   const financeByMatch = useMemo(
-    () => Object.fromEntries(matches.map((match) => [
-      match.id,
-      summarizeMatchFinances(people[match.id] ?? [], match.priceMinor),
-    ])),
+    () =>
+      Object.fromEntries(
+        matches.map((match) => [
+          match.id,
+          summarizeMatchFinances(people[match.id] ?? [], match.priceMinor),
+        ]),
+      ),
     [matches, people],
   );
   const paid = Object.values(financeByMatch).reduce(
@@ -102,11 +122,15 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
     0,
   );
   const paidCount = Object.values(financeByMatch).reduce(
-    (sum, finance) => sum + finance.paidOnline.length + finance.paidDirect.length,
+    (sum, finance) =>
+      sum + finance.paidOnline.length + finance.paidDirect.length,
     0,
   );
 
-  async function removeParticipant(matchId: string, participant: MatchParticipantAdmin) {
+  async function removeParticipant(
+    matchId: string,
+    participant: MatchParticipantAdmin,
+  ) {
     if (!accessToken) return;
     if (isProtectedOrganizerRow(participant)) return;
     setRemoving(`${matchId}:${participant.participantId}`);
@@ -165,7 +189,9 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
       setInviteEmails((current) => ({ ...current, [matchId]: "" }));
     } catch (reason) {
       setError(
-        reason instanceof Error ? reason.message : "No pudimos crear la invitación.",
+        reason instanceof Error
+          ? reason.message
+          : "No pudimos crear la invitación.",
       );
     } finally {
       setInviting("");
@@ -190,7 +216,9 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
       }));
     } catch (reason) {
       setError(
-        reason instanceof Error ? reason.message : "No pudimos revocar la invitación.",
+        reason instanceof Error
+          ? reason.message
+          : "No pudimos revocar la invitación.",
       );
     } finally {
       setInviting("");
@@ -239,7 +267,10 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
     );
   }
 
-  async function copyRoster(match: MatchSummary, roster: MatchParticipantAdmin[]) {
+  async function copyRoster(
+    match: MatchSummary,
+    roster: MatchParticipantAdmin[],
+  ) {
     const price = new Intl.NumberFormat("es-PE", {
       style: "currency",
       currency: match.currency,
@@ -255,10 +286,14 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
       `💰 Cuota por persona: ${price}`,
       "",
       `✅ PAGARON (${paid.length})`,
-      ...(paid.length ? paid.map((person) => `• ${person.displayName}`) : ["• Ningún pago registrado"]),
+      ...(paid.length
+        ? paid.map((person) => `• ${person.displayName}`)
+        : ["• Ningún pago registrado"]),
       "",
       `⏳ PENDIENTES (${pending.length})`,
-      ...(pending.length ? pending.map((person) => `• ${person.displayName}`) : ["• Sin pendientes"]),
+      ...(pending.length
+        ? pending.map((person) => `• ${person.displayName}`)
+        : ["• Sin pendientes"]),
     ];
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
@@ -294,7 +329,10 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
       <main className="section accessDeniedPage">
         <h1>Panel del organizador</h1>
         <p className="pageLead">Inicia sesión para administrar tus eventos.</p>
-        <button className="primary" onClick={() => void login(false, "/organizador")}>
+        <button
+          className="primary"
+          onClick={() => void login(false, "/organizador")}
+        >
           Iniciar sesión
         </button>
       </main>
@@ -327,17 +365,32 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
   }
 
   return (
-    <Root className={embedded ? "organizerDashboard" : "section organizerDashboard"}>
+    <Root
+      className={embedded ? "organizerDashboard" : "section organizerDashboard"}
+    >
       <div className="dashboardHeading">
         <div>
           <p className="eyebrow">MI ORGANIZACIÓN</p>
-          {embedded ? <h2>Partidos creados por ti</h2> : <h1>Panel de partidos</h1>}
-          <p className="pageLead">Controla cupos, participantes y pagos registrados.</p>
+          {embedded ? (
+            <h2>Partidos creados por ti</h2>
+          ) : (
+            <h1>Panel de partidos</h1>
+          )}
+          <p className="pageLead">
+            Controla cupos, participantes y pagos registrados.
+          </p>
         </div>
-        {onCreate ? <button className="primary" type="button" onClick={onCreate}><PlusCircle size={20} />Crear partido</button> : <Link className="primary" href="/crear">
-          <PlusCircle size={20} />
-          Crear partido
-        </Link>}
+        {onCreate ? (
+          <button className="primary" type="button" onClick={onCreate}>
+            <PlusCircle size={20} />
+            Crear partido
+          </button>
+        ) : (
+          <Link className="primary" href="/crear">
+            <PlusCircle size={20} />
+            Crear partido
+          </Link>
+        )}
       </div>
 
       {error && <p className="inlineAlert errorNotice">{error}</p>}
@@ -354,7 +407,13 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
             <article>
               <UsersThree />
               <span>Participantes</span>
-              <strong>{totals.filter((participant) => participant.status === "JOINED").length}</strong>
+              <strong>
+                {
+                  totals.filter(
+                    (participant) => participant.status === "JOINED",
+                  ).length
+                }
+              </strong>
             </article>
             <article>
               <CurrencyCircleDollar />
@@ -388,7 +447,9 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
           <section className="organizerMatchList">
             {matches.map((match) => {
               const roster = people[match.id] ?? [];
-              const finance = financeByMatch[match.id] ?? summarizeMatchFinances([], match.priceMinor);
+              const finance =
+                financeByMatch[match.id] ??
+                summarizeMatchFinances([], match.priceMinor);
               const matchInvitations = invitations[match.id] ?? [];
               const joined = finance.confirmed.length;
               const waitlisted = roster.filter(
@@ -401,184 +462,335 @@ export function MatchOrganizerDashboard({ embedded = false, onCreate }: { embedd
                 Math.round((match.occupiedPlayers / match.maxPlayers) * 100),
               );
               return (
-              <article className="organizerMatchCard" key={match.id}>
-                <header>
-                  <div>
-                    <p className="eyebrow">
-                      {new Date(match.startsAt).toLocaleString("es-PE", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
-                    </p>
-                    <h2>{match.title}</h2>
+                <article className="organizerMatchCard" key={match.id}>
+                  <ExternalPaymentPanel
+                    accessToken={accessToken}
+                    targetType="MATCH"
+                    targetId={match.id}
+                    reviewer
+                    allowUpload={false}
+                  />
+                  <header>
+                    <div>
+                      <p className="eyebrow">
+                        {new Date(match.startsAt).toLocaleString("es-PE", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </p>
+                      <h2>{match.title}</h2>
+                      <span>
+                        {match.venueName} · {match.spaceName}
+                      </span>
+                    </div>
+                    <Link href={`/partidos/${match.publicSlug}`}>
+                      Ver publicación
+                    </Link>
+                  </header>
+                  <section
+                    className="organizerMatchMetrics"
+                    aria-label={`Métricas de ${match.title}`}
+                  >
+                    <div>
+                      <UsersThree />
+                      <span>Confirmados</span>
+                      <strong>
+                        {joined}/{match.maxPlayers}
+                      </strong>
+                    </div>
+                    <div>
+                      <Clock />
+                      <span>En espera</span>
+                      <strong>{waitlisted}</strong>
+                    </div>
+                    <div>
+                      <CheckCircle />
+                      <span>Pagos</span>
+                      <strong>{payments.length}</strong>
+                    </div>
+                    <div>
+                      <CurrencyCircleDollar />
+                      <span>Ingresos</span>
+                      <strong>
+                        {new Intl.NumberFormat("es-PE", {
+                          style: "currency",
+                          currency: "PEN",
+                        }).format(revenue / 100)}
+                      </strong>
+                    </div>
+                  </section>
+                  <div
+                    className="matchOccupancy"
+                    aria-label={`${occupancy}% de ocupación`}
+                  >
                     <span>
-                      {match.venueName} · {match.spaceName}
+                      <b>Ocupación</b>
+                      <small>
+                        {occupancy}% · {match.availablePlayers} cupos libres
+                      </small>
                     </span>
+                    <div>
+                      <i style={{ width: `${occupancy}%` }} />
+                    </div>
                   </div>
-                  <Link href={`/partidos/${match.publicSlug}`}>Ver publicación</Link>
-                </header>
-                <section className="organizerMatchMetrics" aria-label={`Métricas de ${match.title}`}>
-                  <div><UsersThree/><span>Confirmados</span><strong>{joined}/{match.maxPlayers}</strong></div>
-                  <div><Clock/><span>En espera</span><strong>{waitlisted}</strong></div>
-                  <div><CheckCircle/><span>Pagos</span><strong>{payments.length}</strong></div>
-                  <div><CurrencyCircleDollar/><span>Ingresos</span><strong>{new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(revenue / 100)}</strong></div>
-                </section>
-                <div className="matchOccupancy" aria-label={`${occupancy}% de ocupación`}>
-                  <span><b>Ocupación</b><small>{occupancy}% · {match.availablePlayers} cupos libres</small></span>
-                  <div><i style={{ width: `${occupancy}%` }} /></div>
-                </div>
-                <div className="organizerShareActions">
-                  <button className="secondary" onClick={() => void copyRoster(match, roster)} type="button">
-                    <CopySimple aria-hidden="true" /> Copiar lista
-                  </button>
-                  <button className="organizerWhatsapp" onClick={() => sharePublicMatch(match)} type="button">
-                    <WhatsappLogo aria-hidden="true" /> Invitar por WhatsApp
-                  </button>
-                </div>
-                <MatchCheckInScanner
-                  accessToken={accessToken}
-                  matchId={match.id}
-                  onCheckedIn={() => {
-                    void apiRequest<MatchParticipantAdmin[]>(
-                      `/matches/${match.id}/participants`,
-                      accessToken,
-                    ).then((updated) => setPeople((current) => ({ ...current, [match.id]: updated })));
-                  }}
-                />
-                <section className="matchInvitationManager">
-                  <div>
-                    <h3>Invitar jugadores</h3>
-                    <span className="pill">
-                      {match.visibility === "PRIVATE"
-                        ? "Privado"
-                        : match.visibility === "LINK"
-                          ? "Con enlace"
-                          : "Público"}
-                    </span>
-                  </div>
-                  <form noValidate onSubmit={(event) => void invite(event, match.id)}>
-                    <label>
-                      Correo de la persona
-                      <input
-                        aria-label={`Correo para invitar a ${match.title}`}
-                        autoComplete="email"
-                        onChange={(event) =>
-                          setInviteEmails((current) => ({
-                            ...current,
-                            [match.id]: event.target.value,
-                          }))
-                        }
-                        placeholder="jugador@correo.com"
-                        required
-                        type="email"
-                        value={inviteEmails[match.id] ?? ""}
-                      />
-                    </label>
+                  <div className="organizerShareActions">
                     <button
                       className="secondary"
-                      disabled={
-                        inviting === match.id ||
-                        !inviteEmails[match.id]?.trim()
-                      }
-                      type="submit"
+                      onClick={() => void copyRoster(match, roster)}
+                      type="button"
                     >
-                      <PaperPlaneTilt />
-                      {inviting === match.id ? "Creando…" : "Crear invitación"}
+                      <CopySimple aria-hidden="true" /> Copiar lista
                     </button>
-                  </form>
-                  <div className="matchInvitationList">
-                    {matchInvitations.map((invitation) => (
-                      <div key={invitation.id}>
-                        <span>
-                          <strong>{invitation.email}</strong>
+                    <button
+                      className="organizerWhatsapp"
+                      onClick={() => sharePublicMatch(match)}
+                      type="button"
+                    >
+                      <WhatsappLogo aria-hidden="true" /> Invitar por WhatsApp
+                    </button>
+                  </div>
+                  <MatchCheckInScanner
+                    accessToken={accessToken}
+                    matchId={match.id}
+                    onCheckedIn={() => {
+                      void apiRequest<MatchParticipantAdmin[]>(
+                        `/matches/${match.id}/participants`,
+                        accessToken,
+                      ).then((updated) =>
+                        setPeople((current) => ({
+                          ...current,
+                          [match.id]: updated,
+                        })),
+                      );
+                    }}
+                  />
+                  <section className="matchInvitationManager">
+                    <div>
+                      <h3>Invitar jugadores</h3>
+                      <span className="pill">
+                        {match.visibility === "PRIVATE"
+                          ? "Privado"
+                          : match.visibility === "LINK"
+                            ? "Con enlace"
+                            : "Público"}
+                      </span>
+                    </div>
+                    <form
+                      noValidate
+                      onSubmit={(event) => void invite(event, match.id)}
+                    >
+                      <label>
+                        Correo de la persona
+                        <input
+                          aria-label={`Correo para invitar a ${match.title}`}
+                          autoComplete="email"
+                          onChange={(event) =>
+                            setInviteEmails((current) => ({
+                              ...current,
+                              [match.id]: event.target.value,
+                            }))
+                          }
+                          placeholder="jugador@correo.com"
+                          required
+                          type="email"
+                          value={inviteEmails[match.id] ?? ""}
+                        />
+                      </label>
+                      <button
+                        className="secondary"
+                        disabled={
+                          inviting === match.id ||
+                          !inviteEmails[match.id]?.trim()
+                        }
+                        type="submit"
+                      >
+                        <PaperPlaneTilt />
+                        {inviting === match.id
+                          ? "Creando…"
+                          : "Crear invitación"}
+                      </button>
+                    </form>
+                    <div className="matchInvitationList">
+                      {matchInvitations.map((invitation) => (
+                        <div key={invitation.id}>
+                          <span>
+                            <strong>{invitation.email}</strong>
+                            <small>
+                              {invitation.status === "PENDING"
+                                ? "Pendiente"
+                                : invitation.status === "ACCEPTED"
+                                  ? "Aceptada"
+                                  : invitation.status === "REVOKED"
+                                    ? "Revocada"
+                                    : "Vencida"}
+                            </small>
+                          </span>
+                          {invitation.status === "PENDING" && (
+                            <span className="buttonRow">
+                              <Link
+                                className="secondary"
+                                href={`/partidos/invitaciones/${invitation.id}`}
+                              >
+                                Ver
+                              </Link>
+                              <button
+                                className="secondary"
+                                onClick={() =>
+                                  void copyInvitation(invitation.id)
+                                }
+                                type="button"
+                              >
+                                <CopySimple /> Copiar enlace
+                              </button>
+                              <button
+                                className="secondary"
+                                onClick={() =>
+                                  shareInvitation(match, invitation.id)
+                                }
+                                type="button"
+                              >
+                                <WhatsappLogo /> WhatsApp
+                              </button>
+                              <button
+                                className="participantRemove"
+                                disabled={
+                                  inviting === `${match.id}:${invitation.id}`
+                                }
+                                onClick={() =>
+                                  void revokeInvitation(match.id, invitation.id)
+                                }
+                                type="button"
+                              >
+                                Revocar
+                              </button>
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                      {!matchInvitations.length && (
+                        <p className="emptyRows">
+                          Todavía no creaste invitaciones.
+                        </p>
+                      )}
+                    </div>
+                  </section>
+                  <div className="participantTable">
+                    <div className="participantRow participantHead">
+                      <span>Jugador</span>
+                      <span>Pago</span>
+                      <span>Llegada</span>
+                      <span>Acción</span>
+                    </div>
+                    {roster.map((participant) => (
+                      <div
+                        className="participantRow"
+                        key={participant.participantId}
+                      >
+                        <span className="participantIdentity">
+                          <i
+                            aria-label={`Foto de ${participant.displayName}`}
+                            style={
+                              participant.avatarUrl
+                                ? {
+                                    backgroundImage: `url(${participant.avatarUrl})`,
+                                  }
+                                : undefined
+                            }
+                          >
+                            {!participant.avatarUrl &&
+                              participant.displayName.slice(0, 1).toUpperCase()}
+                          </i>
+                          <span>
+                            <strong>{participant.displayName}</strong>
+                            <small>
+                              {participant.source === "ORGANIZER"
+                                ? "Organizador participante"
+                                : participant.source === "MANUAL"
+                                  ? participant.email ||
+                                    "Agregado por el organizador"
+                                  : participant.email}
+                            </small>
+                            <em>
+                              {participant.status === "JOINED"
+                                ? "Cupo confirmado"
+                                : "Lista de espera"}
+                            </em>
+                          </span>
+                        </span>
+                        <span
+                          className={`participantPayment ${participant.paymentStatus === "PAID" || participant.paymentStatus === "PAID_DIRECT" ? "paid" : ""}`}
+                        >
+                          <strong>
+                            {participant.paymentStatus === "PAID" ||
+                            participant.paymentStatus === "PAID_DIRECT"
+                              ? new Intl.NumberFormat("es-PE", {
+                                  style: "currency",
+                                  currency: "PEN",
+                                }).format(participant.paidMinor / 100)
+                              : participant.paymentStatus === "NOT_REQUIRED"
+                                ? "Sin costo"
+                                : "Pendiente"}
+                          </strong>
                           <small>
-                            {invitation.status === "PENDING"
-                              ? "Pendiente"
-                              : invitation.status === "ACCEPTED"
-                                ? "Aceptada"
-                                : invitation.status === "REVOKED"
-                                  ? "Revocada"
-                                  : "Vencida"}
+                            {participant.paidAt
+                              ? `${participant.paymentMethod} · ${new Date(participant.paidAt).toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" })}`
+                              : "Sin pago registrado"}
                           </small>
                         </span>
-                        {invitation.status === "PENDING" && (
-                          <span className="buttonRow">
-                            <Link
-                              className="secondary"
-                              href={`/partidos/invitaciones/${invitation.id}`}
-                            >
-                              Ver
-                            </Link>
-                            <button
-                              className="secondary"
-                              onClick={() => void copyInvitation(invitation.id)}
-                              type="button"
-                            >
-                              <CopySimple /> Copiar enlace
-                            </button>
-                            <button
-                              className="secondary"
-                              onClick={() => shareInvitation(match, invitation.id)}
-                              type="button"
-                            >
-                              <WhatsappLogo /> WhatsApp
-                            </button>
+                        <span className="participantJoined">
+                          <strong>
+                            {participant.checkedInAt ? "Presente" : "Pendiente"}
+                          </strong>
+                          <small>
+                            {participant.checkedInAt
+                              ? new Date(
+                                  participant.checkedInAt,
+                                ).toLocaleString("es-PE", {
+                                  dateStyle: "short",
+                                  timeStyle: "short",
+                                })
+                              : "Sin validar"}
+                          </small>
+                        </span>
+                        <span>
+                          {isProtectedOrganizerRow(participant) ? (
+                            <small className="lockedParticipant">
+                              <ShieldCheck /> Organizador protegido
+                            </small>
+                          ) : participant.paymentStatus === "PAID" &&
+                            participant.source === "ACCOUNT" ? (
+                            <small className="lockedParticipant">
+                              <ShieldCheck /> Pago protegido
+                            </small>
+                          ) : (
                             <button
                               className="participantRemove"
-                              disabled={inviting === `${match.id}:${invitation.id}`}
+                              disabled={
+                                removing ===
+                                `${match.id}:${participant.participantId}`
+                              }
                               onClick={() =>
-                                void revokeInvitation(match.id, invitation.id)
+                                void removeParticipant(match.id, participant)
                               }
                               type="button"
                             >
-                              Revocar
+                              <UserMinus />
+                              {removing ===
+                              `${match.id}:${participant.participantId}`
+                                ? "Retirando…"
+                                : "Retirar"}
                             </button>
-                          </span>
-                        )}
+                          )}
+                        </span>
                       </div>
                     ))}
-                    {!matchInvitations.length && (
-                      <p className="emptyRows">Todavía no creaste invitaciones.</p>
+                    {!roster.length && (
+                      <p className="emptyRows">Todavía no hay participantes.</p>
                     )}
                   </div>
-                </section>
-                <div className="participantTable">
-                  <div className="participantRow participantHead">
-                    <span>Jugador</span>
-                    <span>Pago</span>
-                    <span>Llegada</span>
-                    <span>Acción</span>
-                  </div>
-                  {roster.map((participant) => (
-                    <div className="participantRow" key={participant.participantId}>
-                      <span className="participantIdentity">
-                        <i
-                          aria-label={`Foto de ${participant.displayName}`}
-                          style={participant.avatarUrl ? { backgroundImage: `url(${participant.avatarUrl})` } : undefined}
-                        >{!participant.avatarUrl && participant.displayName.slice(0, 1).toUpperCase()}</i>
-                        <span><strong>{participant.displayName}</strong><small>{participant.source === "ORGANIZER" ? "Organizador participante" : participant.source === "MANUAL" ? participant.email || "Agregado por el organizador" : participant.email}</small><em>{participant.status === "JOINED" ? "Cupo confirmado" : "Lista de espera"}</em></span>
-                      </span>
-                      <span className={`participantPayment ${participant.paymentStatus === "PAID" || participant.paymentStatus === "PAID_DIRECT" ? "paid" : ""}`}>
-                        <strong>{participant.paymentStatus === "PAID" || participant.paymentStatus === "PAID_DIRECT"
-                          ? new Intl.NumberFormat("es-PE", {
-                              style: "currency",
-                              currency: "PEN",
-                            }).format(participant.paidMinor / 100)
-                          : participant.paymentStatus === "NOT_REQUIRED"
-                            ? "Sin costo"
-                            : "Pendiente"}</strong>
-                        <small>{participant.paidAt ? `${participant.paymentMethod} · ${new Date(participant.paidAt).toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" })}` : "Sin pago registrado"}</small>
-                      </span>
-                      <span className="participantJoined"><strong>{participant.checkedInAt ? "Presente" : "Pendiente"}</strong><small>{participant.checkedInAt ? new Date(participant.checkedInAt).toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" }) : "Sin validar"}</small></span>
-                      <span>{isProtectedOrganizerRow(participant) ? <small className="lockedParticipant"><ShieldCheck/> Organizador protegido</small> : participant.paymentStatus === "PAID" && participant.source === "ACCOUNT" ? <small className="lockedParticipant"><ShieldCheck/> Pago protegido</small> : <button className="participantRemove" disabled={removing === `${match.id}:${participant.participantId}`} onClick={() => void removeParticipant(match.id, participant)} type="button"><UserMinus/>{removing === `${match.id}:${participant.participantId}` ? "Retirando…" : "Retirar"}</button>}</span>
-                    </div>
-                  ))}
-                  {!roster.length && (
-                    <p className="emptyRows">Todavía no hay participantes.</p>
-                  )}
-                </div>
-              </article>
-            )})}
+                </article>
+              );
+            })}
           </section>
         </>
       )}

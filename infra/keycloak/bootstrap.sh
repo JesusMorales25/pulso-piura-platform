@@ -67,17 +67,7 @@ else
   "$KCADM" update realms/pulso-piura \
     -s "registrationAllowed=${PASSWORD_REGISTRATION_ENABLED:-true}" \
     -s verifyEmail=false >/dev/null
-  # El entorno local no dispone de SMTP. También repara cuentas que quedaron
-  # detenidas en VERIFY_EMAIL después de un intento de registro anterior.
-  "$KCADM" get users -r pulso-piura --fields id --format csv --noquotes |
-    while IFS= read -r local_user_id; do
-      if [ -n "$local_user_id" ]; then
-        "$KCADM" update "users/$local_user_id" \
-          -r pulso-piura \
-          -s emailVerified=true \
-          -s 'requiredActions=[]' >/dev/null
-      fi
-    done
+  # No modificar verificación ni acciones MFA de cuentas existentes.
 fi
 
 configure_web_client() {
@@ -221,12 +211,6 @@ ensure_user() {
       -s lastName="$last_name" \
       -i)
     user_created=true
-  else
-    "$KCADM" update "users/$user_id" \
-      -r pulso-piura \
-      -s enabled=true \
-      -s emailVerified=true \
-      -s 'requiredActions=[]' >/dev/null
   fi
 
   if [ "$user_created" = "true" ] || [ "${RESET_BOOTSTRAP_USER_PASSWORDS:-false}" = "true" ]; then
@@ -243,14 +227,15 @@ ensure_user() {
     echo "Contraseña inicial sincronizada para $email."
   fi
 
-  if [ "$role" = "PLATFORM_ADMIN" ]; then
+  if [ "$role" = "PLATFORM_ADMIN" ] && [ "$user_created" = "true" ]; then
     "$KCADM" add-roles \
       -r pulso-piura \
       --uusername "$email" \
       --rolename PLATFORM_ADMIN
+    "$KCADM" update "users/$user_id" -r pulso-piura -s 'requiredActions=["CONFIGURE_TOTP"]' >/dev/null
   fi
 
-  if [ "$role" = "ORGANIZER" ]; then
+  if [ "$role" = "ORGANIZER" ] && [ "$user_created" = "true" ]; then
     "$KCADM" add-roles -r pulso-piura --uusername "$email" --rolename CAPTAIN
     "$KCADM" add-roles -r pulso-piura --uusername "$email" --rolename TOURNAMENT_ORGANIZER
   fi

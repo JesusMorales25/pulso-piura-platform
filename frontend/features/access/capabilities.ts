@@ -36,8 +36,7 @@ export function resolveCapabilities(
     memberships.map((membership) => membership.role),
   );
   const isVenueOwner =
-    authenticated &&
-    (venueOwnerApproved || organizationRoles.has("OWNER"));
+    authenticated && (venueOwnerApproved || organizationRoles.has("OWNER"));
 
   return {
     canBrowseVenues: true,
@@ -57,7 +56,9 @@ export function resolveCapabilities(
     canManageOrganizations:
       authenticated &&
       (venueOwnerApproved ||
-        (["OWNER", "ADMIN"] as const).some((role) => organizationRoles.has(role))),
+        (["OWNER", "ADMIN"] as const).some((role) =>
+          organizationRoles.has(role),
+        )),
     canManagePlatform: authenticated && roles.has("PLATFORM_ADMIN"),
     isVenueOwner,
   };

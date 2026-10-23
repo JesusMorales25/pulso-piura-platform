@@ -10,10 +10,14 @@ architecture-decision	ADR-003: web responsive mobile-first	docs/adr/ADR-003-web-
 architecture-decision	ADR-004: diferir la validación externa sin inventar evidencia	docs/adr/ADR-004-validacion-diferida.md
 architecture-decision	ADR-005: integración de pagos desacoplada	docs/adr/ADR-005-pagos-desacoplados.md
 architecture-decision	ADR-006: Proveedor OIDC configurable	docs/adr/ADR-006-proveedor-oidc-configurable.md
+architecture-decision	ADR-007 — Pagos externos con comprobantes privados	docs/adr/ADR-007-pagos-externos-comprobantes-privados.md
 documentation	Análisis de requerimientos importados	docs/ANALISIS_REQUERIMIENTOS_IMPORTADOS.md
 documentation	Revisión de arquitectura, seguridad y estrategia de entrega	docs/ARQUITECTURA_SEGURIDAD_REVIEW.md
+documentation	Recursos visuales de la demostración	docs/ASSET_PROVENANCE.md
 documentation	Configuraciones local y de producción	docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md
+documentation	Operación segura de la demostración	docs/DEMO_SECURITY_OPERATIONS.md
 documentation	Principios profesionales de ingeniería	docs/ENGINEERING_PRINCIPLES.md
+documentation	Pagos externos y comprobantes privados	docs/EXTERNAL_PAYMENTS.md
 documentation	Roadmap de experiencia web — Pulso Piura	docs/FRONTEND_ROADMAP.md
 documentation	Configuración local de identidad	docs/IDENTITY_LOCAL_SETUP.md
 documentation	Iteración 3 — Sedes, canchas y disponibilidad	docs/ITERATION_3_VENUES_PLAN.md

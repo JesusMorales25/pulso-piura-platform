@@ -27,8 +27,8 @@ type VenueOffer = {
 };
 
 const previewImages = [
-  "/images/venue-football-7.png",
-  "/images/venue-volleyball.png",
+  "/images/court-reference.svg",
+  "/images/volleyball-reference.svg",
 ];
 
 const todayInPiura = () =>
@@ -88,9 +88,7 @@ export function HomeVenuePreview({
                       `/spaces/${space.id}/bookable-slots?date=${date}`,
                     );
                     const slot = availability.slots[0];
-                    return slot
-                      ? { venue, space, availability, slot }
-                      : null;
+                    return slot ? { venue, space, availability, slot } : null;
                   } catch {
                     return null;
                   }

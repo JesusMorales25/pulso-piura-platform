@@ -196,16 +196,46 @@ export function OrganizationAdmin({
     <>
       <header className="hybridHome complexPanelHero">
         <section className="hybridHero">
-        <div className="hybridHeroCarousel" aria-hidden="true"><Image src="/images/venue-football-7.png" alt="" fill sizes="(max-width: 760px) 100vw, 1120px" className="hybridHeroImage active" priority /></div>
-        <div className="hybridHeroShade" />
-        <div className="hybridHeroContent">
-          <p className="prototypeGreeting">PANEL DE TU COMPLEJO · {organizationStatusLabel(organization.status)}</p>
-          <h1>{organization.name}</h1>
-          <div className="homeModeSwitch complexPanelSwitch" role="group" aria-label="Secciones del complejo">
-            <button type="button" className={panel === "team" ? "active" : ""} aria-pressed={panel === "team"} onClick={() => setPanel("team")}><UsersThree size={20} /> Equipo</button>
-            <button type="button" className={panel === "operations" ? "active" : ""} aria-pressed={panel === "operations"} onClick={() => setPanel("operations")}><Buildings size={20} /> Operación</button>
+          <div className="hybridHeroCarousel" aria-hidden="true">
+            <Image
+              src="/images/court-reference.svg"
+              alt=""
+              fill
+              sizes="(max-width: 760px) 100vw, 1120px"
+              className="hybridHeroImage active"
+              priority
+            />
           </div>
-        </div>
+          <div className="hybridHeroShade" />
+          <div className="hybridHeroContent">
+            <p className="prototypeGreeting">
+              PANEL DE TU COMPLEJO ·{" "}
+              {organizationStatusLabel(organization.status)}
+            </p>
+            <h1>{organization.name}</h1>
+            <div
+              className="homeModeSwitch complexPanelSwitch"
+              role="group"
+              aria-label="Secciones del complejo"
+            >
+              <button
+                type="button"
+                className={panel === "team" ? "active" : ""}
+                aria-pressed={panel === "team"}
+                onClick={() => setPanel("team")}
+              >
+                <UsersThree size={20} /> Equipo
+              </button>
+              <button
+                type="button"
+                className={panel === "operations" ? "active" : ""}
+                aria-pressed={panel === "operations"}
+                onClick={() => setPanel("operations")}
+              >
+                <Buildings size={20} /> Operación
+              </button>
+            </div>
+          </div>
         </section>
       </header>
 
@@ -235,63 +265,100 @@ export function OrganizationAdmin({
       )}
 
       <div hidden={panel !== "team"}>
-      <section className="adminGrid" aria-label="Gestión de accesos">
-        <div className="card">
-          <p className="eyebrow">EQUIPO</p>
-          <h2>Responsables y colaboradores</h2>
-          {!canManageMembers ? (
-            <p className="muted">Tu rol no permite administrar miembros.</p>
-          ) : members.length === 0 ? (
-            <p className="muted">Todavía no hay miembros adicionales.</p>
-          ) : (
-            <ul className="memberList responsibleList">
-              {members.map((member) => (
-                <li key={member.userId}>
-                  <div>
-                    <strong>{member.displayName}</strong>
-                    <small>{member.email || "Sin correo disponible"}</small>
-                    <span className="pill">{member.principal ? "Dueño principal" : organizationRoleLabel(member.role)}</span>
-                  </div>
-                  {member.role !== "OWNER" && (
-                    <button
-                      className="dangerButton"
-                      onClick={() => setRemoval(member)}
-                    >
-                      Revocar
-                    </button>
-                  )}
-                  {member.role === "OWNER" && <button className="secondary" disabled title="Los propietarios se gestionan desde la consola de plataforma">Protegido</button>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <section className="adminGrid" aria-label="Gestión de accesos">
+          <div className="card">
+            <p className="eyebrow">EQUIPO</p>
+            <h2>Responsables y colaboradores</h2>
+            {!canManageMembers ? (
+              <p className="muted">Tu rol no permite administrar miembros.</p>
+            ) : members.length === 0 ? (
+              <p className="muted">Todavía no hay miembros adicionales.</p>
+            ) : (
+              <ul className="memberList responsibleList">
+                {members.map((member) => (
+                  <li key={member.userId}>
+                    <div>
+                      <strong>{member.displayName}</strong>
+                      <small>{member.email || "Sin correo disponible"}</small>
+                      <span className="pill">
+                        {member.principal
+                          ? "Dueño principal"
+                          : organizationRoleLabel(member.role)}
+                      </span>
+                    </div>
+                    {member.role !== "OWNER" && (
+                      <button
+                        className="dangerButton"
+                        onClick={() => setRemoval(member)}
+                      >
+                        Revocar
+                      </button>
+                    )}
+                    {member.role === "OWNER" && (
+                      <button
+                        className="secondary"
+                        disabled
+                        title="Los propietarios se gestionan desde la consola de plataforma"
+                      >
+                        Protegido
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        {removal && <div className="notice" role="alert"><p>¿Revocar el acceso de {removal.displayName} a este complejo?</p><button className="secondary" type="button" onClick={() => setRemoval(null)}>Cancelar</button><button className="secondary" type="button" onClick={() => void revoke(removal)}>Confirmar retiro</button></div>}
-        {canManageMembers && (
-          <form className="card adminForm" noValidate onSubmit={invite}>
-            <p className="eyebrow">NUEVO ACCESO</p>
-            <h2>Invitar miembro</h2>
-            <label>
-              Correo electrónico
-              <input name="email" type="email" autoComplete="email" required />
-            </label>
-            <label>
-              Rol
-              <select name="role" defaultValue="OPERATOR">
-                <option value="OPERATOR">Operador</option>
-                <option value="ADMIN">Administrador</option>
-              </select>
-            </label>
-            <button className="primary borderless" disabled={submitting}>
-              {submitting ? "Creando invitación…" : "Crear invitación"}
-            </button>
-          </form>
-        )}
-      </section>
+          {removal && (
+            <div className="notice" role="alert">
+              <p>
+                ¿Revocar el acceso de {removal.displayName} a este complejo?
+              </p>
+              <button
+                className="secondary"
+                type="button"
+                onClick={() => setRemoval(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="secondary"
+                type="button"
+                onClick={() => void revoke(removal)}
+              >
+                Confirmar retiro
+              </button>
+            </div>
+          )}
+          {canManageMembers && (
+            <form className="card adminForm" noValidate onSubmit={invite}>
+              <p className="eyebrow">NUEVO ACCESO</p>
+              <h2>Invitar miembro</h2>
+              <label>
+                Correo electrónico
+                <input
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                />
+              </label>
+              <label>
+                Rol
+                <select name="role" defaultValue="OPERATOR">
+                  <option value="OPERATOR">Operador</option>
+                  <option value="ADMIN">Administrador</option>
+                </select>
+              </label>
+              <button className="primary borderless" disabled={submitting}>
+                {submitting ? "Creando invitación…" : "Crear invitación"}
+              </button>
+            </form>
+          )}
+        </section>
       </div>
       <div hidden={panel !== "operations"}>
-      <VenueAdmin organizationId={organizationId} role={organization.role} />
+        <VenueAdmin organizationId={organizationId} role={organization.role} />
       </div>
     </>
   );

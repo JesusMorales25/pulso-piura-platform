@@ -11,7 +11,10 @@ import {
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
-import { PlatformUserDirectory, type PlatformUser } from "@/features/organizations/PlatformUserDirectory";
+import {
+  PlatformUserDirectory,
+  type PlatformUser,
+} from "@/features/organizations/PlatformUserDirectory";
 
 type Summary = {
   activeUsers: number;
@@ -19,7 +22,6 @@ type Summary = {
   organizations: number;
   venues: number;
 };
-
 
 export default function PlatformPage() {
   const { accessToken, login } = useAuth();
@@ -41,35 +43,111 @@ export default function PlatformPage() {
         setUsers(userResult);
       })
       .catch((reason) => {
-        if (active) setError(reason instanceof Error ? reason.message : "No se pudo cargar la consola.");
+        if (active)
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : "No se pudo cargar la consola.",
+          );
       });
     return () => {
       active = false;
     };
   }, [accessToken, capabilities.canManagePlatform]);
 
-  if (loading) return <main className="section"><p className="notice">Validando acceso…</p></main>;
-  if (!accessToken) return <main className="section accessDeniedPage"><h1>Administración de plataforma</h1><button className="primary" onClick={() => void login(false, "/plataforma")}>Iniciar sesión</button></main>;
-  if (!capabilities.canManagePlatform) return <main className="section accessDeniedPage"><h1>Acceso restringido</h1><p>Esta consola requiere el rol de administrador de plataforma.</p></main>;
+  if (loading)
+    return (
+      <main className="section">
+        <p className="notice">Validando acceso…</p>
+      </main>
+    );
+  if (!accessToken)
+    return (
+      <main className="section accessDeniedPage">
+        <h1>Administración de plataforma</h1>
+        <button
+          className="primary"
+          onClick={() => void login(false, "/plataforma")}
+        >
+          Iniciar sesión
+        </button>
+      </main>
+    );
+  if (!capabilities.canManagePlatform)
+    return (
+      <main className="section accessDeniedPage">
+        <h1>Acceso restringido</h1>
+        <p>Esta consola requiere el rol de administrador de plataforma.</p>
+      </main>
+    );
 
   return (
     <main className="section platformDashboard">
       <p className="eyebrow">PULSO PIURA · CONTROL GLOBAL</p>
       <h1>Administración de plataforma</h1>
-      <p className="pageLead">Revisa accesos, usuarios, complejos y el contenido comercial publicado.</p>
-      {error && <p className="inlineAlert errorNotice" role="alert">{error}</p>}
+      <p className="pageLead">
+        Revisa accesos, usuarios, complejos y el contenido comercial publicado.
+      </p>
+      {error && (
+        <p className="inlineAlert errorNotice" role="alert">
+          {error}
+        </p>
+      )}
 
       <section className="platformKpis" aria-label="Resumen de plataforma">
-        <article><UsersThree size={26}/><span>Usuarios activos</span><strong>{summary?.activeUsers ?? "—"}</strong></article>
-        <article><CheckSquareOffset size={26}/><span>Solicitudes pendientes</span><strong>{summary?.pendingRequests ?? "—"}</strong></article>
-        <article><Buildings size={26}/><span>Organizaciones</span><strong>{summary?.organizations ?? "—"}</strong></article>
-        <article><Storefront size={26}/><span>Sedes publicadas</span><strong>{summary?.venues ?? "—"}</strong></article>
+        <article>
+          <UsersThree size={26} />
+          <span>Usuarios activos</span>
+          <strong>{summary?.activeUsers ?? "—"}</strong>
+        </article>
+        <article>
+          <CheckSquareOffset size={26} />
+          <span>Solicitudes pendientes</span>
+          <strong>{summary?.pendingRequests ?? "—"}</strong>
+        </article>
+        <article>
+          <Buildings size={26} />
+          <span>Organizaciones</span>
+          <strong>{summary?.organizations ?? "—"}</strong>
+        </article>
+        <article>
+          <Storefront size={26} />
+          <span>Sedes publicadas</span>
+          <strong>{summary?.venues ?? "—"}</strong>
+        </article>
       </section>
 
-      <section className="platformModules" aria-label="Módulos de administración">
-        <Link href="/plataforma/solicitudes"><CheckSquareOffset size={30}/><span><strong>Permisos y solicitudes</strong><small>Aprobar o retirar acceso de organizadores y dueños de cancha.</small></span></Link>
-        <Link href="/plataforma/organizaciones"><Buildings size={30}/><span><strong>Complejos y dueños</strong><small>Revisar organizaciones y asignar o retirar propietarios.</small></span></Link>
-        <Link href="/plataforma/negocios"><Storefront size={30}/><span><strong>Choperías y restaurantes</strong><small>Administrar el directorio que aparece en “El tercer tiempo”.</small></span></Link>
+      <section
+        className="platformModules"
+        aria-label="Módulos de administración"
+      >
+        <Link href="/plataforma/solicitudes">
+          <CheckSquareOffset size={30} />
+          <span>
+            <strong>Permisos y solicitudes</strong>
+            <small>
+              Aprobar o retirar acceso de organizadores y dueños de cancha.
+            </small>
+          </span>
+        </Link>
+        <Link href="/plataforma/organizaciones">
+          <Buildings size={30} />
+          <span>
+            <strong>Complejos y dueños</strong>
+            <small>
+              Revisar organizaciones y asignar o retirar propietarios.
+            </small>
+          </span>
+        </Link>
+        <Link href="/plataforma/negocios">
+          <Storefront size={30} />
+          <span>
+            <strong>Choperías y restaurantes</strong>
+            <small>
+              Administrar el directorio que aparece en “El tercer tiempo”.
+            </small>
+          </span>
+        </Link>
       </section>
 
       <PlatformUserDirectory users={users} />

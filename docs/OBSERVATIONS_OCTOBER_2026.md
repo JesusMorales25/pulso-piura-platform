@@ -91,3 +91,22 @@ Horario semanal: día, franja horaria, precio y duración en líneas separadas; 
 - Formulario en FormSheet con dos pasos: datos/cupos/visibilidad/política y cancha/publicación. Se mantiene selección de reserva al final y validación de capacidad.
 - Vista previa se abre por botón en otro FormSheet y puede cerrarse sin perder el borrador. Borradores antiguos migran de cuatro a dos pasos con flowVersion=2.
 - Al publicar se vuelve al listado actualizado y se prepara un formulario nuevo. Cerrar sin publicar conserva el avance.
+
+### Seguridad, privacidad y accesibilidad — 9 de octubre de 2026
+- Revisión estándar de límites de confianza OIDC, permisos por usuario/complejo, pagos simulados, carga de imágenes e infraestructura versionada. Cuatro fallos de la versión inicial corregidos: imágenes de negocios no publicados, lecturas de administradores inactivos, identidad pública de organizadores con perfil privado y reactivación/permisos de usuarios existentes durante bootstrap Keycloak.
+- Invitaciones a complejos requieren correo verificado. API stateless, límite compartido de escrituras en PostgreSQL con migración V35 y límites de profundidad/tamaño JSON. La limpieza de contadores se ejecuta cada hora para registros mayores a 24 h.
+- Páginas versionadas de privacidad, cookies, términos y cancelaciones, aceptación exacta y renovable de versiones; distrito de perfil opcional. Datos legales reales pendientes por decisión del usuario para la demo. No se incorporaron analíticas ni cookies opcionales.
+- Enlaces legales, salto al contenido, foco visible, contención/restauración de foco en diálogos y mensajes de error persistentes. Pruebas locales axe/teclado para distintos anchos y roles usan API y sesiones sintéticas; no validan Auth0 real ni certifican WCAG.
+- Sustituidos recursos visuales sin acreditación por SVG originales referenciales; originales en cuarentena local fuera de public y del índice. Calificaciones identificadas como información del complejo, sin reseñas verificadas ficticias.
+- Next actualizado a 16.3.8 con dependencias de producción corregidas; permanecen avisos de herramientas de desarrollo que no deben resolverse degradando Next.
+- Operación y requisitos externos: docs/DEMO_SECURITY_OPERATIONS.md. Procedencia de recursos: docs/ASSET_PROVENANCE.md. Pendientes: MFA efectivo en Auth0, migración/comprobación PostgreSQL, políticas de conservación, respaldo cifrado/restauración, canales legales y revisión con lector de pantalla.
+
+### Pagos externos con revisión — 22 de octubre de 2026
+- Nuevo modo external_manual, separado de simulation/disabled; sin pasarela ni lectura de cuentas bancarias. El receptor confirma manualmente tras comprobar sus movimientos.
+- Envío privado de JPG/PNG recodificado, metadatos en PostgreSQL, puerto PaymentProofStorage con adaptador filesystem y volumen Docker persistente. Nunca se publican URLs estáticas de comprobantes.
+- Pagador consulta su evidencia; solo organizador del partido o OWNER activo del complejo revisa. Capacidad/horario, saldo, idempotencia, referencias duplicadas y cambios de receptor se validan en servidor.
+- Configuración del dueño disponible antes de tener reservas; configuración del organizador por partido. El envío queda ligado a la versión del destino mostrado; si cambió, se solicita atención del receptor sin repetir transferencia.
+- Estados de revisión, corrección con historial, resolución tardía y limpieza configurable de imágenes terminales (90 días predeterminados). Un pago tardío nunca recupera un cupo/horario liberado.
+- Mis reservas y Mis inscripciones conservan solicitudes con evidencia aunque hayan vencido; no confunden pendiente con recaudado. Simulación no puede aprobar órdenes externas al cambiar de modo.
+- Contrato: docs/openapi-external-payments.yaml. Operación/despliegue: docs/EXTERNAL_PAYMENTS.md. ADR-007 documenta filesystem inicial y futura extensión S3.
+- Verificación local: migraciones V35/V36 y cuatro casos de pagos de dominio sobre PostgreSQL 18 aislado; 32 pruebas frontend, seis flujos sintéticos de navegador y 51 escenarios axe sin desbordamientos ni infracciones detectadas. Flyway advierte que su versión está probada hasta PostgreSQL 17; los manifests de producción conservan PostgreSQL 17.

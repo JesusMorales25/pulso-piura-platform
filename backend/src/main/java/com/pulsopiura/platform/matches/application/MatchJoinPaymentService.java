@@ -132,6 +132,9 @@ public class MatchJoinPaymentService {
         if (!order.payerUserId().equals(actor))
             throw new org.springframework.security.access.AccessDeniedException(
                     "Sin acceso a la orden");
+        if (!order.simulated())
+            throw new ReservationConflictException(
+                    "Los pagos externos requieren revisión del receptor");
         var now = clock.instant();
         if ("PAID".equals(order.status())) {
             if (!isPlayingOrganizer(match, actor)) {
@@ -212,7 +215,7 @@ public class MatchJoinPaymentService {
                 order.expiresAt(),
                 order.providerReference(),
                 order.paidAt(),
-                true);
+                order.simulated());
     }
 
     public record JoinOrderView(

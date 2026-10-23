@@ -69,7 +69,7 @@ public class OrganizationController {
     @PostMapping("/invitations/{invitationId}/accept")
     MemberView accept(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID invitationId) {
         var user = users.provision(jwt);
-        return memberships.accept(user.id(), user.email(), invitationId);
+        return memberships.accept(user.id(), user.email(), user.emailVerified(), invitationId);
     }
 
     @GetMapping("/{organizationId}/members")

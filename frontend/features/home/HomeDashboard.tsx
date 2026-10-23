@@ -23,14 +23,14 @@ type Me = { displayName: string };
 
 const heroSlides: Record<HomeMode, string[]> = {
   matches: [
-    "/images/hero-football-night.png",
-    "/images/hero-match-football-mixed-night.png",
-    "/images/hero-match-volleyball-night.png",
+    "/images/court-reference.svg",
+    "/images/court-reference.svg",
+    "/images/volleyball-reference.svg",
   ],
   venues: [
-    "/images/venue-football-7.png",
-    "/images/venue-volleyball.png",
-    "/images/hero-venue-padel-night.png",
+    "/images/court-reference.svg",
+    "/images/volleyball-reference.svg",
+    "/images/court-reference.svg",
   ],
 };
 
@@ -60,10 +60,20 @@ export function HomeDashboard({
       day: "2-digit",
     }).format(new Date());
     const controller = new AbortController();
-    void apiRequest<VenuePage>(`/venues?${new URLSearchParams({ size: "4", date: today, ...(district ? { district } : {}) })}`, null, { signal: controller.signal })
-      .then((result) => { if (!controller.signal.aborted) setVenues(result.items); })
-      .catch(() => { if (!controller.signal.aborted) setVenues([]); })
-      .finally(() => { if (!controller.signal.aborted) setLoadingVenues(false); });
+    void apiRequest<VenuePage>(
+      `/venues?${new URLSearchParams({ size: "4", date: today, ...(district ? { district } : {}) })}`,
+      null,
+      { signal: controller.signal },
+    )
+      .then((result) => {
+        if (!controller.signal.aborted) setVenues(result.items);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setVenues([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoadingVenues(false);
+      });
     return () => controller.abort();
   }, [district]);
 
@@ -101,7 +111,11 @@ export function HomeDashboard({
     return (
       <main className="homePage hybridHome mode-venues directBookingPage">
         <div className="hybridContent">
-          <PublicVenueCatalog embedded preparingDirectBooking returnToCreate={returnToCreate} />
+          <PublicVenueCatalog
+            embedded
+            preparingDirectBooking
+            returnToCreate={returnToCreate}
+          />
         </div>
       </main>
     );

@@ -31,20 +31,23 @@ export function AppNavigation() {
           Icon: CalendarCheck,
           active: pathname.startsWith("/reservas-cancha"),
         }
-    : capabilities.canOperateOrganizations
-      ? {
-          href: "/organizaciones",
-          label: "Mi cancha",
-          Icon: Buildings,
-          active:
-            pathname.startsWith("/organizaciones") || pathname.startsWith("/admin/"),
-        }
-      : {
-          href: "/crear",
-          label: "Crear",
-          Icon: Plus,
-          active: pathname.startsWith("/crear") || pathname.startsWith("/organizador"),
-        };
+      : capabilities.canOperateOrganizations
+        ? {
+            href: "/organizaciones",
+            label: "Mi cancha",
+            Icon: Buildings,
+            active:
+              pathname.startsWith("/organizaciones") ||
+              pathname.startsWith("/admin/"),
+          }
+        : {
+            href: "/crear",
+            label: "Crear",
+            Icon: Plus,
+            active:
+              pathname.startsWith("/crear") ||
+              pathname.startsWith("/organizador"),
+          };
   const activityItem = capabilities.isVenueOwner
     ? {
         href: "/organizaciones",
@@ -67,7 +70,10 @@ export function AppNavigation() {
       href: "/",
       label: "Explorar",
       Icon: Compass,
-      active: pathname === "/" || pathname.startsWith("/partidos") || pathname === "/canchas",
+      active:
+        pathname === "/" ||
+        pathname.startsWith("/partidos") ||
+        pathname === "/canchas",
       featured: false,
     },
     activityItem,

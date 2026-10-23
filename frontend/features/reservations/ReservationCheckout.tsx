@@ -1,4 +1,9 @@
 "use client";
+import Link from "next/link";
+import {
+  ExternalPaymentPanel,
+  useExternalPayments,
+} from "@/features/payments/ExternalPaymentPanel";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle, Clock, DeviceMobile } from "@phosphor-icons/react";
 import { apiRequest } from "@/lib/api";
@@ -41,6 +46,7 @@ export function ReservationCheckout({
   initialPlan = "DEPOSIT",
   paymentActive = true,
 }: Props) {
+  const externalPayments = useExternalPayments();
   const [now, setNow] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
@@ -135,8 +141,8 @@ export function ReservationCheckout({
     pending?.amountMinor ??
     (balancePayment
       ? reservation.totalMinor - paid
-      : paymentOptions.find((option) => option.plan === plan)?.amountMinor ??
-        reservation.totalMinor);
+      : (paymentOptions.find((option) => option.plan === plan)?.amountMinor ??
+        reservation.totalMinor));
   const selectedMethod = pending?.method ?? paymentMethod;
   const selectedPlan = pending?.plan ?? plan;
   const checkoutReady = simulation === true && ordersLoaded;
@@ -276,7 +282,7 @@ export function ReservationCheckout({
           <dd>{money(reservation.totalMinor)}</dd>
         </div>
         <div>
-          <dt>Pagado en pruebas</dt>
+          <dt>Pagos registrados</dt>
           <dd>{money(paid)}</dd>
         </div>
         <div>
@@ -294,6 +300,34 @@ export function ReservationCheckout({
           </dd>
         </div>
       </dl>
+      {externalPayments && paymentActive && (
+        <ExternalPaymentPanel
+          accessToken={accessToken}
+          targetType="RESERVATION"
+          targetId={reservation.id}
+          allowUpload={(temporary && !expired) || balancePayment}
+          plans={
+            balancePayment
+              ? [
+                  {
+                    plan: "BALANCE",
+                    label: `Saldo ${money(reservation.totalMinor - paid)}`,
+                  },
+                ]
+              : paymentOptions.map((option) => ({
+                  plan: option.plan,
+                  label: `${option.label} · ${money(option.amountMinor)}`,
+                }))
+          }
+          onChange={() => setCheckoutRefresh((value) => value + 1)}
+        />
+      )}
+      {externalPayments && (
+        <p className="notice">
+          Los pagos de simulación anteriores no acreditan dinero recibido;
+          revisa los comprobantes confirmados.
+        </p>
+      )}
       {error && (
         <p className="inlineAlert errorNotice" role="alert">
           {error}
@@ -305,118 +339,130 @@ export function ReservationCheckout({
           iniciar otra reserva.
         </p>
       )}
-      {paymentActive && ((temporary && !expired) || balancePayment) && (
-        <div className="paymentChoice">
-          <p className="eyebrow">MODO DE PRUEBAS · SIN COBROS REALES</p>
-          <p>
-            El horario es exclusivo para ti durante el contador. Una reserva
-            confirmada conserva el horario.
-          </p>
-          {!balancePayment && (
+      {!externalPayments &&
+        paymentActive &&
+        ((temporary && !expired) || balancePayment) && (
+          <div className="paymentChoice">
+            <p className="eyebrow">MODO DE PRUEBAS · SIN COBROS REALES</p>
+            <p>
+              El horario es exclusivo para ti durante el contador. Una reserva
+              confirmada conserva el horario.
+            </p>
+            {!balancePayment && (
+              <div
+                className="paymentMethods"
+                role="group"
+                aria-label="Importe a pagar"
+              >
+                {paymentOptions.map((option) => (
+                  <button
+                    type="button"
+                    key={option.plan}
+                    className={
+                      selectedPlan === option.plan
+                        ? "paymentMethod active"
+                        : "paymentMethod"
+                    }
+                    aria-pressed={selectedPlan === option.plan}
+                    disabled={busy || !!pending}
+                    onClick={() => {
+                      setPlan(option.plan);
+                      requestKey.current = crypto.randomUUID();
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <div
               className="paymentMethods"
               role="group"
-              aria-label="Importe a pagar"
+              aria-label="Método de pago"
             >
-              {paymentOptions.map((option) => (
+              {(["YAPE", "PLIN"] as const).map((method) => (
                 <button
                   type="button"
-                  key={option.plan}
+                  key={method}
                   className={
-                    selectedPlan === option.plan
+                    selectedMethod === method
                       ? "paymentMethod active"
                       : "paymentMethod"
                   }
-                  aria-pressed={selectedPlan === option.plan}
+                  aria-pressed={selectedMethod === method}
                   disabled={busy || !!pending}
                   onClick={() => {
-                    setPlan(option.plan);
+                    setPaymentMethod(method);
                     requestKey.current = crypto.randomUUID();
                   }}
                 >
-                  {option.label}
+                  <DeviceMobile aria-hidden="true" size={18} />
+                  {method === "YAPE" ? "Yape" : "Plin"}
                 </button>
               ))}
             </div>
-          )}
-          <div
-            className="paymentMethods"
-            role="group"
-            aria-label="Método de pago"
-          >
-            {(["YAPE", "PLIN"] as const).map((method) => (
-              <button
-                type="button"
-                key={method}
-                className={
-                  selectedMethod === method
-                    ? "paymentMethod active"
-                    : "paymentMethod"
-                }
-                aria-pressed={selectedMethod === method}
-                disabled={busy || !!pending}
-                onClick={() => {
-                  setPaymentMethod(method);
-                  requestKey.current = crypto.randomUUID();
-                }}
-              >
-                <DeviceMobile aria-hidden="true" size={18} />
-                {method === "YAPE" ? "Yape" : "Plin"}
-              </button>
-            ))}
+            {!checkoutReady && simulation !== false && (
+              <div className="checkoutPreparation" role="status">
+                <span>Verificando tu reserva antes de habilitar el pago…</span>
+                <button
+                  className="secondary"
+                  disabled={busy}
+                  onClick={() => setCheckoutRefresh((current) => current + 1)}
+                  type="button"
+                >
+                  Reintentar verificación
+                </button>
+              </div>
+            )}
+            {simulation === false && (
+              <p role="status">
+                Los pagos están deshabilitados en este ambiente.
+              </p>
+            )}
           </div>
-          {!checkoutReady && simulation !== false && (
-            <div className="checkoutPreparation" role="status">
-              <span>Verificando tu reserva antes de habilitar el pago…</span>
-              <button
-                className="secondary"
+        )}
+      {!externalPayments &&
+        paymentActive &&
+        ((temporary && !expired) || balancePayment) && (
+          <div className="mobileReservationAction">
+            <label className="reservationPolicy">
+              <input
+                type="checkbox"
+                checked={accepted}
                 disabled={busy}
-                onClick={() => setCheckoutRefresh((current) => current + 1)}
-                type="button"
-              >
-                Reintentar verificación
-              </button>
-            </div>
-          )}
-          {simulation === false && (
-            <p role="status">
-              Los pagos están deshabilitados en este ambiente.
-            </p>
-          )}
-        </div>
-      )}
-      {paymentActive && ((temporary && !expired) || balancePayment) && (
-        <div className="mobileReservationAction">
-          <label className="reservationPolicy">
-            <input
-              type="checkbox"
-              checked={accepted}
-              disabled={busy}
-              onChange={(event) => setAccepted(event.target.checked)}
-            />
+                onChange={(event) => setAccepted(event.target.checked)}
+              />
+              <span>
+                Acepto que puedo cancelar hasta 2 horas antes y que no hay
+                devoluciones de ningún importe de prueba registrado.{" "}
+                <Link
+                  href="/informacion/cancelaciones"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Condiciones de pagos y cancelaciones
+                </Link>
+                .
+              </span>
+            </label>
             <span>
-              Acepto que puedo cancelar hasta 2 horas antes y que no hay
-              devoluciones de ningún importe pagado.
+              <small>{balancePayment ? "Saldo pendiente" : "Paga ahora"}</small>
+              <strong>{money(amount)}</strong>
             </span>
-          </label>
-          <span>
-            <small>{balancePayment ? "Saldo pendiente" : "Paga ahora"}</small>
-            <strong>{money(amount)}</strong>
-          </span>
-          <button
-            aria-busy={busy}
-            disabled={busy || !accepted || !checkoutReady}
-            onClick={() => void pay()}
-            type="button"
-          >
-            {busy
-              ? "Verificando…"
-              : !checkoutReady
-                ? "Preparando…"
-                : `${pending ? "Retomar" : "Simular"} pago`}
-          </button>
-        </div>
-      )}
+            <button
+              aria-busy={busy}
+              disabled={busy || !accepted || !checkoutReady}
+              onClick={() => void pay()}
+              type="button"
+            >
+              {busy
+                ? "Verificando…"
+                : !checkoutReady
+                  ? "Preparando…"
+                  : `${pending ? "Retomar" : "Simular"} pago`}
+            </button>
+          </div>
+        )}
       {reservation.status === "CONFIRMED" && paid > 0 && (
         <p className="successNotice" role="status">
           <CheckCircle aria-hidden="true" size={18} />

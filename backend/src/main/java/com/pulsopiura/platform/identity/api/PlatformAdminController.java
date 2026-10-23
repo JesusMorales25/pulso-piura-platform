@@ -30,17 +30,21 @@ public class PlatformAdminController {
     }
 
     @GetMapping("/summary")
-    PlatformAdminQueryService.SummaryView summary() {
+    PlatformAdminQueryService.SummaryView summary(@AuthenticationPrincipal Jwt jwt) {
+        users.provision(jwt);
         return platformQueries.summary();
     }
 
     @GetMapping("/users")
-    List<PlatformAdminQueryService.UserView> users() {
+    List<PlatformAdminQueryService.UserView> users(@AuthenticationPrincipal Jwt jwt) {
+        users.provision(jwt);
         return platformQueries.users();
     }
 
     @GetMapping("/capability-requests")
-    List<PlatformAdminQueryService.RequestView> capabilityRequests() {
+    List<PlatformAdminQueryService.RequestView> capabilityRequests(
+            @AuthenticationPrincipal Jwt jwt) {
+        users.provision(jwt);
         return platformQueries.requests();
     }
 

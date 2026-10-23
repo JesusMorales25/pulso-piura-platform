@@ -1,0 +1,72 @@
+# VPS Linux: Vercel hosts the frontend, Auth0 hosts identity. No Keycloak container.
+services:
+  app-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pulso_piura
+      POSTGRES_USER: pulso_app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - app_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulso_app -d pulso_piura"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 1g
+    networks: [private]
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      app-db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+      DATABASE_URL: jdbc:postgresql://app-db:5432/pulso_piura
+      POSTGRES_USER: pulso_app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      AUTH_PROVIDER: auth0
+      OIDC_ISSUER_URI: ${OIDC_ISSUER_URI:?}
+      OIDC_JWK_SET_URI: ${OIDC_JWK_SET_URI:?}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:?}
+      OIDC_ROLES_CLAIM: ${OIDC_ROLES_CLAIM:-https://pulsopiura.app/roles}
+      OIDC_CLAIMS_NAMESPACE: ${OIDC_CLAIMS_NAMESPACE:-https://pulsopiura.app}
+      PLATFORM_ADMIN_EMAIL: ${PLATFORM_ADMIN_EMAIL:-}
+      WEB_ALLOWED_ORIGIN: ${WEB_ALLOWED_ORIGIN:?}
+      PAYMENTS_MODE: ${PAYMENTS_MODE:-disabled}
+      PAYMENT_PROOF_DIRECTORY: /srv/pulso/private/payment-proofs
+      PAYMENT_PROOF_RETENTION_DAYS: ${PAYMENT_PROOF_RETENTION_DAYS:-90}
+      EXTERNAL_PAYMENT_REVIEW_MINUTES: ${EXTERNAL_PAYMENT_REVIEW_MINUTES:-30}
+    volumes:
+      - payment_proofs:/srv/pulso/private/payment-proofs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    mem_limit: 2g
+    networks: [private, edge]
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?}
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [private, edge]
+networks:
+  private:
+    internal: true
+  edge:
+volumes:
+  app_postgres:
+  payment_proofs:
+  caddy_data:
+  caddy_config:

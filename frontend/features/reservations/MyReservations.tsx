@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
 import { ReservationCheckout } from "./ReservationCheckout";
+import { useExternalPayments } from "@/features/payments/ExternalPaymentPanel";
 import type { Reservation, ReservationPage } from "./types";
 function ReservationItem({
   initial,
@@ -29,8 +30,7 @@ function ReservationItem({
               venueName: next.venueName ?? current.venueName,
               spaceName: next.spaceName ?? current.spaceName,
               spaceCapacity: next.spaceCapacity ?? current.spaceCapacity,
-              matchAssociated:
-                next.matchAssociated ?? current.matchAssociated,
+              matchAssociated: next.matchAssociated ?? current.matchAssociated,
             },
       ),
     [],
@@ -41,8 +41,15 @@ function ReservationItem({
       id={`reservation-${reservation.id}`}
     >
       {onSelectPayment && canPay(reservation) && (
-        <button className="secondary" type="button" aria-pressed={paymentActive} onClick={onSelectPayment}>
-          {paymentActive ? "Reserva seleccionada para pagar" : "Seleccionar para pagar"}
+        <button
+          className="secondary"
+          type="button"
+          aria-pressed={paymentActive}
+          onClick={onSelectPayment}
+        >
+          {paymentActive
+            ? "Reserva seleccionada para pagar"
+            : "Seleccionar para pagar"}
         </button>
       )}
       <ReservationCheckout
@@ -69,9 +76,13 @@ function FocusedReservation({
 
   useEffect(() => {
     const controller = new AbortController();
-    void apiRequest<Reservation>(`/reservations/${reservationId}`, accessToken, {
-      signal: controller.signal,
-    })
+    void apiRequest<Reservation>(
+      `/reservations/${reservationId}`,
+      accessToken,
+      {
+        signal: controller.signal,
+      },
+    )
       .then((value) => {
         if (!controller.signal.aborted) setReservation(value);
       })
@@ -87,13 +98,25 @@ function FocusedReservation({
     return () => controller.abort();
   }, [accessToken, reservationId]);
 
-  if (error) return <p className="inlineAlert errorNotice" role="alert">{error}</p>;
+  if (error)
+    return (
+      <p className="inlineAlert errorNotice" role="alert">
+        {error}
+      </p>
+    );
   if (!reservation) return <p className="notice">Preparando tu reserva…</p>;
 
   return (
     <div className="reservationList focusedReservationList">
-      <ReservationItem accessToken={accessToken} highlighted initial={reservation} />
-      <Link className="secondary focusedReservationHistoryLink" href="/actividad">
+      <ReservationItem
+        accessToken={accessToken}
+        highlighted
+        initial={reservation}
+      />
+      <Link
+        className="secondary focusedReservationHistoryLink"
+        href="/actividad"
+      >
         Ver todas mis reservas
       </Link>
     </div>
@@ -107,6 +130,7 @@ function ReservationsList({
   accessToken: string;
   highlightedReservationId: string;
 }) {
+  const externalPayments = useExternalPayments();
   const [result, setResult] = useState<ReservationPage | null>(null);
   const [page, setPage] = useState(0);
   const [selectedPaymentId, setSelectedPaymentId] = useState("");
@@ -148,13 +172,24 @@ function ReservationsList({
       </p>
     );
   if (!result) return <p className="notice">Cargando tus reservas…</p>;
-  const activePaymentId = result.items.some((item) => item.id === selectedPaymentId)
-    ? selectedPaymentId : result.items.find(canPay)?.id;
+  const activePaymentId = result.items.some(
+    (item) => item.id === selectedPaymentId,
+  )
+    ? selectedPaymentId
+    : result.items.find(canPay)?.id;
   return (
     <div className="reservationList activeReservationList">
       <aside className="reservationListNotice">
-        <strong>Pagos de demostración</strong>
-        <span>No se realizan cobros reales. Puedes cancelar hasta 2 horas antes.</span>
+        <strong>
+          {externalPayments
+            ? "Pagos pendientes de validación"
+            : "Pagos de demostración"}
+        </strong>
+        <span>
+          {externalPayments
+            ? "El responsable verifica cada transferencia. Una captura no confirma la reserva."
+            : "No se realizan cobros reales. Puedes cancelar hasta 2 horas antes."}
+        </span>
       </aside>
       {result.items.length === 0 ? (
         <div className="empty">
@@ -205,9 +240,16 @@ function ReservationsList({
 }
 
 function canPay(reservation: Reservation) {
-  if (reservation.status === "CONFIRMED") return reservation.paidMinor > 0 && reservation.paidMinor < reservation.totalMinor;
-  return (reservation.status === "HOLD" || reservation.status === "PENDING_PAYMENT") &&
-    (!reservation.expiresAt || Date.parse(reservation.expiresAt) > Date.now());
+  if (reservation.status === "CONFIRMED")
+    return (
+      reservation.paidMinor > 0 &&
+      reservation.paidMinor < reservation.totalMinor
+    );
+  return (
+    (reservation.status === "HOLD" ||
+      reservation.status === "PENDING_PAYMENT") &&
+    (!reservation.expiresAt || Date.parse(reservation.expiresAt) > Date.now())
+  );
 }
 
 export function MyReservations({
@@ -230,14 +272,12 @@ export function MyReservations({
         </button>
       </div>
     );
-  return (
-    highlightedReservationId ? (
-      <FocusedReservation
-        accessToken={accessToken}
-        reservationId={highlightedReservationId}
-      />
-    ) : (
-      <ReservationsList accessToken={accessToken} highlightedReservationId="" />
-    )
+  return highlightedReservationId ? (
+    <FocusedReservation
+      accessToken={accessToken}
+      reservationId={highlightedReservationId}
+    />
+  ) : (
+    <ReservationsList accessToken={accessToken} highlightedReservationId="" />
   );
 }

@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  CheckCircle,
-  Info,
-  WarningCircle,
-  X,
-} from "@phosphor-icons/react";
+import { CheckCircle, Info, WarningCircle, X } from "@phosphor-icons/react";
 
 type NoticeTone = "success" | "error" | "info";
 
@@ -30,10 +25,10 @@ export function FloatingNotice({
   duration = 4500,
 }: FloatingNoticeProps) {
   useEffect(() => {
-    if (!message || duration <= 0) return;
+    if (!message || duration <= 0 || tone === "error") return;
     const timer = window.setTimeout(onDismiss, duration);
     return () => window.clearTimeout(timer);
-  }, [duration, message, onDismiss]);
+  }, [duration, message, onDismiss, tone]);
 
   if (!message) return null;
 
@@ -48,11 +43,7 @@ export function FloatingNotice({
     >
       <Icon aria-hidden="true" size={24} weight="fill" />
       <p>{message}</p>
-      <button
-        aria-label="Cerrar mensaje"
-        onClick={onDismiss}
-        type="button"
-      >
+      <button aria-label="Cerrar mensaje" onClick={onDismiss} type="button">
         <X aria-hidden="true" size={18} weight="bold" />
       </button>
     </aside>

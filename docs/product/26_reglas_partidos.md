@@ -18,7 +18,7 @@ PUBLISHED/MINIMUM_REACHED/CONFIRMED → RESCHEDULED
 | MAT-004 | Costo no negativo y moneda PEN inicialmente |
 | MAT-005 | Debe indicar ubicación confirmada o estado “por confirmar” |
 | MAT-006 | Política de cancelación visible antes de unirse |
-| MAT-007 | Visibilidad: público, enlace o privado |
+| MAT-007 | Visibilidad: público o privado |
 | MAT-008 | Jugador activo con correo verificado y `MATCH_ORGANIZER` autoactivado |
 
 ## Visibilidad e invitaciones
@@ -138,7 +138,7 @@ Asistencia reciente: alta/media/baja, con muestra mínima
 ## Privacidad del partido
 
 - público: nombre visible limitado, no teléfono;
-- enlace: no indexado, pero no se considera secreto fuerte;
-- privado: acceso por invitación/autorización;
+- los enlaces usan identificadores aleatorios; compartirlos permite solicitar inscripción;
+- privado: no indexado en Explorar; una persona autenticada con el enlace puede acceder (decisión del producto y MatchAccessPolicyTest). No ofrece confidencialidad basada en invitación exclusiva;
 - ubicación exacta puede mostrarse solo a confirmados cuando la seguridad lo justifique;
 - lista de participantes respeta configuración y minimización.

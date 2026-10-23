@@ -1,0 +1,268 @@
+openapi: 3.1.0
+info:
+  title: Pulso Piura - Pagos externos con revisión
+  version: '2026-10-22'
+  description: Transferencia fuera de la plataforma; una imagen no confirma recepción bancaria.
+servers:
+  - url: /api/v1
+security:
+  - bearer: []
+paths:
+  /external-payments/capabilities:
+    get:
+      security: []
+      responses:
+        '200':
+          description: Modo disponible y plazo máximo de revisión en minutos.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled: {type: boolean}
+                  reviewMinutes: {type: integer, minimum: 1, maximum: 60}
+  /external-payments/destination:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/targetType'
+        - $ref: '#/components/parameters/targetId'
+      responses:
+        '200':
+          description: Destino del receptor; acceso según partido/reserva.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Destination'}
+        '403': {description: Sin permiso sobre el recurso}
+    put:
+      description: Solo el organizador del partido o OWNER activo del complejo; destino auditado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Target'
+                - type: object
+                  required: [holderName, phone, yapeEnabled, plinEnabled]
+                  properties:
+                    holderName: {type: string, minLength: 1, maxLength: 120}
+                    phone: {type: string, description: Celular peruano de nueve dígitos iniciado en 9}
+                    yapeEnabled: {type: boolean}
+                    plinEnabled: {type: boolean}
+      responses:
+        '200':
+          description: Destino actualizado
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Destination'}
+        '400': {description: Datos inválidos}
+        '403': {description: No es el receptor autorizado}
+  /organizations/{organizationId}/external-payment-destination:
+    parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      description: OWNER activo configura su cuenta incluso sin reservas previas.
+      responses:
+        '200':
+          description: Cuenta del complejo
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Destination'}
+        '403': {description: No es OWNER activo del complejo}
+    put:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [holderName, phone, yapeEnabled, plinEnabled]
+              properties:
+                holderName: {type: string, minLength: 1, maxLength: 120}
+                phone: {type: string}
+                yapeEnabled: {type: boolean}
+                plinEnabled: {type: boolean}
+      responses:
+        '200':
+          description: Destino actualizado y auditado
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Destination'}
+        '403': {description: No es OWNER activo del complejo}
+  /external-payments/prepare:
+    post:
+      description: Retiene un cupo de partido antes de mostrar los datos para transferir; valida el hold de una reserva. No confirma dinero recibido.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: {type: string, minLength: 1, maxLength: 100}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Target'
+                - type: object
+                  required: [method, plan]
+                  properties:
+                    method: {type: string, enum: [YAPE, PLIN]}
+                    plan: {type: string, enum: [FULL, DEPOSIT, BALANCE]}
+      responses:
+        '200':
+          description: Importe y destino para transferir durante el plazo indicado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  amountMinor: {type: integer, minimum: 1}
+                  currency: {type: string, const: PEN}
+                  expiresAt: {type: string, format: date-time}
+                  destination: {$ref: '#/components/schemas/Destination'}
+        '403': {description: Sin permiso sobre el recurso}
+        '409': {description: No hay capacidad, venció el hold, ya existe pago o el receptor no configuró cuenta}
+  /external-payments:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/targetType'
+        - $ref: '#/components/parameters/targetId'
+      description: Pagador ve sus entregas; receptor autorizado ve las del recurso. Una consulta actualiza revisiones vencidas.
+      responses:
+        '200':
+          description: Historial de comprobantes autorizado
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Proof'}
+    post:
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: {type: string, minLength: 1, maxLength: 100}
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Target'
+                - type: object
+                  required: [method, plan, destinationVersion, file]
+                  properties:
+                    method: {type: string, enum: [YAPE, PLIN]}
+                    plan: {type: string, enum: [FULL, DEPOSIT, BALANCE]}
+                    destinationVersion: {type: string, description: Versión del destino mostrado antes de transferir}
+                    reference: {type: string, maxLength: 100}
+                    file: {type: string, format: binary, description: JPG o PNG hasta 5 MiB; importe calculado por servidor}
+      responses:
+        '200':
+          description: Entrega en revisión o replay idempotente
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Proof'}
+        '400': {description: Archivo o campos inválidos}
+        '403': {description: El recurso no pertenece al pagador}
+        '409': {description: Destino modificado, referencia duplicada, pago previo, retención vencida o recurso no disponible}
+        '413': {description: Petición demasiado grande}
+        '429': {description: Límite de escrituras alcanzado}
+  /external-payments/{proofId}/image:
+    parameters:
+      - $ref: '#/components/parameters/proofId'
+    get:
+      description: Solo pagador o receptor contextual; no acceso implícito por rol global.
+      responses:
+        '200':
+          description: Imagen privada recodificada, Cache-Control no-store
+          content:
+            image/png:
+              schema: {type: string, format: binary}
+        '403': {description: Sin acceso al comprobante}
+        '404': {description: No existe o fue retirada por conservación}
+  /external-payments/{proofId}/decision:
+    parameters:
+      - $ref: '#/components/parameters/proofId'
+    post:
+      description: Repetir una decisión idéntica no vuelve a sumar dinero. Confirmación tardía requiere resolución y no recupera horario/cupo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: {type: string, enum: [CONFIRMED, REJECTED, CORRECTION_REQUIRED]}
+                note: {type: string, maxLength: 1000, description: Obligatoria para rechazo o corrección}
+      responses:
+        '200':
+          description: Decisión registrada e historial conservado
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Proof'}
+        '400': {description: Falta motivo o decisión inválida}
+        '403': {description: No es el receptor del recurso}
+        '409': {description: Transición inválida}
+components:
+  securitySchemes:
+    bearer: {type: http, scheme: bearer, bearerFormat: JWT}
+  parameters:
+    targetType:
+      name: targetType
+      in: query
+      required: true
+      schema: {type: string, enum: [MATCH, RESERVATION]}
+    targetId:
+      name: targetId
+      in: query
+      required: true
+      schema: {type: string, format: uuid}
+    proofId:
+      name: proofId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+  schemas:
+    Target:
+      type: object
+      required: [targetType, targetId]
+      properties:
+        targetType: {type: string, enum: [MATCH, RESERVATION]}
+        targetId: {type: string, format: uuid}
+    Destination:
+      type: object
+      properties:
+        holderName: {type: string}
+        phone: {type: string}
+        yapeEnabled: {type: boolean}
+        plinEnabled: {type: boolean}
+        configured: {type: boolean}
+        version: {type: string}
+    Proof:
+      allOf:
+        - $ref: '#/components/schemas/Target'
+        - type: object
+          properties:
+            id: {type: string, format: uuid}
+            payerUserId: {type: string, format: uuid}
+            payerName: {type: string}
+            amountMinor: {type: integer, minimum: 1, description: Céntimos PEN}
+            currency: {type: string, const: PEN}
+            method: {type: string, enum: [YAPE, PLIN]}
+            plan: {type: string, enum: [FULL, DEPOSIT, BALANCE]}
+            status: {type: string, enum: [PENDING_REVIEW, CONFIRMED, REJECTED, CORRECTION_REQUIRED, NEEDS_RESOLUTION]}
+            reference: {type: [string, 'null']}
+            holderName: {type: string}
+            phone: {type: string}
+            createdAt: {type: string, format: date-time}
+            reviewExpiresAt: {type: string, format: date-time}
+            reviewedAt: {type: [string, 'null'], format: date-time}
+            reviewNote: {type: [string, 'null']}
+            canReview: {type: boolean}
+            hasImage: {type: boolean}

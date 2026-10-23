@@ -59,7 +59,9 @@ export function AvailabilityAdmin({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [panel, setPanel] = useState<"schedule" | "exceptions">("schedule");
-  const [formOpen, setFormOpen] = useState<"schedule" | "exceptions" | null>(null);
+  const [formOpen, setFormOpen] = useState<"schedule" | "exceptions" | null>(
+    null,
+  );
   const [editingRule, setEditingRule] = useState<AvailabilityRule | null>(null);
   const [pendingAction, setPendingAction] = useState<
     | { kind: "rule"; item: AvailabilityRule }
@@ -113,7 +115,11 @@ export function AvailabilityAdmin({
           }),
         },
       );
-      setRules((current) => editingRule ? current.map((item) => item.id === rule.id ? rule : item) : [...current, rule]);
+      setRules((current) =>
+        editingRule
+          ? current.map((item) => (item.id === rule.id ? rule : item))
+          : [...current, rule],
+      );
       setFormOpen(null);
       formElement.reset();
       return editingRule ? "Horario actualizado." : "Horario semanal agregado.";
@@ -128,7 +134,10 @@ export function AvailabilityAdmin({
         accessToken,
         { method: "DELETE" },
       );
-      const refreshed = await apiRequest<AvailabilityRule[]>(`/organizations/${organizationId}/spaces/${space.id}/availability-rules`, accessToken);
+      const refreshed = await apiRequest<AvailabilityRule[]>(
+        `/organizations/${organizationId}/spaces/${space.id}/availability-rules`,
+        accessToken,
+      );
       setRules(refreshed);
       return "Horario desactivado.";
     });
@@ -137,8 +146,14 @@ export function AvailabilityAdmin({
   async function activateRule(rule: AvailabilityRule) {
     if (!accessToken) return;
     await runMutation(async () => {
-      const updated = await apiRequest<AvailabilityRule>(`/organizations/${organizationId}/spaces/${space.id}/availability-rules/${rule.id}/activate?version=${rule.version}`, accessToken, { method: "POST" });
-      setRules((current) => current.map((item) => item.id === updated.id ? updated : item));
+      const updated = await apiRequest<AvailabilityRule>(
+        `/organizations/${organizationId}/spaces/${space.id}/availability-rules/${rule.id}/activate?version=${rule.version}`,
+        accessToken,
+        { method: "POST" },
+      );
+      setRules((current) =>
+        current.map((item) => (item.id === updated.id ? updated : item)),
+      );
       return "Horario activado.";
     });
   }
@@ -302,40 +317,106 @@ export function AvailabilityAdmin({
               {rules.length === 0 ? (
                 <p className="muted">Sin horarios configurados.</p>
               ) : (
-                [...rules].sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startLocalTime.localeCompare(b.startLocalTime)).map((rule) => (
-                  <article className="scheduleCard weeklyScheduleCard" key={rule.id}>
-                    <div className="weeklyScheduleDetails">
-                      <strong>{days[rule.dayOfWeek - 1]}</strong>
-                      <span className="weeklyScheduleTime">{shortTime(rule.startLocalTime)} – {shortTime(rule.endLocalTime)}</span>
-                      <small><span>S/ {minorToSoles(rule.priceMinor)}</span><span>Turnos de {rule.slotMinutes} min</span></small>
-                    </div>
-                    <div className="weeklyScheduleActions">
-                    <span className="pill">{rule.status === "ACTIVE" ? "Activo" : "Inactivo"}</span>
-                    {canManage && rule.status === "INACTIVE" && <button className="secondary" type="button" disabled={submitting} onClick={() => void activateRule(rule)}>Activar</button>}
-                    {canManage && <button className="secondary" type="button" disabled={submitting} onClick={() => { setEditingRule(rule); setError(null); setFormOpen("schedule"); }}>Editar</button>}
-                    {canManage && rule.status === "ACTIVE" && (
-                      <button
-                        className="dangerButton"
-                        disabled={submitting}
-                        onClick={() =>
-                          setPendingAction({ kind: "rule", item: rule })
-                        }
-                      >
-                        Desactivar
-                      </button>
-                    )}
-                    </div>
-                  </article>
-                ))
+                [...rules]
+                  .sort(
+                    (a, b) =>
+                      a.dayOfWeek - b.dayOfWeek ||
+                      a.startLocalTime.localeCompare(b.startLocalTime),
+                  )
+                  .map((rule) => (
+                    <article
+                      className="scheduleCard weeklyScheduleCard"
+                      key={rule.id}
+                    >
+                      <div className="weeklyScheduleDetails">
+                        <strong>{days[rule.dayOfWeek - 1]}</strong>
+                        <span className="weeklyScheduleTime">
+                          {shortTime(rule.startLocalTime)} –{" "}
+                          {shortTime(rule.endLocalTime)}
+                        </span>
+                        <small>
+                          <span>S/ {minorToSoles(rule.priceMinor)}</span>
+                          <span>Turnos de {rule.slotMinutes} min</span>
+                        </small>
+                      </div>
+                      <div className="weeklyScheduleActions">
+                        <span className="pill">
+                          {rule.status === "ACTIVE" ? "Activo" : "Inactivo"}
+                        </span>
+                        {canManage && rule.status === "INACTIVE" && (
+                          <button
+                            className="secondary"
+                            type="button"
+                            disabled={submitting}
+                            onClick={() => void activateRule(rule)}
+                          >
+                            Activar
+                          </button>
+                        )}
+                        {canManage && (
+                          <button
+                            className="secondary"
+                            type="button"
+                            disabled={submitting}
+                            onClick={() => {
+                              setEditingRule(rule);
+                              setError(null);
+                              setFormOpen("schedule");
+                            }}
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {canManage && rule.status === "ACTIVE" && (
+                          <button
+                            className="dangerButton"
+                            disabled={submitting}
+                            onClick={() =>
+                              setPendingAction({ kind: "rule", item: rule })
+                            }
+                          >
+                            Desactivar
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  ))
               )}
             </div>
             {canManage && (
               <>
-              <button className="primary borderless" type="button" onClick={() => { setEditingRule(null); setError(null); setFormOpen("schedule"); }}>Nuevo horario</button>
-              <FormSheet open={formOpen === "schedule"} title={editingRule ? "Editar horario" : "Nuevo horario"} onClose={() => setFormOpen(null)}>
-              {error && <p className="errorNotice" role="alert">{error}</p>}
-              <RuleForm key={editingRule ? `${editingRule.id}-${editingRule.version}` : "new"} initial={editingRule} disabled={submitting} onSubmit={createRule} />
-              </FormSheet>
+                <button
+                  className="primary borderless"
+                  type="button"
+                  onClick={() => {
+                    setEditingRule(null);
+                    setError(null);
+                    setFormOpen("schedule");
+                  }}
+                >
+                  Nuevo horario
+                </button>
+                <FormSheet
+                  open={formOpen === "schedule"}
+                  title={editingRule ? "Editar horario" : "Nuevo horario"}
+                  onClose={() => setFormOpen(null)}
+                >
+                  {error && (
+                    <p className="errorNotice" role="alert">
+                      {error}
+                    </p>
+                  )}
+                  <RuleForm
+                    key={
+                      editingRule
+                        ? `${editingRule.id}-${editingRule.version}`
+                        : "new"
+                    }
+                    initial={editingRule}
+                    disabled={submitting}
+                    onSubmit={createRule}
+                  />
+                </FormSheet>
               </>
             )}
           </div>
@@ -376,14 +457,28 @@ export function AvailabilityAdmin({
                 ))
               )}
             </div>
-            <button className="primary borderless" type="button" onClick={() => setFormOpen("exceptions")}>Nueva excepción</button>
-            <FormSheet open={formOpen === "exceptions"} title="Nueva excepción" onClose={() => setFormOpen(null)}>
-            {error && <p className="errorNotice" role="alert">{error}</p>}
-            <ExceptionForm
-              canManage={canManage}
-              disabled={submitting}
-              onSubmit={createException}
-            />
+            <button
+              className="primary borderless"
+              type="button"
+              onClick={() => setFormOpen("exceptions")}
+            >
+              Nueva excepción
+            </button>
+            <FormSheet
+              open={formOpen === "exceptions"}
+              title="Nueva excepción"
+              onClose={() => setFormOpen(null)}
+            >
+              {error && (
+                <p className="errorNotice" role="alert">
+                  {error}
+                </p>
+              )}
+              <ExceptionForm
+                canManage={canManage}
+                disabled={submitting}
+                onSubmit={createException}
+              />
             </FormSheet>
           </div>
         )}
@@ -417,11 +512,21 @@ function RuleForm({
       <div className="formPair">
         <label>
           Desde
-          <input name="startLocalTime" type="time" defaultValue={initial?.startLocalTime.slice(0, 5)} required />
+          <input
+            name="startLocalTime"
+            type="time"
+            defaultValue={initial?.startLocalTime.slice(0, 5)}
+            required
+          />
         </label>
         <label>
           Hasta
-          <input name="endLocalTime" type="time" defaultValue={initial?.endLocalTime.slice(0, 5)} required />
+          <input
+            name="endLocalTime"
+            type="time"
+            defaultValue={initial?.endLocalTime.slice(0, 5)}
+            required
+          />
         </label>
       </div>
       <div className="formPair">
@@ -438,17 +543,35 @@ function RuleForm({
         </label>
         <label>
           Precio (S/)
-          <input name="price" type="number" min="0" step="0.01" defaultValue={initial ? minorToSoles(initial.priceMinor) : undefined} required />
+          <input
+            name="price"
+            type="number"
+            min="0"
+            step="0.01"
+            defaultValue={
+              initial ? minorToSoles(initial.priceMinor) : undefined
+            }
+            required
+          />
         </label>
       </div>
       <div className="formPair">
         <label>
           Vigente desde
-          <input name="validFrom" type="date" defaultValue={initial?.validFrom} required />
+          <input
+            name="validFrom"
+            type="date"
+            defaultValue={initial?.validFrom}
+            required
+          />
         </label>
         <label>
           Hasta (opcional)
-          <input name="validTo" type="date" defaultValue={initial?.validTo ?? ""} />
+          <input
+            name="validTo"
+            type="date"
+            defaultValue={initial?.validTo ?? ""}
+          />
         </label>
       </div>
       <button className="primary borderless" disabled={disabled}>

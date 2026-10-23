@@ -6,6 +6,8 @@ import { LocationSelector } from "@/features/navigation/LocationSelector";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { AuthButton } from "@/features/auth/AuthButton";
 import { AppNavigation } from "@/features/navigation/AppNavigation";
+import { LegalLinks } from "@/components/LegalLinks";
+import { AccessibleDialogs } from "@/components/AccessibleDialogs";
 import "@fontsource-variable/manrope";
 import "./styles.css";
 
@@ -20,21 +22,32 @@ export default function RootLayout({
   return (
     <html data-scroll-behavior="smooth" lang="es">
       <body suppressHydrationWarning>
+        <a className="skipLink" href="#main-content">
+          Saltar al contenido
+        </a>
         <AuthProvider>
           <LocationProvider>
-          <header className="topbar">
-            <Link className="brand" href="/">
-              <Pulse aria-hidden="true" className="brandPulse" weight="bold" />
-              <span className="brandWords">
-                <strong>PULSO</strong>
-                <small>PIURA</small>
-              </span>
-            </Link>
-            <LocationSelector />
-            <AuthButton />
-          </header>
-          {children}
-          <AppNavigation />
+            <header className="topbar">
+              <Link className="brand" href="/">
+                <Pulse
+                  aria-hidden="true"
+                  className="brandPulse"
+                  weight="bold"
+                />
+                <span className="brandWords">
+                  <strong>PULSO</strong>
+                  <small>PIURA</small>
+                </span>
+              </Link>
+              <LocationSelector />
+              <AuthButton />
+            </header>
+            <div id="main-content" tabIndex={-1}>
+              {children}
+            </div>
+            <LegalLinks />
+            <AccessibleDialogs />
+            <AppNavigation />
           </LocationProvider>
         </AuthProvider>
       </body>

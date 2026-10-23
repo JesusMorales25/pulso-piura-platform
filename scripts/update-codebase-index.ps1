@@ -23,7 +23,7 @@ function Add-Line([Collections.Generic.List[string]]$Lines, [string]$Value = "")
 
 $ProjectFiles = @(
     Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File | Where-Object {
-        $_.FullName -notmatch '[\\/](node_modules|\.next|target|build|\.git|\.idea|\.tmp|\.m2|\.npm-cache|\.local|\.vscode)[\\/]' -and
+        $_.FullName -notmatch '[\\/](node_modules|\.next|target|build|\.git|\.idea|\.tmp|\.m2|\.npm-cache|\.local|\.vscode|\.verification)[\\/]' -and
         $_.FullName -notlike "$IndexDirectory*" -and
         $_.Name -notin @('.env', 'tsconfig.tsbuildinfo') -and
         $_.FullName -ne $OutputPath
@@ -98,7 +98,7 @@ Add-Line $Lines '| Sesion y perfil | frontend/features/auth, frontend/app/perfil
 Add-Line $Lines '| Organizaciones | frontend/features/organizations, frontend/app/admin | organizations | docs/product/11_matriz_roles_permisos.md |'
 Add-Line $Lines '| Complejos y canchas | frontend/features/venues | venues | docs/product/27_panel_complejos.md, docs/ITERATION_3_VENUES_PLAN.md |'
 Add-Line $Lines '| Reservas | frontend/features/reservations, PublicVenueCatalog.tsx | reservations | docs/product/25_reglas_reservas.md, docs/RESERVATIONS_PAYMENTS.md |'
-Add-Line $Lines '| Pagos | ReservationCheckout.tsx | payments | docs/product/32_pagos_yape_plin.md, docs/adr/ADR-005-pagos-desacoplados.md |'
+Add-Line $Lines '| Pagos | frontend/features/payments, ReservationCheckout.tsx | payments, ExternalMatchPaymentService | docs/EXTERNAL_PAYMENTS.md, docs/openapi-external-payments.yaml, docs/adr/ADR-007-pagos-externos-comprobantes-privados.md |'
 Add-Line $Lines '| Partidos | frontend/features/matches, frontend/app/partidos | matches | docs/product/26_reglas_partidos.md |'
 Add-Line $Lines '| Infraestructura | frontend/lib | foundation, shared | README.md, compose.yaml, docs/IDENTITY_LOCAL_SETUP.md |'
 Add-Line $Lines

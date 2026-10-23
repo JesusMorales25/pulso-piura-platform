@@ -40,7 +40,13 @@ export function ThirdTimeSection() {
   const [places, setPlaces] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const visiblePlaces = places.filter((place) => pathname !== "/" || !district || place.zone.trim().toLocaleLowerCase("es-PE") === district.toLocaleLowerCase("es-PE"));
+  const visiblePlaces = places.filter(
+    (place) =>
+      pathname !== "/" ||
+      !district ||
+      place.zone.trim().toLocaleLowerCase("es-PE") ===
+        district.toLocaleLowerCase("es-PE"),
+  );
 
   useEffect(() => {
     let active = true;
@@ -109,7 +115,11 @@ export function ThirdTimeSection() {
                 <div className="thirdTimeImage">
                   <img
                     alt={`${categoryLabels[place.category]} ${place.name}`}
-                    src={place.imageUrl ? apiAssetUrl(place.imageUrl) : "/images/third-time-restaurant.jpg"}
+                    src={
+                      place.imageUrl
+                        ? apiAssetUrl(place.imageUrl)
+                        : "/images/third-time-reference.svg"
+                    }
                   />
                   <span>
                     <Icon aria-hidden="true" size={15} weight="fill" />{" "}

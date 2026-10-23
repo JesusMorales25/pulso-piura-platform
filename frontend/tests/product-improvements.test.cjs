@@ -9,7 +9,12 @@ const ts = require("typescript");
 function load(file, dependencies = {}) {
   const source = ts.transpileModule(
     fs.readFileSync(path.join(__dirname, "..", file), "utf8"),
-    { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } },
+    {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        jsx: ts.JsxEmit.ReactJSX,
+      },
+    },
   ).outputText;
   const exports = {};
   vm.runInNewContext(source, {
@@ -23,10 +28,29 @@ function load(file, dependencies = {}) {
 }
 
 test("directory combines profiles and search without duplicate accounts", () => {
-  const { filterDirectory, belongsToProfile } = load("features/organizations/user-directory.ts");
-  const player = { id: "1", displayName: "José Pérez", email: "jose@example.test", districtCode: "PIURA", capabilities: "", owner: false };
-  const both = { ...player, id: "2", displayName: "Ana", districtCode: "CASTILLA", capabilities: "MATCH_ORGANIZER:APPROVED, VENUE_OWNER:APPROVED" };
-  const revoked = { ...player, id: "3", capabilities: "VENUE_OWNER:REVOKED, MATCH_ORGANIZER:PENDING" };
+  const { filterDirectory, belongsToProfile } = load(
+    "features/organizations/user-directory.ts",
+  );
+  const player = {
+    id: "1",
+    displayName: "José Pérez",
+    email: "jose@example.test",
+    districtCode: "PIURA",
+    capabilities: "",
+    owner: false,
+  };
+  const both = {
+    ...player,
+    id: "2",
+    displayName: "Ana",
+    districtCode: "CASTILLA",
+    capabilities: "MATCH_ORGANIZER:APPROVED, VENUE_OWNER:APPROVED",
+  };
+  const revoked = {
+    ...player,
+    id: "3",
+    capabilities: "VENUE_OWNER:REVOKED, MATCH_ORGANIZER:PENDING",
+  };
   const users = [player, both, both, revoked];
   assert.equal(filterDirectory(users, "Todos", "").length, 3);
   assert.equal(filterDirectory(users, "Organizadores", "").length, 1);
@@ -56,9 +80,27 @@ test("financial summary includes organizer debt without duplicating rows", () =>
   const roster = [
     organizer,
     { ...organizer },
-    { participantId: "player-1", source: "ACCOUNT", status: "JOINED", paymentStatus: "PAID", paidMinor: 1500 },
-    { participantId: "manual-1", source: "MANUAL", status: "JOINED", paymentStatus: "PAID_DIRECT", paidMinor: 1500 },
-    { participantId: "free-1", source: "ACCOUNT", status: "JOINED", paymentStatus: "NOT_REQUIRED", paidMinor: 0 },
+    {
+      participantId: "player-1",
+      source: "ACCOUNT",
+      status: "JOINED",
+      paymentStatus: "PAID",
+      paidMinor: 1500,
+    },
+    {
+      participantId: "manual-1",
+      source: "MANUAL",
+      status: "JOINED",
+      paymentStatus: "PAID_DIRECT",
+      paidMinor: 1500,
+    },
+    {
+      participantId: "free-1",
+      source: "ACCOUNT",
+      status: "JOINED",
+      paymentStatus: "NOT_REQUIRED",
+      paidMinor: 0,
+    },
   ];
 
   const summary = summarizeMatchFinances(roster, 1500);
@@ -75,9 +117,18 @@ test("financial summary includes organizer debt without duplicating rows", () =>
 
 test("financial summary adds a confirmed organizer payment", () => {
   const { summarizeMatchFinances } = load("features/matches/presentation.ts");
-  const summary = summarizeMatchFinances([
-    { participantId: "organizer-1", source: "ORGANIZER", status: "JOINED", paymentStatus: "PAID", paidMinor: 1500 },
-  ], 1500);
+  const summary = summarizeMatchFinances(
+    [
+      {
+        participantId: "organizer-1",
+        source: "ORGANIZER",
+        status: "JOINED",
+        paymentStatus: "PAID",
+        paidMinor: 1500,
+      },
+    ],
+    1500,
+  );
 
   assert.equal(summary.paidOnline.length, 1);
   assert.equal(summary.collectedMinor, 1500);
@@ -101,15 +152,26 @@ test("upcoming matches are copied, past entries excluded and future entries sort
 
   const result = sortUpcomingMatches(input, Date.parse("2026-09-27T20:00:00Z"));
 
-  assert.deepEqual(result.map((match) => match.id), ["next", "late"]);
-  assert.deepEqual(input.map((match) => match.id), ["late", "past", "next"]);
+  assert.deepEqual(
+    result.map((match) => match.id),
+    ["next", "late"],
+  );
+  assert.deepEqual(
+    input.map((match) => match.id),
+    ["late", "past", "next"],
+  );
   assert.equal(result.filter((_, index) => index === 0).length, 1);
 });
 
 test("reservation payment options use the persisted deposit amount", () => {
-  const { reservationPaymentOptions } = load("features/reservations/payment-options.ts");
+  const { reservationPaymentOptions } = load(
+    "features/reservations/payment-options.ts",
+  );
 
-  const options = reservationPaymentOptions({ totalMinor: 9000, depositMinor: 2250 });
+  const options = reservationPaymentOptions({
+    totalMinor: 9000,
+    depositMinor: 2250,
+  });
 
   assert.equal(options.length, 2);
   assert.equal(options[0].plan, "DEPOSIT");
@@ -136,11 +198,20 @@ test("venue filters match exact district, covered courts and merged LED amenitie
     space: { indoor: true, amenityCodes: ["LED_LIGHTING"] },
   };
 
-  assert.equal(matchesVenueFilters(base, { district: "piura", covered: true, led: true }), true);
-  assert.equal(matchesVenueFilters(base, { district: "piu", covered: false, led: false }), false);
+  assert.equal(
+    matchesVenueFilters(base, { district: "piura", covered: true, led: true }),
+    true,
+  );
+  assert.equal(
+    matchesVenueFilters(base, { district: "piu", covered: false, led: false }),
+    false,
+  );
   assert.equal(
     matchesVenueFilters(
-      { venue: { districtCode: "Piura", amenityCodes: ["LED_LIGHTING"] }, space: { indoor: false } },
+      {
+        venue: { districtCode: "Piura", amenityCodes: ["LED_LIGHTING"] },
+        space: { indoor: false },
+      },
       { district: "", covered: false, led: true },
     ),
     true,
@@ -182,7 +253,10 @@ test("admin rating rejects partial or invalid values", () => {
   assert.throws(() => normalizeAdminRatingInput("4.9", ""), /juntas/i);
   assert.throws(() => normalizeAdminRatingInput("", "142"), /juntas/i);
   assert.throws(() => normalizeAdminRatingInput("5.1", "1"), /entre 0 y 5/i);
-  assert.throws(() => normalizeAdminRatingInput("4.9", "-1"), /entero positivo/i);
+  assert.throws(
+    () => normalizeAdminRatingInput("4.9", "-1"),
+    /entero positivo/i,
+  );
 });
 
 test("booking card renders only supplied available slots as accessible buttons", () => {
@@ -224,11 +298,17 @@ test("mobile checkout explains each missing requirement before payment", () => {
 
   const missingBoth = mobileCheckoutStatus(null, false);
   assert.equal(missingBoth.ready, false);
-  assert.equal(missingBoth.message, "Elige Yape o Plin y acepta la cuota y la política.");
+  assert.equal(
+    missingBoth.message,
+    "Elige Yape o Plin y acepta la cuota y la política.",
+  );
 
   const missingAcceptance = mobileCheckoutStatus("YAPE", false);
   assert.equal(missingAcceptance.ready, false);
-  assert.equal(missingAcceptance.message, "Acepta la cuota y la política para continuar.");
+  assert.equal(
+    missingAcceptance.message,
+    "Acepta la cuota y la política para continuar.",
+  );
 
   const missingMethod = mobileCheckoutStatus(null, true);
   assert.equal(missingMethod.ready, false);

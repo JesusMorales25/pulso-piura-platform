@@ -152,13 +152,19 @@ export function VenueAdmin({
         const saved = window.sessionStorage.getItem(draftStorageKey);
         if (saved) {
           const draft = JSON.parse(saved) as Partial<VenueSetupDraft>;
-          if (["venue", "space", "availability"].includes(String(draft.setupStep))) {
+          if (
+            ["venue", "space", "availability"].includes(String(draft.setupStep))
+          ) {
             setSetupStep(draft.setupStep as SetupStep);
           }
-          if (draft.selectedVenueId !== undefined) setSelectedVenueId(draft.selectedVenueId);
-          if (draft.selectedSpaceId !== undefined) setSelectedSpaceId(draft.selectedSpaceId);
-          if (draft.venue) setVenueDraft({ ...emptyVenueDraft, ...draft.venue });
-          if (draft.space) setSpaceDraft({ ...emptySpaceDraft, ...draft.space });
+          if (draft.selectedVenueId !== undefined)
+            setSelectedVenueId(draft.selectedVenueId);
+          if (draft.selectedSpaceId !== undefined)
+            setSelectedSpaceId(draft.selectedSpaceId);
+          if (draft.venue)
+            setVenueDraft({ ...emptyVenueDraft, ...draft.venue });
+          if (draft.space)
+            setSpaceDraft({ ...emptySpaceDraft, ...draft.space });
         }
       } catch {
         window.sessionStorage.removeItem(draftStorageKey);
@@ -179,7 +185,15 @@ export function VenueAdmin({
       space: spaceDraft,
     };
     window.sessionStorage.setItem(draftStorageKey, JSON.stringify(draft));
-  }, [draftReady, draftStorageKey, selectedSpaceId, selectedVenueId, setupStep, spaceDraft, venueDraft]);
+  }, [
+    draftReady,
+    draftStorageKey,
+    selectedSpaceId,
+    selectedVenueId,
+    setupStep,
+    spaceDraft,
+    venueDraft,
+  ]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -198,7 +212,7 @@ export function VenueAdmin({
         setSelectedVenueId((current) =>
           current && venueResult.some((venue) => venue.id === current)
             ? current
-            : venueResult[0]?.id ?? null,
+            : (venueResult[0]?.id ?? null),
         );
       })
       .catch((requestError: unknown) => {
@@ -225,7 +239,7 @@ export function VenueAdmin({
         setSelectedSpaceId((current) =>
           current && result.some((space) => space.id === current)
             ? current
-            : result[0]?.id ?? null,
+            : (result[0]?.id ?? null),
         );
       })
       .catch((requestError: unknown) => {
@@ -356,7 +370,8 @@ export function VenueAdmin({
       districtCode: venue.districtCode,
       publicPhone: venue.publicPhone ?? "",
       adminRating: venue.adminRating === null ? "" : String(venue.adminRating),
-      adminRatingCount: venue.adminRatingCount === null ? "" : String(venue.adminRatingCount),
+      adminRatingCount:
+        venue.adminRatingCount === null ? "" : String(venue.adminRatingCount),
       latitude: "",
       longitude: "",
       amenityCodes: venue.amenityCodes,
@@ -529,7 +544,13 @@ export function VenueAdmin({
                   onClick={() => openStep(step)}
                   type="button"
                 >
-                  <span>{completed && !active ? <Check size={15} weight="bold" /> : index + 1}</span>
+                  <span>
+                    {completed && !active ? (
+                      <Check size={15} weight="bold" />
+                    ) : (
+                      index + 1
+                    )}
+                  </span>
                   <small>{label}</small>
                 </button>
               </li>
@@ -646,24 +667,39 @@ export function VenueAdmin({
             )}
             {canManage && (
               <>
-              <button className="primary borderless" type="button" onClick={() => { if (editingVenue) cancelVenueEdit(); setFormOpen("venue"); }}>Nueva sede</button>
-              <FormSheet open={formOpen === "venue"} title={editingVenue ? "Editar sede" : "Nueva sede"} onClose={() => setFormOpen(null)}>
-              {error && <p role="alert" className="errorNotice">{error}</p>}
-              <VenueForm
-                key={editingVenue?.id ?? "new-venue"}
-                initial={editingVenue}
-                value={venueDraft}
-                onChange={setVenueDraft}
-                amenities={catalog.amenities.filter(
-                  (item) => item.scope !== "SPORT_SPACE",
-                )}
-                disabled={submitting}
-                onSubmit={saveVenue}
-                onCancel={
-                  () => setFormOpen(null)
-                }
-              />
-              </FormSheet>
+                <button
+                  className="primary borderless"
+                  type="button"
+                  onClick={() => {
+                    if (editingVenue) cancelVenueEdit();
+                    setFormOpen("venue");
+                  }}
+                >
+                  Nueva sede
+                </button>
+                <FormSheet
+                  open={formOpen === "venue"}
+                  title={editingVenue ? "Editar sede" : "Nueva sede"}
+                  onClose={() => setFormOpen(null)}
+                >
+                  {error && (
+                    <p role="alert" className="errorNotice">
+                      {error}
+                    </p>
+                  )}
+                  <VenueForm
+                    key={editingVenue?.id ?? "new-venue"}
+                    initial={editingVenue}
+                    value={venueDraft}
+                    onChange={setVenueDraft}
+                    amenities={catalog.amenities.filter(
+                      (item) => item.scope !== "SPORT_SPACE",
+                    )}
+                    disabled={submitting}
+                    onSubmit={saveVenue}
+                    onCancel={() => setFormOpen(null)}
+                  />
+                </FormSheet>
               </>
             )}
           </div>
@@ -675,7 +711,11 @@ export function VenueAdmin({
               <span>2</span>
               <div>
                 <h3>Datos de la cancha</h3>
-                <p>{selectedVenue ? `Agrega las canchas disponibles en ${selectedVenue.name}.` : "Primero completa los datos de la sede."}</p>
+                <p>
+                  {selectedVenue
+                    ? `Agrega las canchas disponibles en ${selectedVenue.name}.`
+                    : "Primero completa los datos de la sede."}
+                </p>
               </div>
             </div>
             <h4 className="venueResourceHeading">Canchas registradas</h4>
@@ -756,26 +796,45 @@ export function VenueAdmin({
               selectedVenue &&
               selectedVenue.status !== "ARCHIVED" && (
                 <>
-                <button className="primary borderless" type="button" onClick={() => { if (editingSpace) cancelSpaceEdit(); setFormOpen("space"); }}>Nueva cancha</button>
-                <FormSheet open={formOpen === "space"} title={editingSpace ? "Editar cancha" : "Nueva cancha"} onClose={() => setFormOpen(null)}>
-                {error && <p role="alert" className="errorNotice">{error}</p>}
-                <SpaceForm
-                  key={editingSpace?.id ?? `new-space-${selectedVenue.id}`}
-                  initial={editingSpace}
-                  value={spaceDraft}
-                  onChange={setSpaceDraft}
-                  catalog={catalog}
-                  disabled={submitting}
-                  onSubmit={saveSpace}
-                  onCancel={
-                    () => setFormOpen(null)
-                  }
-                />
-                </FormSheet>
+                  <button
+                    className="primary borderless"
+                    type="button"
+                    onClick={() => {
+                      if (editingSpace) cancelSpaceEdit();
+                      setFormOpen("space");
+                    }}
+                  >
+                    Nueva cancha
+                  </button>
+                  <FormSheet
+                    open={formOpen === "space"}
+                    title={editingSpace ? "Editar cancha" : "Nueva cancha"}
+                    onClose={() => setFormOpen(null)}
+                  >
+                    {error && (
+                      <p role="alert" className="errorNotice">
+                        {error}
+                      </p>
+                    )}
+                    <SpaceForm
+                      key={editingSpace?.id ?? `new-space-${selectedVenue.id}`}
+                      initial={editingSpace}
+                      value={spaceDraft}
+                      onChange={setSpaceDraft}
+                      catalog={catalog}
+                      disabled={submitting}
+                      onSubmit={saveSpace}
+                      onCancel={() => setFormOpen(null)}
+                    />
+                  </FormSheet>
                 </>
               )}
             <div className="venueStepActions">
-              <button className="secondary" onClick={() => openStep("venue")} type="button">
+              <button
+                className="secondary"
+                onClick={() => openStep("venue")}
+                type="button"
+              >
                 Volver a sede
               </button>
             </div>
@@ -801,7 +860,11 @@ export function VenueAdmin({
               role={role}
             />
             <div className="venueStepActions">
-              <button className="secondary" onClick={() => openStep("space")} type="button">
+              <button
+                className="secondary"
+                onClick={() => openStep("space")}
+                type="button"
+              >
                 Volver a canchas
               </button>
             </div>
@@ -844,7 +907,11 @@ function VenueForm({
   onCancel?: () => void;
 }) {
   return (
-    <form className="card adminForm compactForm venueSetupForm" noValidate onSubmit={onSubmit}>
+    <form
+      className="card adminForm compactForm venueSetupForm"
+      noValidate
+      onSubmit={onSubmit}
+    >
       <h4>{initial ? "Editar sede" : "Nueva sede"}</h4>
       <label>
         Nombre
@@ -861,7 +928,9 @@ function VenueForm({
         <input
           name="address"
           maxLength={240}
-          onChange={(event) => onChange({ ...value, address: event.target.value })}
+          onChange={(event) =>
+            onChange({ ...value, address: event.target.value })
+          }
           required
           value={value.address}
         />
@@ -876,20 +945,28 @@ function VenueForm({
           onChange({ ...value, latitude, longitude })
         }
       />
-      <DistrictSelect value={value.districtCode} onChange={(districtCode) => onChange({ ...value, districtCode })} />
+      <DistrictSelect
+        value={value.districtCode}
+        onChange={(districtCode) => onChange({ ...value, districtCode })}
+      />
       <label>
         Teléfono público
         <input
           name="publicPhone"
           maxLength={30}
           inputMode="tel"
-          onChange={(event) => onChange({ ...value, publicPhone: event.target.value })}
+          onChange={(event) =>
+            onChange({ ...value, publicPhone: event.target.value })
+          }
           value={value.publicPhone}
         />
       </label>
       <fieldset className="venueRatingFields">
         <legend>Calificación informada por el complejo</legend>
-        <p>Dato provisional configurable hasta activar valoraciones reales de usuarios.</p>
+        <p>
+          Dato provisional configurable hasta activar valoraciones reales de
+          usuarios.
+        </p>
         <div>
           <label>
             Calificación
@@ -898,7 +975,9 @@ function VenueForm({
               max={5}
               min={0}
               name="adminRating"
-              onChange={(event) => onChange({ ...value, adminRating: event.target.value })}
+              onChange={(event) =>
+                onChange({ ...value, adminRating: event.target.value })
+              }
               placeholder="4.9"
               step={0.1}
               type="number"
@@ -911,7 +990,9 @@ function VenueForm({
               inputMode="numeric"
               min={0}
               name="adminRatingCount"
-              onChange={(event) => onChange({ ...value, adminRatingCount: event.target.value })}
+              onChange={(event) =>
+                onChange({ ...value, adminRatingCount: event.target.value })
+              }
               placeholder="142"
               step={1}
               type="number"
@@ -960,9 +1041,13 @@ function SpaceForm({
   );
   const formatCode = formats.some((format) => format.code === value.formatCode)
     ? value.formatCode
-    : formats[0]?.code ?? "";
+    : (formats[0]?.code ?? "");
   return (
-    <form className="card adminForm compactForm venueSetupForm" noValidate onSubmit={onSubmit}>
+    <form
+      className="card adminForm compactForm venueSetupForm"
+      noValidate
+      onSubmit={onSubmit}
+    >
       <h4>{initial ? "Editar cancha" : "Nueva cancha"}</h4>
       <label>
         Nombre
@@ -1003,7 +1088,9 @@ function SpaceForm({
         Modalidad
         <select
           name="formatCode"
-          onChange={(event) => onChange({ ...value, formatCode: event.target.value })}
+          onChange={(event) =>
+            onChange({ ...value, formatCode: event.target.value })
+          }
           required
           value={formatCode}
         >
@@ -1021,7 +1108,9 @@ function SpaceForm({
           type="number"
           inputMode="numeric"
           min={1}
-          onChange={(event) => onChange({ ...value, capacity: event.target.value })}
+          onChange={(event) =>
+            onChange({ ...value, capacity: event.target.value })
+          }
           required
           value={value.capacity}
         />
@@ -1030,7 +1119,9 @@ function SpaceForm({
         Superficie
         <select
           name="surfaceType"
-          onChange={(event) => onChange({ ...value, surfaceType: event.target.value })}
+          onChange={(event) =>
+            onChange({ ...value, surfaceType: event.target.value })
+          }
           value={value.surfaceType}
         >
           <option value="">Sin especificar</option>
@@ -1045,7 +1136,9 @@ function SpaceForm({
         <input
           checked={value.indoor}
           name="indoor"
-          onChange={(event) => onChange({ ...value, indoor: event.target.checked })}
+          onChange={(event) =>
+            onChange({ ...value, indoor: event.target.checked })
+          }
           type="checkbox"
         />{" "}
         Espacio techado

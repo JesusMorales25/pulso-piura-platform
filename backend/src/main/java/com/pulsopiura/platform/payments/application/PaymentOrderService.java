@@ -17,6 +17,19 @@ public class PaymentOrderService {
     private final ReservationTransitionService transitions;
     private final PaymentProviderPort provider;
     private final PaymentAuditStore audit;
+    private ExternalPaymentStore externalProofs;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public PaymentOrderService(
+            PaymentOrderRepository orders,
+            ReservationQueryService reservations,
+            ReservationTransitionService transitions,
+            PaymentProviderPort provider,
+            PaymentAuditStore audit,
+            ExternalPaymentStore externalProofs) {
+        this(orders, reservations, transitions, provider, audit);
+        this.externalProofs = externalProofs;
+    }
 
     public PaymentOrderService(
             PaymentOrderRepository orders,
@@ -48,6 +61,16 @@ public class PaymentOrderService {
                     "Los pagos están deshabilitados hasta configurar un proveedor. No se realizará ningún cobro.");
         var key = new ReservationIdempotencyKey(rawKey).value();
         var reservation = reservations.lockCustomer(actor, reservationId);
+        if (externalProofs != null
+                && !externalProofs
+                        .list(ExternalPaymentModels.TargetType.RESERVATION, reservationId)
+                        .isEmpty())
+            throw new ReservationConflictException(
+                    "La reserva tiene comprobantes externos y no admite simulaciones");
+        if (orders.findAllByReservationIdOrderByCreatedAtAsc(reservationId).stream()
+                .anyMatch(p -> !p.simulated()))
+            throw new ReservationConflictException(
+                    "La reserva ya tiene pagos externos y no admite simulaciones");
         var replay = orders.findByPayerUserIdAndIdempotencyKey(actor, key);
         if (replay.isPresent()) return replay(replay.get(), reservationId, method, plan);
         var installment = plan == PaymentPlan.BALANCE ? "BALANCE" : "INITIAL";
@@ -119,6 +142,9 @@ public class PaymentOrderService {
                 orders.findById(orderId)
                         .orElseThrow(() -> new NoSuchElementException("Orden no encontrada"));
         requirePayer(actor, order);
+        if (!order.simulated())
+            throw new ReservationConflictException(
+                    "Los pagos externos requieren revisión del receptor");
         if ("PAID".equals(order.status())) return view(order);
         if (order.plan() == PaymentPlan.BALANCE) {
             if (!"CONFIRMED".equals(reservation.status()))
@@ -167,7 +193,7 @@ public class PaymentOrderService {
                 order.status(),
                 order.providerReference(),
                 order.paidAt(),
-                true);
+                order.simulated());
     }
 
     public record PaymentOrderView(
