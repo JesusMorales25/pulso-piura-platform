@@ -391,7 +391,7 @@ documentation	md	17579	docs/ITERATION_3_VENUES_PLAN.md
 documentation	md	13709	docs/ITERATION_4_RESERVATIONS_PLAN.md
 documentation	md	3620	docs/ITERATION_5_MATCHES_PLAN.md
 documentation	md	4785	docs/NEXT_INCREMENT.md
-documentation	md	16139	docs/OBSERVATIONS_OCTOBER_2026.md
+documentation	md	16659	docs/OBSERVATIONS_OCTOBER_2026.md
 documentation	yaml	10391	docs/openapi-external-payments.yaml
 documentation	yaml	54836	docs/openapi-identity.yaml
 documentation	md	10606	docs/PRODUCCION_ORACLE_FREE_TIER.md
@@ -524,7 +524,7 @@ frontend-feature	tsx	1767	frontend/features/navigation/LocationProvider.tsx
 frontend-feature	tsx	2946	frontend/features/navigation/LocationSelector.tsx
 frontend-feature	tsx	2483	frontend/features/organizations/InvitationAcceptance.tsx
 frontend-feature	tsx	11619	frontend/features/organizations/OrganizationAdmin.tsx
-frontend-feature	tsx	12420	frontend/features/organizations/OrganizationWorkspace.tsx
+frontend-feature	tsx	13673	frontend/features/organizations/OrganizationWorkspace.tsx
 frontend-feature	tsx	4012	frontend/features/organizations/PlatformUserDirectory.tsx
 frontend-feature	ts	1243	frontend/features/organizations/user-directory.ts
 frontend-feature	css	573	frontend/features/payments/ExternalPaymentPanel.module.css
@@ -576,6 +576,7 @@ frontend-test	cjs	9912	frontend/tests/accessibility.browser.cjs
 frontend-test	cjs	10419	frontend/tests/auth-security.test.cjs
 frontend-test	cjs	21172	frontend/tests/external-payments.browser.cjs
 frontend-test	cjs	2010	frontend/tests/external-payments.test.cjs
+frontend-test	cjs	5762	frontend/tests/organization-workspace.browser.cjs
 frontend-test	cjs	10871	frontend/tests/product-improvements.test.cjs
 root-or-support	json	661	frontend/tsconfig.json
 root-or-support	json	82	frontend/vercel.json

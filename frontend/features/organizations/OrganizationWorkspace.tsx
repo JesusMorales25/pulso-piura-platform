@@ -41,6 +41,9 @@ export function OrganizationWorkspace() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [overviews, setOverviews] = useState<Record<string, Overview>>({});
+  const [overviewError, setOverviewError] = useState(false);
+  const [overviewLoading, setOverviewLoading] = useState(false);
+  const [overviewRetry, setOverviewRetry] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const createDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -64,17 +67,6 @@ export function OrganizationWorkspace() {
           if (new URLSearchParams(window.location.search).get("create") === "1")
             setShowCreate(true);
         }
-        return Promise.all(
-          result.map(async (organization) => {
-            const overview = await apiRequest<Overview>(
-              `/organizations/${organization.id}/overview`,
-              accessToken,
-            );
-            return [organization.id, overview] as const;
-          }),
-        ).then((entries) => {
-          if (active) setOverviews(Object.fromEntries(entries));
-        });
       })
       .catch((requestError: unknown) => {
         if (!active) return;
@@ -91,6 +83,37 @@ export function OrganizationWorkspace() {
       active = false;
     };
   }, [accessToken, authLoading, fetchOrganizations]);
+
+  useEffect(() => {
+    if (!accessToken || organizations.length === 0) return;
+    let active = true;
+    const controller = new AbortController();
+    void Promise.allSettled(
+      organizations.map(async (organization) => {
+        const overview = await apiRequest<Overview>(
+          `/organizations/${organization.id}/overview`,
+          accessToken,
+          { signal: controller.signal },
+        );
+        return [organization.id, overview] as const;
+      }),
+    ).then((results) => {
+      if (!active) return;
+      setOverviews(
+        Object.fromEntries(
+          results.flatMap((result) =>
+            result.status === "fulfilled" ? [result.value] : [],
+          ),
+        ),
+      );
+      setOverviewError(results.some((result) => result.status === "rejected"));
+      setOverviewLoading(false);
+    });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [accessToken, organizations, overviewRetry]);
 
   async function createOrganization(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -150,6 +173,11 @@ export function OrganizationWorkspace() {
       </div>
     );
 
+  const summaries = organizations.flatMap((organization) =>
+    overviews[organization.id] ? [overviews[organization.id]] : [],
+  );
+  const overviewComplete = summaries.length === organizations.length;
+
   return (
     <>
       <header className="ownerWorkspaceHero">
@@ -173,17 +201,11 @@ export function OrganizationWorkspace() {
           ["Complejos", organizations.length],
           [
             "Canchas habilitadas",
-            Object.values(overviews).reduce(
-              (sum, item) => sum + item.spaces,
-              0,
-            ),
+            summaries.reduce((sum, item) => sum + item.spaces, 0),
           ],
           [
             "Partidos hoy",
-            Object.values(overviews).reduce(
-              (sum, item) => sum + item.matchesToday,
-              0,
-            ),
+            summaries.reduce((sum, item) => sum + item.matchesToday, 0),
           ],
           [
             "Recaudación estimada hoy",
@@ -191,23 +213,37 @@ export function OrganizationWorkspace() {
               style: "currency",
               currency: "PEN",
             }).format(
-              Object.values(overviews).reduce(
-                (sum, item) => sum + item.expectedMinor,
-                0,
-              ) / 100,
+              summaries.reduce((sum, item) => sum + item.expectedMinor, 0) /
+                100,
             ),
           ],
         ].map(([label, value]) => (
           <article key={label}>
             <small>{label}</small>
             <strong>
-              {Object.keys(overviews).length === organizations.length
-                ? value
-                : "—"}
+              {label === "Complejos" || overviewComplete ? value : "—"}
             </strong>
           </article>
         ))}
       </div>
+      {overviewError && (
+        <div className="notice" role="alert">
+          <p>
+            No se pudo cargar todo el resumen. Tus complejos siguen disponibles.
+          </p>
+          <button
+            className="secondary"
+            type="button"
+            disabled={overviewLoading}
+            onClick={() => {
+              setOverviewLoading(true);
+              setOverviewRetry((current) => current + 1);
+            }}
+          >
+            Reintentar resumen
+          </button>
+        </div>
+      )}
       <p className="muted">
         Estimación basada en las reservas confirmadas de hoy; no equivale a
         dinero cobrado.
