@@ -133,11 +133,13 @@ function Dashboard({
         </div>
         <span className="pill">{total} registradas</span>
       </div>
-      <p className="notice">
-        Los pagos de simulación anteriores no acreditan dinero recibido; revisa
-        los comprobantes confirmados. Solo puedes cancelar reservas sin pagos
-        registrados.
-      </p>
+      <details className="muted">
+        <summary>Sobre los pagos anteriores</summary>
+        <p>
+          Los pagos de simulación no acreditan dinero recibido. Las reservas con
+          pagos registrados no se pueden cancelar desde este panel.
+        </p>
+      </details>
       <ReservationCheckInScanner
         organizationId={organizationId}
         accessToken={accessToken}

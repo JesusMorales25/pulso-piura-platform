@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: 3eecdd92cf86e1f8
-- Archivos indexados: 652
+- Huella del inventario: f50829a9d2e6161a
+- Archivos indexados: 653
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso

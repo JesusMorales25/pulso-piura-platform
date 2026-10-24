@@ -217,3 +217,27 @@ activación/despliegue de Render. No se han enviado transferencias ni comprobant
   S/0 en revisión y nota explícita de ensayo sin transferencia. No se borró el historial.
 - Este registro de ensayo permanece identificado; no representa dinero recibido realmente.
 - El selector Plin comparte el flujo, pero este ensayo remoto se ejecutó con Yape.
+
+## Cuenta receptora única y edición compacta — 24 de octubre de 2026
+
+La configuración del complejo se muestra una sola vez en Reservas, con edición mediante FormSheet.
+Las tarjetas de reservas conservan importes y comprobantes, sin controles para editar la cuenta.
+El aviso sobre simulación queda plegado en el panel general. El formulario tiene controles oscuros,
+confirmación explícita de titular/celular y conserva el avance al cerrar sin guardar.
+Los permisos backend siguen exigiendo propietario activo del complejo, auditando cambios y
+conservando la versión/datos mostrados al pagador en cada comprobante. No implica validación bancaria
+ni verificación de titularidad por Yape/Plin; es configuración declarada por el propietario.
+
+## Cobros del partido al organizador — 24 de octubre de 2026
+
+El mismo popup y confirmación de datos se aplica al receptor del partido, con título explícito
+Cuenta receptora del organizador. La configuración se asocia al partido (no a la organización
+ni a la cuenta del propietario de la cancha). Solo su organizador puede editar y revisar.
+El jugador prepara la cuota, ve el destino verificado por el servidor y adjunta su comprobante;
+la captura queda en revisión hasta que el organizador confirme. Se conserva historial de corrección,
+rechazo y resolución por vencimiento. La imagen utiliza el mismo almacenamiento privado.
+Al registrar una decisión se actualizan padrón, ocupación y resumen de ingresos del organizador
+sin recarga completa. Los pagos al complejo y al partido siguen siendo obligaciones distintas.
+Prueba sintética del organizador: edición del destino MATCH, revisión de comprobante, refresco de
+padrón/finanzas y sin desbordamientos en 320, 393 y 768 px. No se ejecutó transferencia real ni
+se alteraron cobros de partidos en producción durante este ajuste.

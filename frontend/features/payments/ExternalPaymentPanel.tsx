@@ -113,6 +113,8 @@ function ExternalPaymentPanelInner({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [refresh, setRefresh] = useState(0);
+  const [editingDestination, setEditingDestination] = useState(false);
+  const [destinationSaved, setDestinationSaved] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [prepared, setPrepared] = useState<PreparedPayment | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -278,16 +280,20 @@ function ExternalPaymentPanelInner({
         .filter((proof) => proof.status === status)
         .reduce((sum, proof) => sum + proof.amountMinor, 0) / 100,
     );
+  const matchPayment = targetType === "MATCH";
+  const recipientLabel = matchPayment ? "organizador" : "propietario";
+  const canEditDestination =
+    reviewer && (organizationSettings || targetType === "MATCH");
   const shownDestination = allowUpload
     ? preparedActive
       ? prepared.destination
       : null
-    : reviewer
+    : reviewer && (organizationSettings || targetType === "MATCH")
       ? destination
       : null;
   return (
     <section
-      className={`${styles.panel} card`}
+      className={`${styles.panel} ${organizationSettings ? styles.accountPanel : ""} card`}
       aria-label={
         reviewer ? "Revisión de pagos externos" : "Pago por Yape o Plin"
       }
@@ -296,33 +302,44 @@ function ExternalPaymentPanelInner({
         {organizationSettings
           ? "Cuenta receptora del complejo"
           : reviewer
-            ? "Pagos por validar"
+            ? matchPayment
+              ? "Cobros del partido"
+              : "Pagos por validar"
             : allowUpload
               ? "Paga con Yape o Plin"
               : "Historial de pago"}
       </h3>
-      <p>
-        {organizationSettings
-          ? "Configura los datos que verán los jugadores antes de su primera reserva. Verifica el titular y celular antes de guardarlos."
-          : !allowUpload
-            ? "Consulta el comprobante y su revisión. Si el pago requiere resolución, contacta al responsable; no vuelvas a transferir."
-            : "Primero prepara el pago para verificar disponibilidad; después transfiere desde tu aplicación. Enviar una captura no confirma el pago: el responsable debe verificarlo."}
-      </p>
+      {!organizationSettings && (
+        <p>
+          {organizationSettings
+            ? "Configura los datos que verán los jugadores antes de su primera reserva. Verifica el titular y celular antes de guardarlos."
+            : !allowUpload
+              ? matchPayment
+                ? "El organizador valida los comprobantes de este partido."
+                : "Revisa los comprobantes y su estado."
+              : matchPayment
+                ? "Paga tu cuota al organizador por Yape o Plin y envía el comprobante. Tu cupo se confirma cuando él apruebe el pago."
+                : "Primero prepara el pago para verificar disponibilidad; después transfiere desde tu aplicación. Enviar una captura no confirma el pago: el responsable debe verificarlo."}
+        </p>
+      )}
+      {destinationSaved && (
+        <p className={styles.saved} role="status">
+          Cuenta receptora actualizada.
+        </p>
+      )}
       {error && (
         <p role="alert" className="errorNotice">
           {error}
         </p>
       )}
-      {reviewer && destination && (
-        <p className="notice">
-          Los pagos de simulación anteriores no acreditan dinero recibido;
-          revisa los comprobantes confirmados.
-        </p>
-      )}
       {!organizationSettings && (
         <dl className="reservationSummary">
           <div>
-            <dt>Confirmado por el receptor</dt>
+            <dt>
+              {matchPayment
+                ? "Confirmado por el organizador"
+                : "Confirmado por el receptor"}
+            </dt>
             <dd>{externalTotal("CONFIRMED")}</dd>
           </div>
           <div>
@@ -331,80 +348,127 @@ function ExternalPaymentPanelInner({
           </div>
         </dl>
       )}
-      {reviewer && destination && (
-        <details>
-          <summary>Configurar cuenta receptora</summary>
-          <form
-            key={`${destination.holderName}:${destination.phone}`}
-            onSubmit={(event) => {
-              event.preventDefault();
-              const data = new FormData(event.currentTarget);
-              void mutate(async () => {
-                const saved = await apiRequest<Destination>(
-                  destinationPath,
-                  accessToken,
-                  {
-                    method: "PUT",
-                    body: JSON.stringify({
-                      ...(!organizationSettings
-                        ? { targetType, targetId }
-                        : {}),
-                      holderName: data.get("holderName"),
-                      phone: data.get("phone"),
-                      yapeEnabled: data.has("yapeEnabled"),
-                      plinEnabled: data.has("plinEnabled"),
-                    }),
-                  },
-                );
-                setDestination(saved);
-              });
+      {canEditDestination && destination && (
+        <>
+          {matchPayment && (
+            <h4 className={styles.accountTitle}>
+              Cuenta receptora del organizador
+            </h4>
+          )}
+          <button
+            className="secondary"
+            type="button"
+            onClick={() => {
+              setDestinationSaved(false);
+              setEditingDestination(true);
             }}
           >
-            <label>
-              Titular
-              <input
-                name="holderName"
-                required
-                maxLength={120}
-                defaultValue={destination.holderName ?? ""}
-              />
-            </label>
-            <label>
-              Celular peruano
-              <input
-                name="phone"
-                type="tel"
-                inputMode="tel"
-                required
-                pattern="(\+51)?9[0-9]{8}"
-                placeholder="987654321"
-                defaultValue={destination.phone ?? ""}
-              />
-            </label>
-            <label>
-              <input
-                name="yapeEnabled"
-                type="checkbox"
-                defaultChecked={destination.yapeEnabled}
-              />{" "}
-              Yape
-            </label>
-            <label>
-              <input
-                name="plinEnabled"
-                type="checkbox"
-                defaultChecked={destination.plinEnabled}
-              />{" "}
-              Plin
-            </label>
-            <button disabled={busy} type="submit">
-              Guardar cuenta receptora
-            </button>
-          </form>
-        </details>
+            {destination.configured
+              ? "Editar cuenta receptora"
+              : "Configurar cuenta receptora"}
+          </button>
+          <FormSheet
+            open={editingDestination}
+            title={
+              matchPayment
+                ? "Cuenta receptora del organizador"
+                : "Cuenta receptora"
+            }
+            onClose={() => {
+              if (!busy) setEditingDestination(false);
+            }}
+          >
+            <p className={styles.help}>
+              {organizationSettings
+                ? "Cuenta única para este complejo. Solo el propietario puede cambiarla; los cambios quedan registrados."
+                : "Solo el organizador de este partido puede cambiar la cuenta. Los cambios quedan registrados."}
+            </p>
+            {error && (
+              <p role="alert" className="errorNotice">
+                {error}
+              </p>
+            )}
+            <form
+              className={styles.destinationForm}
+              key={`${destination.holderName}:${destination.phone}`}
+              onSubmit={(event) => {
+                event.preventDefault();
+                const data = new FormData(event.currentTarget);
+                void mutate(async () => {
+                  const saved = await apiRequest<Destination>(
+                    destinationPath,
+                    accessToken,
+                    {
+                      method: "PUT",
+                      body: JSON.stringify({
+                        ...(!organizationSettings
+                          ? { targetType, targetId }
+                          : {}),
+                        holderName: data.get("holderName"),
+                        phone: data.get("phone"),
+                        yapeEnabled: data.has("yapeEnabled"),
+                        plinEnabled: data.has("plinEnabled"),
+                      }),
+                    },
+                  );
+                  setDestination(saved);
+                  setEditingDestination(false);
+                  setDestinationSaved(true);
+                });
+              }}
+            >
+              <label>
+                Titular
+                <input
+                  name="holderName"
+                  required
+                  maxLength={120}
+                  defaultValue={destination.holderName ?? ""}
+                />
+              </label>
+              <label>
+                Celular peruano
+                <input
+                  name="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={12}
+                  required
+                  pattern="(\+51)?9[0-9]{8}"
+                  placeholder="987654321"
+                  defaultValue={destination.phone ?? ""}
+                />
+              </label>
+              <label className={styles.methodChoice}>
+                <input
+                  name="yapeEnabled"
+                  type="checkbox"
+                  defaultChecked={destination.yapeEnabled}
+                />{" "}
+                Yape
+              </label>
+              <label className={styles.methodChoice}>
+                <input
+                  name="plinEnabled"
+                  type="checkbox"
+                  defaultChecked={destination.plinEnabled}
+                />{" "}
+                Plin
+              </label>
+              <label className={styles.methodChoice}>
+                <input type="checkbox" required />
+                Confirmo que el titular y celular corresponden a la cuenta que
+                recibirá los pagos.
+              </label>
+              <button className="primary" disabled={busy} type="submit">
+                Guardar cuenta receptora
+              </button>
+            </form>
+          </FormSheet>
+        </>
       )}
       {shownDestination?.configured && (
-        <p>
+        <p className={styles.destinationSummary}>
           <strong>{shownDestination.holderName}</strong>
           <br />
           Celular: {shownDestination.phone}
@@ -417,9 +481,9 @@ function ExternalPaymentPanelInner({
             .join(" · ")}
         </p>
       )}
-      {!destination?.configured && (
+      {!destination?.configured && (organizationSettings || !reviewer) && (
         <p role="status">
-          El responsable todavía debe configurar su cuenta receptora. No
+          El {recipientLabel} todavía debe configurar su cuenta receptora. No
           realices la transferencia hasta verla aquí.
         </p>
       )}

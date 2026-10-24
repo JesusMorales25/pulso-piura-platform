@@ -105,6 +105,31 @@ export function MatchOrganizerDashboard({
     };
   }, [accessToken, capabilities.canCreateMatches, capabilitiesLoading]);
 
+  async function refreshMatchPayments(matchId: string) {
+    if (!accessToken) return;
+    try {
+      const [roster, updatedMatches] = await Promise.all([
+        apiRequest<MatchParticipantAdmin[]>(
+          `/matches/${matchId}/participants`,
+          accessToken,
+        ),
+        apiRequest<MatchSummary[]>("/matches/mine", accessToken),
+      ]);
+      setPeople((current) => ({ ...current, [matchId]: roster }));
+      const updated = updatedMatches.find((item) => item.id === matchId);
+      if (updated)
+        setMatches((current) =>
+          current.map((item) => (item.id === matchId ? updated : item)),
+        );
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "No se pudo actualizar el resumen del partido.",
+      );
+    }
+  }
+
   const totals = useMemo(() => Object.values(people).flat(), [people]);
   const financeByMatch = useMemo(
     () =>
@@ -461,6 +486,7 @@ export function MatchOrganizerDashboard({
                     accessToken={accessToken}
                     targetType="MATCH"
                     targetId={match.id}
+                    onChange={() => void refreshMatchPayments(match.id)}
                     reviewer
                     allowUpload={false}
                   />

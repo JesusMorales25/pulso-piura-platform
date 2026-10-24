@@ -136,3 +136,12 @@ Horario semanal: día, franja horaria, precio y duración en líneas separadas; 
 
 ## Pestañas de Mis canchas
 - Gestiona tu complejo reutiliza el banner y selector de las otras secciones: Complejos creados muestra resumen y listado; Crear complejos contiene la acción que abre el popup existente. Al guardar vuelve al listado actualizado.
+
+## Configuración de cuenta receptora compacta
+- Una sola tarjeta por complejo, edición en popup compartido, sin formulario repetido por reserva.
+- Controles consistentes y confirmación de titular/celular antes de guardar. Aviso anterior plegado.
+
+## Pago de partidos al organizador
+- Cuenta del organizador por partido, edición en popup y confirmación de titular/celular.
+- Comprobantes y aprobación con el mismo almacenamiento privado y control de propiedad del partido.
+- Al aprobar, el panel actualiza cupos, participantes e ingresos sin recargar la página.

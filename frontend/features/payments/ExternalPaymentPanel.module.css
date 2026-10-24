@@ -36,3 +36,68 @@
 .panel button {
   white-space: normal;
 }
+
+.panel h3,
+.panel p {
+  margin: 0;
+}
+.accountPanel {
+  padding: 16px;
+  gap: 8px;
+}
+.accountPanel h3 {
+  font-size: 1rem;
+}
+.destinationSummary {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.destinationSummary strong {
+  color: var(--text);
+}
+.help {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.saved {
+  color: var(--accent);
+  font-size: 0.875rem;
+}
+.panel .destinationForm {
+  gap: 16px;
+}
+.destinationForm input:not([type="checkbox"]),
+.destinationForm select,
+.destinationForm textarea {
+  background: var(--bg, #071827);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text, #fff);
+  font: inherit;
+  padding: 12px;
+  min-height: 44px;
+}
+.destinationForm input:focus-visible {
+  outline: 2px solid var(--primary, #18c6c8);
+  outline-offset: 2px;
+}
+.panel .methodChoice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.methodChoice input {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--primary, #18c6c8);
+}
+.accountTitle {
+  margin: 0;
+  font-size: 0.875rem;
+}

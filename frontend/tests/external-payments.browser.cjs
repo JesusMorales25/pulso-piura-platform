@@ -462,9 +462,37 @@ async function main() {
                 name: "Cuenta receptora del complejo",
               }),
             });
-          await settings.getByText("Configurar cuenta receptora").click();
-          await settings.getByLabel("Titular").fill("Cuenta actualizada");
+          await settings
+            .getByRole("button", {
+              name: "Editar cuenta receptora",
+              exact: true,
+            })
+            .click();
+          await settings
+            .getByRole("dialog", { name: "Cuenta receptora", exact: true })
+            .waitFor();
+          await settings
+            .getByLabel("Titular", { exact: true })
+            .fill("Cuenta actualizada");
           await settings.getByLabel("Celular peruano").fill("912345678");
+          await settings
+            .getByRole("button", { name: "Guardar cuenta receptora" })
+            .click();
+          assert.equal(
+            saved,
+            false,
+            "Changing the recipient requires explicit confirmation.",
+          );
+          if (width === 393)
+            await page.screenshot({
+              path: path.join(
+                __dirname,
+                "../../.local/payment-destination-dialog-mobile.png",
+              ),
+            });
+          await settings
+            .getByRole("checkbox", { name: /Confirmo que el titular/ })
+            .check();
           await settings
             .getByRole("button", { name: "Guardar cuenta receptora" })
             .click();
@@ -495,6 +523,21 @@ async function main() {
             .filter({
               has: page.getByRole("heading", { name: "Pagos por validar" }),
             });
+          assert.equal(
+            await page
+              .getByRole("button", {
+                name: /Editar cuenta receptora|Configurar cuenta receptora/,
+              })
+              .count(),
+            1,
+            "Only the organization settings can edit a reservation recipient.",
+          );
+          assert.equal(
+            await review
+              .getByRole("button", { name: /cuenta receptora/ })
+              .count(),
+            0,
+          );
           await review.getByRole("button", { name: "Ver comprobante" }).click();
           const dialog = page.getByRole("dialog", {
             name: "Comprobante de pago",
