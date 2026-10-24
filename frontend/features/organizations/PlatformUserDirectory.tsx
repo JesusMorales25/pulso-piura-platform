@@ -41,6 +41,7 @@ export function PlatformUserDirectory({ users }: { users: PlatformUser[] }) {
         onSelect={(id) => setProfile(id as UserProfile)}
       />
       <FormSheet
+        variant="workspace"
         open={profile !== null}
         title={"Usuarios · " + (profile ?? "Todos")}
         onClose={() => setProfile(null)}

@@ -1,0 +1,334 @@
+/* Shared responsive geometry; imported after the legacy surface stylesheet. */
+:root {
+  --page-gutter: 16px;
+  --sheet-padding: 20px;
+  --safe-page-left: max(var(--page-gutter), env(safe-area-inset-left, 0px));
+  --safe-page-right: max(var(--page-gutter), env(safe-area-inset-right, 0px));
+  --popup-top-gap: max(16px, env(safe-area-inset-top, 0px));
+  --popup-menu-clearance: calc(84px + env(safe-area-inset-bottom, 0px));
+}
+#main-content {
+  min-width: 0;
+}
+.section {
+  min-width: 0;
+}
+.section :where(h1, h2, h3, h4, p, dd, dt, legend, label) {
+  overflow-wrap: anywhere;
+}
+:where(.sectionHeading, .sectionTitle, .profileHead, .adminHead) {
+  flex-wrap: wrap;
+}
+:where(.sectionHeading, .sectionTitle, .profileHead, .adminHead) > * {
+  min-width: 0;
+  max-width: 100%;
+}
+:where(
+  .card,
+  .empty,
+  .notice,
+  .profileForm,
+  .workspaceGrid,
+  .adminForm,
+  .formPair
+) {
+  min-width: 0;
+}
+:where(.workspaceGrid, .adminForm, .formPair) > * {
+  min-width: 0;
+}
+:where(.primary, .secondary) {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+:where(.primary, .secondary) > svg {
+  flex-shrink: 0;
+}
+
+/* Native sheets share a stable header and a separate, consistently spaced body. */
+.createComplexDialog {
+  padding: 0;
+  max-width: calc(100% - var(--safe-page-left) - var(--safe-page-right));
+  scroll-padding-block: 92px 24px;
+}
+.createComplexDialogHeading {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  min-width: 0;
+  padding: 16px var(--sheet-padding);
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+  background: #082230;
+}
+.createComplexDialogHeading h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+.createComplexDialogHeading button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  flex: 0 0 44px;
+  padding: 0;
+}
+.resourceFormSheet > .createComplexDialogHeading {
+  margin: 0;
+}
+.resourceFormSheetBody {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  padding: var(--sheet-padding);
+  min-width: 0;
+}
+.resourceFormSheetBody > * {
+  min-width: 0;
+  max-width: 100%;
+  margin-block: 0;
+}
+.resourceFormSheetBody :where(h2, h3, p, dd, dt, label, legend) {
+  overflow-wrap: anywhere;
+}
+.resourceFormSheetBody > .section,
+.resourceFormSheet .compactMatchBuilder.section {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+.resourceFormSheet .reservationCard {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.resourceFormSheet :where(input, select, textarea, fieldset) {
+  min-width: 0;
+  max-width: 100%;
+}
+.resourceFormSheet textarea {
+  width: 100%;
+  resize: vertical;
+}
+.resourceFormSheet :where(.formPair, .locationActions) > * {
+  min-width: 0;
+}
+.resourceFormSheet .formPair {
+  gap: 16px;
+}
+.manualPlayerDialog > header {
+  grid-template-columns: 42px minmax(0, 1fr) 44px;
+}
+.manualPlayerDialog > header > button,
+.scheduleModalClose {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  flex-basis: 44px;
+}
+:where(.manualPlayerDialog, .scheduleModal, .mobileCheckoutSheet)
+  :where(h2, h3, p, label) {
+  overflow-wrap: anywhere;
+}
+:where(.scheduleModalHeader, .mobileCheckoutSheet > header) > div {
+  min-width: 0;
+}
+
+@media (max-width: 899px) {
+  .section,
+  .ownerReservationsPage.section {
+    width: calc(
+      100% - max(var(--page-gutter), env(safe-area-inset-left, 0px)) -
+        max(var(--page-gutter), env(safe-area-inset-right, 0px))
+    );
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-block: 24px calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+  /* Full-bleed hero remains ambient; operational content keeps the page gutter. */
+  .activityPage.hybridHome {
+    width: 100%;
+  }
+  .activityPage .activityTabPanel.hybridContent,
+  .matchExperienceLayout,
+  .thirdTimePage {
+    width: calc(100% - var(--safe-page-left) - var(--safe-page-right));
+    margin-inline: auto;
+  }
+  .activityDashboard > .activityReturnToDraft {
+    width: calc(100% - var(--safe-page-left) - var(--safe-page-right));
+  }
+  .complexPanelHero .hybridHeroContent {
+    padding-inline: 0;
+  }
+  .complexPanelHero .hybridHeroContent h1 {
+    padding-inline: 0;
+  }
+  .complexPanelHero .hybridHero {
+    border-radius: 16px;
+  }
+  .createMatchPage,
+  .compactMatchBuilder.section {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+  .profileAccess {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+  .profileHead {
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .profileHead > div {
+    min-width: 0;
+  }
+  .card {
+    padding: 18px;
+  }
+  :where(.section, .resourceFormSheet)
+    :where(
+      input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
+          [type="hidden"]
+        ),
+      select,
+      textarea
+    ) {
+    font-size: 16px;
+  }
+  .resourceFormSheet
+    :where(
+      input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
+          [type="hidden"]
+        ),
+      select
+    ) {
+    min-height: 44px;
+  }
+  .resourceFormSheet label {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .resourceFormSheet label input,
+  .resourceFormSheet label select {
+    margin-top: 0;
+  }
+  .resourceFormSheet :where(.primary, .secondary),
+  .venueAdmin .resourceActions button {
+    min-height: 44px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  .venueAdmin .resourceSelect strong,
+  .venueAdmin .resourceSelect small {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+  .venueAdmin .resourceActions {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .venueAdmin .resourceActions button {
+    flex: 1 1 110px;
+    padding-inline: 12px;
+  }
+  .scheduleControls {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .scheduleModalFooter {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .scheduleModalFooter > span {
+    min-width: 0;
+  }
+  .scheduleModalFooter .primary {
+    min-width: 0;
+    flex: 1 1 150px;
+  }
+  .createComplexDialog[open] {
+    left: var(--safe-page-left);
+    right: var(--safe-page-right);
+    width: min(
+      680px,
+      calc(100% - var(--safe-page-left) - var(--safe-page-right))
+    );
+    max-width: calc(100% - var(--safe-page-left) - var(--safe-page-right));
+    max-height: calc(
+      100dvh - var(--popup-top-gap) - var(--popup-menu-clearance)
+    );
+    margin: auto auto var(--popup-menu-clearance);
+    border-radius: 18px;
+    padding: 0;
+  }
+  .matchDialogBackdrop,
+  .scheduleModalBackdrop,
+  .mobileCheckoutBackdrop {
+    padding: var(--popup-top-gap)
+      max(var(--page-gutter), env(safe-area-inset-right, 0px))
+      var(--popup-menu-clearance)
+      max(var(--page-gutter), env(safe-area-inset-left, 0px));
+  }
+  .manualPlayerDialog,
+  .scheduleModal,
+  .mobileCheckoutSheet {
+    width: 100%;
+    max-height: calc(
+      100dvh - var(--popup-top-gap) - var(--popup-menu-clearance)
+    );
+    min-width: 0;
+    margin: 0;
+    border-radius: 18px;
+  }
+  .scheduleModal {
+    height: auto;
+  }
+  .manualPlayerDialog,
+  .mobileCheckoutSheet {
+    padding: var(--sheet-padding);
+  }
+  .scheduleModalBody {
+    min-height: 0;
+    overscroll-behavior: contain;
+  }
+  .topbar {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .appNavigation {
+    padding-left: max(4px, env(safe-area-inset-left, 0px));
+    padding-right: max(4px, env(safe-area-inset-right, 0px));
+  }
+}
+@media (max-width: 480px) {
+  .resourceFormSheet .formPair,
+  .resourceFormSheet .matchBuilderForm .formPair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .resourceFormSheet .matchBuilderForm .formPair label > span:first-child {
+    min-height: 0;
+  }
+}
+@media (max-width: 360px) {
+  :root {
+    --sheet-padding: 16px;
+  }
+  .resourceFormSheetBody {
+    gap: 16px;
+  }
+  .card {
+    padding: 16px;
+  }
+}

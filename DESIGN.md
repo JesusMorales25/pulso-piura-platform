@@ -56,3 +56,24 @@ según el contrato de identidad visual. La selección respeta movimiento reducid
 - La tarjeta abre un FormSheet con la lista de esa categoría; seleccionar un registro abre su gestión dentro del mismo popup, con regreso a la lista. No se apilan fichas completas, comprobantes, QR ni formularios en la página inicial.
 - El popup conserva el estilo nocturno, foco visible y controles táctiles de 44 px; cierra con Escape y devuelve el foco. Cerrar un visor de comprobante anidado conserva abierto el detalle de origen.
 - Los contadores usan todos los registros autorizados, no solo la página visible. Carga/error no se presentan como cero; las decisiones actualizan resumen y listas. Las categorías financieras pueden superponerse con los estados de reserva.
+
+## Adaptación móvil compartida — 24 de octubre de 2026
+
+La referencia sigue siendo Inicio: identidad nocturna, tarjetas legibles y separación consistente. La corrección mantiene rutas, contenido, permisos y acciones.
+
+- Contenedores de operación con un margen lateral mínimo de 16 px y safe areas; ningún formulario de ancho completo añade márgenes externos al ancho de su padre.
+- Popups con 16 px de separación exterior, 20 px interiores (16 px en 320 px), cabecera visible al desplazar y cierre de 44 px. La altura disponible usa dvh y conserva distancia con la navegación inferior.
+- Formularios de dos columnas pasan a una en teléfonos estrechos. Nombres, correos y direcciones largos se ajustan sin perder contenido. Controles cómodos, texto de entrada de 16 px para evitar zoom automático.
+- Los errores de ancho se corrigen en su contenedor; no se ocultan con overflow-x:hidden en la página. Carruseles y tablas conservan desplazamiento interno cuando corresponde.
+- Comprobación con datos sintéticos largos en 320/393/768 y escritorio, más altura reducida para verificar desplazamiento de popups. La emulación no sustituye una validación física en iPhone/Android.
+
+## Escritorio y tableta — espacio de trabajo deportivo
+
+Se conserva el diseño móvil y la misma identidad Manrope/nocturno/turquesa/lima. La adaptación de escritorio se activa desde 1024 px; entre 900 y 1023 px la navegación es horizontal superior y bajo 900 px sigue siendo inferior.
+
+- Navegación lateral persistente de 224–240 px, accesos por los mismos permisos y página actual marcada; cabecera con ubicación y perfil.
+- Contenido calculado respecto al espacio disponible (sin vw que invada el menú), máximo 1280 px, con margen de 32–48 px. Cabeceras fotográficas de cancha y jerarquía deportiva, sin cambiar datos ni añadir indicadores ficticios.
+- Resúmenes fluidos y formularios agrupados. Perfil en dos zonas, catálogos y espacios en columnas cuando el contenido lo permite.
+- Los diálogos de gestión se centran y amplían. Desde 1280 px, reservas de jugador y propietario permiten lista y detalle simultáneos; en móvil permanece lista → detalle. Un solo formulario de pago por reserva seleccionada.
+
+Plan de implementación: (1) navegación y geometría compartida; (2) espacios de trabajo y formulario de escritorio; (3) pruebas de los cuatro roles en móvil/tableta/escritorio, revisión visual y compilación. Reutilizar lógica/API actuales; no duplicar autorización ni datos para cada dispositivo.

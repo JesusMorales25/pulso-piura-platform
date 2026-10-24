@@ -125,9 +125,8 @@ export function HomeDashboard({
     <main className={`homePage hybridHome mode-${mode}`}>
       <section className="hybridHero">
         <div aria-hidden="true" className="hybridHeroCarousel">
-          {Object.values(heroSlides)
-            .flat()
-            .map((slide) => (
+          {Array.from(new Set(Object.values(heroSlides).flat())).map(
+            (slide) => (
               <Image
                 alt=""
                 className={`hybridHeroImage ${slide === slides[heroIndex] ? "active" : ""}`}
@@ -137,7 +136,8 @@ export function HomeDashboard({
                 sizes="(max-width: 760px) 100vw, 1120px"
                 src={slide}
               />
-            ))}
+            ),
+          )}
         </div>
         <div className="hybridHeroShade" />
         <div className="hybridHeroContent">

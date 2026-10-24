@@ -382,6 +382,7 @@ typescript	error.tsx	function	GlobalError	frontend/app/error.tsx
 typescript	informacion	function	generateStaticParams	frontend/app/informacion/[section]/page.tsx
 typescript	informacion	function	InformationPage	frontend/app/informacion/[section]/page.tsx
 typescript	invitaciones	function	InvitationPage	frontend/app/invitaciones/[invitationId]/page.tsx
+typescript	layout.tsx	const	viewport	frontend/app/layout.tsx
 typescript	layout.tsx	const	metadata	frontend/app/layout.tsx
 typescript	layout.tsx	function	RootLayout	frontend/app/layout.tsx
 typescript	not-found.tsx	function	NotFound	frontend/app/not-found.tsx
@@ -402,6 +403,7 @@ typescript	reservas-cancha	function	VenueOwnerReservationsPage	frontend/app/rese
 typescript	tercer-tiempo	function	ThirdTimePage	frontend/app/tercer-tiempo/page.tsx
 typescript	-	function	AccessibleDialogs	frontend/components/AccessibleDialogs.tsx
 typescript	-	function	BusinessImage	frontend/components/BusinessImage.tsx
+typescript	-	function	DesktopDrilldown	frontend/components/dashboard/DesktopDrilldown.tsx
 typescript	-	type	SummaryCard	frontend/components/dashboard/SummaryCards.tsx
 typescript	-	function	SummaryCards	frontend/components/dashboard/SummaryCards.tsx
 typescript	-	function	FloatingNotice	frontend/components/feedback/FloatingNotice.tsx
@@ -485,6 +487,7 @@ typescript	reservations	const	money	frontend/features/reservations/presentation.
 typescript	reservations	const	reservationDate	frontend/features/reservations/presentation.ts
 typescript	reservations	const	reservationTime	frontend/features/reservations/presentation.ts
 typescript	reservations	const	canPlayerCancel	frontend/features/reservations/presentation.ts
+typescript	reservations	const	reservationCount	frontend/features/reservations/presentation.ts
 typescript	reservations	function	ReservationCheckInScanner	frontend/features/reservations/ReservationCheckInScanner.tsx
 typescript	reservations	function	ReservationCheckout	frontend/features/reservations/ReservationCheckout.tsx
 typescript	reservations	function	ReservationQrPass	frontend/features/reservations/ReservationQrPass.tsx

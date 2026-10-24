@@ -52,6 +52,7 @@
   margin: 12px 0;
 }
 .controls label {
+  min-width: 0;
   display: grid;
   gap: 6px;
   width: 100%;
@@ -74,7 +75,11 @@
   gap: 14px;
   min-width: 0;
 }
-.detail p {
+.detail p,
+.detail h3,
+.detail h4,
+.detail header > * {
+  min-width: 0;
   overflow-wrap: anywhere;
 }
 .detail header {
@@ -83,4 +88,13 @@
   gap: 10px;
   align-items: center;
   justify-content: space-between;
+}
+
+@media (min-width: 1024px) {
+  .detail > p {
+    margin: 0;
+  }
+  .detail header :where(h2, h3) {
+    margin: 0;
+  }
 }

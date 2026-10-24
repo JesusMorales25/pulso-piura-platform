@@ -176,3 +176,28 @@ Horario semanal: día, franja horaria, precio y duración en líneas separadas; 
 - Chrome local con API sintética: jugador, propietario, organizador y administración en 320/393/768 px; listas filtradas, paginación, aprobación/cancelación y actualización de cantidades. Flujo de pagos con axe: sin violaciones detectadas en sus seis escenarios.
 - La revisión independiente detectó un resumen enfocado desactualizado; corregido propagando cambios de pago/reserva al resumen y verificado al cerrar el popup.
 - Base local de pruebas arrancada en 15432 porque Windows impedía enlazar 55439; no se modificó Supabase ni producción.
+
+## Adaptación móvil y popups — 24 de octubre
+- Se conserva Inicio como referencia y la identidad visual. Geometría compartida centralizada en frontend/app/responsive.css, importada después de los estilos anteriores.
+- Margen operativo de 16 px y safe areas, encabezados y nombres largos adaptables, formularios estrechos en una columna, entradas de 16 px y acciones táctiles de 44 px. Eliminado el ocultamiento horizontal que enmascaraba el ancho extra del formulario de partidos.
+- FormSheet separa cabecera y cuerpo, conserva la cabecera al desplazar, reinicia desplazamiento al abrir sin perder el borrador y deja espacio con la navegación inferior hasta 899 px.
+- Selector de horarios: dirección y calificación en el contenido desplazable; en alturas bajas el panel completo permite desplazar los turnos. Se verificó la selección real de un turno en 320×480 y 667×375 con nombres largos.
+- Pago: términos/enlace en flujo de texto continuo para evitar columnas comprimidas. Filtros y detalles de reservas/organización admiten contenido largo.
+- Carrusel de Inicio evita repetir elementos con la misma clave cuando dos modos usan la misma fotografía.
+- QA con API sintética: recorrido inicial de 100 estados sin fallos geométricos; ampliación de 160 estados identificó una medición inestable tras cargar fuentes, estabilizada con fuentes y frames de desplazamiento. Confirmación focalizada de 4 estados de organizador y 5 del selector de horarios correcta. Las capturas detectaron y permitieron corregir la falta de espacio para turnos en horizontal.
+- Regresión: creación/edición de complejos, reservas por estado/paginación, pagos con axe sin violaciones detectadas, administración y organizador correctos en 320/393/768. Typecheck, ESLint y 37 pruebas unitarias correctas. Emulación Chrome; queda pendiente comprobación física en iPhone/Android.
+- Cambios locales; esta adaptación todavía no se ha publicado.
+
+- Cierre de validación móvil: compilación optimizada de Next.js correcta (23 páginas generadas). Se conserva el archivo generado next-env.d.ts original para evitar un cambio ajeno a la adaptación.
+
+## Composición responsive de escritorio — 24 de octubre
+- Se mantiene la identidad deportiva nocturna y la composición móvil. La adaptación usa frontend/app/desktop.css después de responsive.css.
+- Menú inferior bajo900 px; navegación superior entre900–1023; rail lateral desde1024 con los mismos destinos/permisos. Contenido calculado sobre el espacio restante y máximo1280 px.
+- Inicio, actividad, complejos, creación, perfil y administración aprovechan columnas, métricas equilibradas y formularios amplios. Las ventanas de gestión se centran y amplían en escritorio.
+- DesktopDrilldown reutiliza listas/detalles en las reservas del jugador y propietario: desde1280, dos paneles con desplazamiento independiente; por debajo, secuencia original. Un solo checkout/revisor seleccionado. Foco transferido al pasar entre composiciones.
+- Selector de horarios centrado en escritorio; corregida una vista antigua de partido que usaba vw y se desbordaba a1024 con el rail. Se conserva API, estados, moneda y autorización.
+- Validación: primer recorrido64 estados sin recortes (ajustado el detector para distinguir rail de navegación inferior); recorrido amplio192 estados detectó el detalle de partido a1024, corregido y confirmado en12 estados focalizados. El redimensionado1280→1024→1280 conserva foco visible y las dos columnas operativas.
+- Regresión móvil: complejos, cancelación y paginación, pagos con axe sin violaciones detectadas, solicitudes de administración y organización correctos en320/393/768. Typecheck, ESLint y37 pruebas unitarias correctas. Capturas locales en .verification/desktop-responsive; datos de prueba.
+- Esta composición y la adaptación móvil anterior permanecen locales, pendientes de publicación.
+
+- Cierre de escritorio: compilación de producción correcta, con 23 páginas generadas. Archivo generado next-env.d.ts conservado sin cambios.

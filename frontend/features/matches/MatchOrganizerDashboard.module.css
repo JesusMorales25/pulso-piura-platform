@@ -9,6 +9,7 @@
   align-items: center;
   gap: 16px;
   width: 100%;
+  min-width: 0;
   padding: 16px;
   border: 1px solid var(--border, #29465b);
   border-radius: 12px;
@@ -32,6 +33,8 @@
   outline-offset: 3px;
 }
 .detail {
+  min-width: 0;
+  overflow-wrap: anywhere;
   padding-top: 16px;
 }
 @media (max-width: 480px) {

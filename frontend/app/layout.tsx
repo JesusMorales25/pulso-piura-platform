@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Pulse } from "@phosphor-icons/react/dist/ssr";
 import { LocationProvider } from "@/features/navigation/LocationProvider";
@@ -10,6 +10,14 @@ import { LegalLinks } from "@/components/LegalLinks";
 import { AccessibleDialogs } from "@/components/AccessibleDialogs";
 import "@fontsource-variable/manrope";
 import "./styles.css";
+import "./responsive.css";
+import "./desktop.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "Pulso Piura",

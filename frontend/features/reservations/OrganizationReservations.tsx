@@ -4,12 +4,14 @@ import { apiRequest } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { ExternalPaymentPanel } from "@/features/payments/ExternalPaymentPanel";
 import { FormSheet } from "@/components/forms/FormSheet";
+import { DesktopDrilldown } from "@/components/dashboard/DesktopDrilldown";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import {
   money,
   reservationDate,
   reservationTime,
   reservationStatus,
+  reservationCount,
 } from "./presentation";
 import type { Reservation } from "./types";
 import { ReservationCheckInScanner } from "./ReservationCheckInScanner";
@@ -186,6 +188,7 @@ function Dashboard({
         </p>
       </details>
       <FormSheet
+        variant="workspace"
         open={dashboard.filter !== null}
         title={
           selected
@@ -194,177 +197,195 @@ function Dashboard({
         }
         onClose={() => dashboard.select(null)}
       >
-        {selected ? (
-          <div className={styles.detail}>
-            <button
-              className="secondary"
-              type="button"
-              onClick={() => {
-                setSelected(null);
-                setError("");
-                setConfirmCancel(false);
-                dashboard.refresh();
-              }}
-            >
-              ← Volver a la lista
-            </button>
-            <header>
-              <h3>{selected.spaceName}</h3>
-              <span className="pill">{reservationStatus[selected.status]}</span>
-            </header>
-            <p>{selected.venueName}</p>
-            <p>
-              {reservationDate(selected.startsAt)} ·{" "}
-              {reservationTime(selected.startsAt)} –{" "}
-              {reservationTime(selected.endsAt)}
-            </p>
-            <p>Cliente: {selected.customerEmail ?? "Cliente registrado"}</p>
-            <dl className="reservationSummary">
-              <div>
-                <dt>Total</dt>
-                <dd>{money(selected.totalMinor)}</dd>
+        <DesktopDrilldown
+          selected={selected !== null}
+          list={
+            <>
+              <div className={styles.controls}>
+                <label>
+                  Categoría
+                  <select
+                    disabled={busy}
+                    value={dashboard.filter ?? "ALL"}
+                    onChange={(event) => choose(event.target.value)}
+                  >
+                    {Object.entries(reservationFilterLabels).map(
+                      ([id, label]) => (
+                        <option key={id} value={id}>
+                          {label}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </label>
               </div>
-              <div>
-                <dt>Pagos registrados</dt>
-                <dd>{money(selected.paidMinor)}</dd>
-              </div>
-              <div>
-                <dt>Saldo pendiente</dt>
-                <dd>
-                  {money(Math.max(0, selected.totalMinor - selected.paidMinor))}
-                </dd>
-              </div>
-            </dl>
-            <ExternalPaymentPanel
-              accessToken={accessToken}
-              targetType="RESERVATION"
-              targetId={selected.id}
-              reviewer
-              allowUpload={false}
-              onChange={() => void refreshSelected()}
-            />
-            {error && (
-              <p role="alert" className="errorNotice">
-                {error}
-              </p>
-            )}
-            {[
-              "HOLD",
-              "PENDING_PAYMENT",
-              "PENDING_PAYMENT_CONFIRMATION",
-              "CONFIRMED",
-            ].includes(selected.status) &&
-              (selected.paidMinor > 0 ? (
-                <p className="muted">
-                  No se puede cancelar desde aquí: tiene pagos registrados.
+              {dashboard.loading ? (
+                <p role="status">Cargando reservas…</p>
+              ) : dashboard.error ? (
+                <p role="alert" className="errorNotice">
+                  {dashboard.error}
                 </p>
-              ) : confirmCancel ? (
-                <div>
-                  <p>¿Cancelar y liberar este horario?</p>
-                  <button
-                    className="secondary"
-                    disabled={busy}
-                    onClick={() => setConfirmCancel(false)}
-                  >
-                    Conservar
-                  </button>
-                  <button
-                    className="secondary"
-                    disabled={busy}
-                    onClick={() => void cancel()}
-                  >
-                    {busy ? "Cancelando…" : "Confirmar cancelación"}
-                  </button>
-                </div>
               ) : (
+                <div className={styles.list}>
+                  {!data?.items.length ? (
+                    <p className="empty">No hay reservas en esta categoría.</p>
+                  ) : (
+                    data.items.map((item) => (
+                      <button
+                        className={styles.row}
+                        disabled={busy}
+                        aria-current={
+                          selected?.id === item.id ? "true" : undefined
+                        }
+                        type="button"
+                        key={item.id}
+                        onClick={() => {
+                          setSelected(item);
+                          setConfirmCancel(false);
+                          setError("");
+                        }}
+                      >
+                        <strong>{item.spaceName}</strong>
+                        <small>
+                          {item.venueName} · {reservationDate(item.startsAt)}
+                        </small>
+                        <small>
+                          {reservationTime(item.startsAt)} –{" "}
+                          {reservationTime(item.endsAt)}
+                        </small>
+                        <span>
+                          {reservationStatus[item.status]} · Ver reserva →
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+              <nav className={styles.controls} aria-label="Páginas de reservas">
                 <button
                   className="secondary"
-                  onClick={() => setConfirmCancel(true)}
+                  disabled={dashboard.loading || dashboard.page === 0}
+                  onClick={() => dashboard.setPage(dashboard.page - 1)}
                 >
-                  Cancelar reserva
+                  Anterior
                 </button>
-              ))}
-          </div>
-        ) : (
-          <>
-            <div className={styles.controls}>
-              <label>
-                Categoría
-                <select
-                  value={dashboard.filter ?? "ALL"}
-                  onChange={(event) => choose(event.target.value)}
+                <span>
+                  {reservationCount(data?.total ?? 0)} · Página{" "}
+                  {dashboard.page + 1}
+                </span>
+                <button
+                  className="secondary"
+                  disabled={
+                    dashboard.loading ||
+                    (dashboard.page + 1) * 10 >= (data?.total ?? 0)
+                  }
+                  onClick={() => dashboard.setPage(dashboard.page + 1)}
                 >
-                  {Object.entries(reservationFilterLabels).map(
-                    ([id, label]) => (
-                      <option key={id} value={id}>
-                        {label}
-                      </option>
-                    ),
-                  )}
-                </select>
-              </label>
-            </div>
-            {dashboard.loading ? (
-              <p role="status">Cargando reservas…</p>
-            ) : dashboard.error ? (
-              <p role="alert" className="errorNotice">
-                {dashboard.error}
-              </p>
-            ) : (
-              <div className={styles.list}>
-                {!data?.items.length ? (
-                  <p className="empty">No hay reservas en esta categoría.</p>
-                ) : (
-                  data.items.map((item) => (
-                    <button
-                      className={styles.row}
-                      type="button"
-                      key={item.id}
-                      onClick={() => {
-                        setSelected(item);
-                        setError("");
-                      }}
-                    >
-                      <strong>{item.spaceName}</strong>
-                      <small>
-                        {item.venueName} · {reservationDate(item.startsAt)}
-                      </small>
-                      <small>
-                        {reservationTime(item.startsAt)} –{" "}
-                        {reservationTime(item.endsAt)}
-                      </small>
-                      <span>
-                        {reservationStatus[item.status]} · Ver reserva →
-                      </span>
-                    </button>
-                  ))
+                  Siguiente
+                </button>
+              </nav>
+            </>
+          }
+          detail={
+            selected ? (
+              <div className={styles.detail}>
+                <button
+                  data-drilldown-back
+                  className="secondary"
+                  type="button"
+                  onClick={() => {
+                    setSelected(null);
+                    setError("");
+                    setConfirmCancel(false);
+                    dashboard.refresh();
+                  }}
+                >
+                  ← Volver a la lista
+                </button>
+                <header>
+                  <h3>{selected.spaceName}</h3>
+                  <span className="pill">
+                    {reservationStatus[selected.status]}
+                  </span>
+                </header>
+                <p>{selected.venueName}</p>
+                <p>
+                  {reservationDate(selected.startsAt)} ·{" "}
+                  {reservationTime(selected.startsAt)} –{" "}
+                  {reservationTime(selected.endsAt)}
+                </p>
+                <p>Cliente: {selected.customerEmail ?? "Cliente registrado"}</p>
+                <dl className="reservationSummary">
+                  <div>
+                    <dt>Total</dt>
+                    <dd>{money(selected.totalMinor)}</dd>
+                  </div>
+                  <div>
+                    <dt>Pagos registrados</dt>
+                    <dd>{money(selected.paidMinor)}</dd>
+                  </div>
+                  <div>
+                    <dt>Saldo pendiente</dt>
+                    <dd>
+                      {money(
+                        Math.max(0, selected.totalMinor - selected.paidMinor),
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+                <ExternalPaymentPanel
+                  accessToken={accessToken}
+                  targetType="RESERVATION"
+                  targetId={selected.id}
+                  reviewer
+                  allowUpload={false}
+                  onChange={() => void refreshSelected()}
+                />
+                {error && (
+                  <p role="alert" className="errorNotice">
+                    {error}
+                  </p>
                 )}
+                {[
+                  "HOLD",
+                  "PENDING_PAYMENT",
+                  "PENDING_PAYMENT_CONFIRMATION",
+                  "CONFIRMED",
+                ].includes(selected.status) &&
+                  (selected.paidMinor > 0 ? (
+                    <p className="muted">
+                      No se puede cancelar desde aquí: tiene pagos registrados.
+                    </p>
+                  ) : confirmCancel ? (
+                    <div>
+                      <p>¿Cancelar y liberar este horario?</p>
+                      <button
+                        className="secondary"
+                        disabled={busy}
+                        onClick={() => setConfirmCancel(false)}
+                      >
+                        Conservar
+                      </button>
+                      <button
+                        className="secondary"
+                        disabled={busy}
+                        onClick={() => void cancel()}
+                      >
+                        {busy ? "Cancelando…" : "Confirmar cancelación"}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="secondary"
+                      onClick={() => setConfirmCancel(true)}
+                    >
+                      Cancelar reserva
+                    </button>
+                  ))}
               </div>
-            )}
-            <nav className={styles.controls} aria-label="Páginas de reservas">
-              <button
-                className="secondary"
-                disabled={dashboard.loading || dashboard.page === 0}
-                onClick={() => dashboard.setPage(dashboard.page - 1)}
-              >
-                Anterior
-              </button>
-              <span>
-                {data?.total ?? 0} reservas · Página {dashboard.page + 1}
-              </span>
-              <button
-                className="secondary"
-                disabled={
-                  dashboard.loading ||
-                  (dashboard.page + 1) * 10 >= (data?.total ?? 0)
-                }
-                onClick={() => dashboard.setPage(dashboard.page + 1)}
-              >
-                Siguiente
-              </button>
-            </nav>
-          </>
-        )}
+            ) : null
+          }
+        />
       </FormSheet>
       <FormSheet
         open={scanner}

@@ -67,3 +67,32 @@
     transition: none;
   }
 }
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    gap: 16px;
+  }
+  .card {
+    min-height: 120px;
+    padding: 18px;
+    gap: 10px;
+  }
+  .card strong {
+    font-size: 1.6rem;
+  }
+  .label {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid:has(> .card:nth-child(6):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1440px) {
+  .grid:has(> .card:nth-child(6):last-child) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}

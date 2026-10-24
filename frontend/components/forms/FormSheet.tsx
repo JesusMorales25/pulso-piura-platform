@@ -8,11 +8,13 @@ export function FormSheet({
   title,
   onClose,
   children,
+  variant = "default",
 }: {
   open: boolean;
   title: string;
   onClose: () => void;
   children: ReactNode;
+  variant?: "default" | "workspace";
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -24,6 +26,7 @@ export function FormSheet({
           ? document.activeElement
           : null;
       dialog.current?.showModal();
+      if (dialog.current) dialog.current.scrollTop = 0;
     }
     if (!open && dialog.current?.open) {
       dialog.current.close();
@@ -33,7 +36,7 @@ export function FormSheet({
   return (
     <dialog
       ref={dialog}
-      className="createComplexDialog resourceFormSheet"
+      className={`createComplexDialog resourceFormSheet${variant === "workspace" ? " resourceFormSheet--workspace" : ""}`}
       aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault();
@@ -52,7 +55,7 @@ export function FormSheet({
           ×
         </button>
       </header>
-      {children}
+      <div className="resourceFormSheetBody">{children}</div>
     </dialog>
   );
 }

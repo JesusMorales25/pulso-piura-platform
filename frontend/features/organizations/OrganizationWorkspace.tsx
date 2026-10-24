@@ -322,6 +322,7 @@ export function OrganizationWorkspace() {
           </p>
 
           <FormSheet
+            variant="workspace"
             open={overviewCategory !== null}
             title={
               overviewCategory === "spaces"

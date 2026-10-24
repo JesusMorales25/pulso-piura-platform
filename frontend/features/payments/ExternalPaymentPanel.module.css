@@ -86,17 +86,18 @@
   outline-offset: 2px;
 }
 .panel .methodChoice {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  display: block;
+  min-height: 44px;
+  padding-block: 10px;
   font-size: 0.875rem;
   line-height: 1.5;
 }
 .methodChoice input {
-  flex: 0 0 20px;
+  display: inline-block;
+  vertical-align: middle;
   width: 20px;
   height: 20px;
-  margin: 0;
+  margin: 0 8px 0 0;
   accent-color: var(--primary, #18c6c8);
 }
 .accountTitle {

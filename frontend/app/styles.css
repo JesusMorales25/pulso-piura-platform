@@ -7481,7 +7481,6 @@ body:has(.scheduleModal) .appNavigation {
     width: calc(100% - 20px);
     max-width: 100vw;
     padding: 18px 0 calc(116px + env(safe-area-inset-bottom));
-    overflow-x: clip;
   }
   .matchComposerHeading h1 {
     font-size: clamp(2rem, 10vw, 2.75rem);
@@ -7631,9 +7630,6 @@ body:has(.scheduleModal) .appNavigation {
 }
 
 @media (max-width: 899px) {
-  body:has(.createMatchPage) {
-    overflow-x: hidden;
-  }
   body:has(.createMatchPage) .appNavigation {
     z-index: 300;
     display: grid;

@@ -68,3 +68,7 @@ deploy/vps/backups/
 !deploy/supabase/.env.example
 deploy/supabase/.env.production
 deploy/supabase/backups/
+
+.verification/mobile-layout/
+
+.verification/desktop-responsive/

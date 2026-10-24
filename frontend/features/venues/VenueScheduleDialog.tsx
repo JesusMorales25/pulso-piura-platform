@@ -120,6 +120,19 @@ export const VenueScheduleDialog = forwardRef<HTMLDivElement, Props>(
             <div>
               <p className={styles.eyebrow}>DETALLE Y TURNOS DISPONIBLES</p>
               <h2 id="schedule-modal-title">{venue.name}</h2>
+            </div>
+            <button
+              aria-label="Cerrar horarios"
+              className={styles.close}
+              onClick={onClose}
+              type="button"
+            >
+              <X aria-hidden="true" size={22} weight="bold" />
+            </button>
+          </header>
+
+          <div className={styles.body}>
+            <div className={styles.metadata}>
               <p>
                 <MapPin aria-hidden="true" size={15} /> {venue.address} ·{" "}
                 {venue.districtCode}
@@ -134,17 +147,6 @@ export const VenueScheduleDialog = forwardRef<HTMLDivElement, Props>(
                 <Star aria-hidden="true" size={15} weight="fill" /> {rating}
               </span>
             </div>
-            <button
-              aria-label="Cerrar horarios"
-              className={styles.close}
-              onClick={onClose}
-              type="button"
-            >
-              <X aria-hidden="true" size={22} weight="bold" />
-            </button>
-          </header>
-
-          <div className={styles.body}>
             <div className={styles.date}>
               {new Intl.DateTimeFormat("es-PE", {
                 dateStyle: "full",

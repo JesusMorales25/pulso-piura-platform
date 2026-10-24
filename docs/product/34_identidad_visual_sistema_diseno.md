@@ -104,3 +104,24 @@ En pantallas estrechas se priorizan techado, iluminación LED y estacionamiento.
 desplazarse dentro de su propia franja, sin provocar scroll horizontal del documento. Los botones de
 pago tienen al menos 44 px de alto y todos los controles de tarjeta y diálogo exhiben foco visible.
 La composición fue comprobada en 320, 393 y 768 px.
+
+## Adaptación móvil compartida — 24 de octubre de 2026
+
+La referencia sigue siendo Inicio: identidad nocturna, tarjetas legibles y separación consistente. La corrección mantiene rutas, contenido, permisos y acciones.
+
+- Contenedores de operación con un margen lateral mínimo de 16 px y safe areas; ningún formulario de ancho completo añade márgenes externos al ancho de su padre.
+- Popups con 16 px de separación exterior, 20 px interiores (16 px en 320 px), cabecera visible al desplazar y cierre de 44 px. La altura disponible usa dvh y conserva distancia con la navegación inferior.
+- Formularios de dos columnas pasan a una en teléfonos estrechos. Nombres, correos y direcciones largos se ajustan sin perder contenido. Controles cómodos, texto de entrada de 16 px para evitar zoom automático.
+- Los errores de ancho se corrigen en su contenedor; no se ocultan con overflow-x:hidden en la página. Carruseles y tablas conservan desplazamiento interno cuando corresponde.
+- Comprobación con datos sintéticos largos en 320/393/768 y escritorio, más altura reducida para verificar desplazamiento de popups. La emulación no sustituye una validación física en iPhone/Android.
+
+## Escritorio y tableta — espacio de trabajo deportivo
+
+Se conserva el diseño móvil y la misma identidad Manrope/nocturno/turquesa/lima. La adaptación de escritorio se activa desde 1024 px; entre 900 y 1023 px la navegación es horizontal superior y bajo 900 px sigue siendo inferior.
+
+- Navegación lateral persistente de 224–240 px, accesos por los mismos permisos y página actual marcada; cabecera con ubicación y perfil.
+- Contenido calculado respecto al espacio disponible (sin vw que invada el menú), máximo 1280 px, con margen de 32–48 px. Cabeceras fotográficas de cancha y jerarquía deportiva, sin cambiar datos ni añadir indicadores ficticios.
+- Resúmenes fluidos y formularios agrupados. Perfil en dos zonas, catálogos y espacios en columnas cuando el contenido lo permite.
+- Los diálogos de gestión se centran y amplían. Desde 1280 px, reservas de jugador y propietario permiten lista y detalle simultáneos; en móvil permanece lista → detalle. Un solo formulario de pago por reserva seleccionada.
+
+Plan de implementación: (1) navegación y geometría compartida; (2) espacios de trabajo y formulario de escritorio; (3) pruebas de los cuatro roles en móvil/tableta/escritorio, revisión visual y compilación. Reutilizar lógica/API actuales; no duplicar autorización ni datos para cada dispositivo.

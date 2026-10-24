@@ -173,6 +173,7 @@ export default function PlatformPage() {
         </section>
       </details>
       <FormSheet
+        variant="workspace"
         open={showUsers}
         title="Usuarios activos"
         onClose={() => setShowUsers(false)}

@@ -179,6 +179,7 @@ export function MyMatchParticipations() {
         />
       )}
       <FormSheet
+        variant="workspace"
         open={category !== null}
         title={selected ? "Tu inscripción" : (group?.label ?? "Mis partidos")}
         onClose={() => {

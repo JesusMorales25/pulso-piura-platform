@@ -678,6 +678,7 @@ export function MatchOrganizerDashboard({
           )}
 
           <FormSheet
+            variant="workspace"
             open={category !== null}
             title={sheetTitle}
             onClose={() => {

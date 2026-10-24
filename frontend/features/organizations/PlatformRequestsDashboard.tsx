@@ -168,6 +168,7 @@ export function PlatformRequestsDashboard({
 
   const requestSheet = (
     <FormSheet
+      variant="workspace"
       open={selectedStatus !== null}
       title={
         "Solicitudes · " +

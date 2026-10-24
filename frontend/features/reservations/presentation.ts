@@ -33,3 +33,6 @@ export const canPlayerCancel = (reservation: Reservation, now: number) =>
     "CONFIRMED",
   ].includes(reservation.status) &&
   now <= new Date(reservation.startsAt).getTime() - 7200000;
+
+export const reservationCount = (count: number) =>
+  `${count} ${count === 1 ? "reserva" : "reservas"}`;

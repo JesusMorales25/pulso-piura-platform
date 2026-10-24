@@ -94,8 +94,29 @@ export function AppNavigation() {
     },
   ];
 
+  const captions: Record<string, string> = {
+    Explorar: "Partidos y canchas",
+    Actividad: "Tus partidos y reservas",
+    "Mis canchas": "Sedes, horarios y equipo",
+    "Mi cancha": "Operación de tu complejo",
+    Reservas: "Pagos y disponibilidad",
+    Administrar: "Accesos y complejos",
+    Crear: "Organiza tu próximo partido",
+    "Tercer tiempo": "Planes después del partido",
+    Perfil: "Tu cuenta y preferencias",
+  };
   return (
     <nav className="appNavigation" aria-label="Navegación principal">
+      <div className="appNavigationContext" aria-hidden="true">
+        <span>Tu espacio</span>
+        <strong>
+          {capabilities.canManagePlatform
+            ? "Administración"
+            : capabilities.isVenueOwner
+              ? "Gestiona tu complejo"
+              : "Vive el juego"}
+        </strong>
+      </div>
       {items.map(({ href, label, Icon, active, featured }) => {
         return (
           <Link
@@ -109,10 +130,19 @@ export function AppNavigation() {
               size={24}
               weight={active ? "fill" : "regular"}
             />
-            <span>{label}</span>
+            <span>
+              {label}
+              <small className="appNavigationCaption" aria-hidden="true">
+                {captions[label]}
+              </small>
+            </span>
           </Link>
         );
       })}
+      <div className="appNavigationFooter" aria-hidden="true">
+        <strong>Pulso Piura</strong>
+        <span>Nos vemos en la cancha.</span>
+      </div>
     </nav>
   );
 }
