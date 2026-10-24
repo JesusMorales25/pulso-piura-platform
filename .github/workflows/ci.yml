@@ -16,6 +16,7 @@ jobs:
           java-version: "21"
           cache: maven
       - run: mvn --batch-mode verify
+      - run: sh tests/database-config.test.sh
   frontend:
     runs-on: ubuntu-latest
     defaults:

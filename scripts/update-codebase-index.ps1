@@ -100,7 +100,7 @@ Add-Line $Lines '| Complejos y canchas | frontend/features/venues | venues | doc
 Add-Line $Lines '| Reservas | frontend/features/reservations, PublicVenueCatalog.tsx | reservations | docs/product/25_reglas_reservas.md, docs/RESERVATIONS_PAYMENTS.md |'
 Add-Line $Lines '| Pagos | frontend/features/payments, ReservationCheckout.tsx | payments, ExternalMatchPaymentService | docs/EXTERNAL_PAYMENTS.md, docs/openapi-external-payments.yaml, docs/adr/ADR-007-pagos-externos-comprobantes-privados.md |'
 Add-Line $Lines '| Partidos | frontend/features/matches, frontend/app/partidos | matches | docs/product/26_reglas_partidos.md |'
-Add-Line $Lines '| Infraestructura | frontend/lib | foundation, shared | README.md, compose.yaml, docs/IDENTITY_LOCAL_SETUP.md |'
+Add-Line $Lines '| Infraestructura | frontend/lib | foundation, shared | docs/SUPABASE_MIGRATION.md, deploy/supabase, deploy/vps, docs/IDENTITY_LOCAL_SETUP.md |'
 Add-Line $Lines
 Add-Line $Lines '## Frontend'
 Add-Line $Lines

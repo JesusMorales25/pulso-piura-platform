@@ -1,7 +1,7 @@
 # Demostración con Auth0, Render y Vercel
 
 Esta variante usa Auth0 como proveedor OIDC administrado con registro e inicio
-por correo y contraseña o Google. Despliega únicamente la API y PostgreSQL en Render y
+por correo y contraseña o Google. Despliega la API en Render, PostgreSQL en Supabase y
 mantiene Next.js en Vercel. Keycloak continúa disponible en el repositorio para
 desarrollo local y futuros despliegues propios, pero no se ejecuta en Render ni
 consume memoria durante la demostración.
@@ -57,7 +57,11 @@ publicado por Auth0, incluida la barra final cuando aparezca en su metadata.
 ## 3. Configurar Render
 
 Conecta el repositorio como Blueprint y usa `render.yaml`. El Blueprint crea
-solamente la API y PostgreSQL; ya no intenta ejecutar Keycloak. Completa:
+solamente la API; no ejecuta Keycloak ni crea una base gratuita de Render.
+Antes de sincronizar un servicio existente, sigue [la migración conservando datos](../../docs/SUPABASE_MIGRATION.md).
+Completa también `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD` y las tres
+variables `MIGRATION_*` descritas en esa guía; no se necesita ninguna clave de Supabase en Vercel.
+Conserva la configuración de Auth0:
 
 | Variable | Valor |
 | --- | --- |

@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: e34df85777bbe84f
-- Archivos indexados: 635
+- Huella del inventario: 7d435d1c8a098d25
+- Archivos indexados: 643
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -45,7 +45,7 @@
 | Reservas | frontend/features/reservations, PublicVenueCatalog.tsx | reservations | docs/product/25_reglas_reservas.md, docs/RESERVATIONS_PAYMENTS.md |
 | Pagos | frontend/features/payments, ReservationCheckout.tsx | payments, ExternalMatchPaymentService | docs/EXTERNAL_PAYMENTS.md, docs/openapi-external-payments.yaml, docs/adr/ADR-007-pagos-externos-comprobantes-privados.md |
 | Partidos | frontend/features/matches, frontend/app/partidos | matches | docs/product/26_reglas_partidos.md |
-| Infraestructura | frontend/lib | foundation, shared | README.md, compose.yaml, docs/IDENTITY_LOCAL_SETUP.md |
+| Infraestructura | frontend/lib | foundation, shared | docs/SUPABASE_MIGRATION.md, deploy/supabase, deploy/vps, docs/IDENTITY_LOCAL_SETUP.md |
 
 ## Frontend
 

@@ -110,3 +110,13 @@ Horario semanal: día, franja horaria, precio y duración en líneas separadas; 
 - Mis reservas y Mis inscripciones conservan solicitudes con evidencia aunque hayan vencido; no confunden pendiente con recaudado. Simulación no puede aprobar órdenes externas al cambiar de modo.
 - Contrato: docs/openapi-external-payments.yaml. Operación/despliegue: docs/EXTERNAL_PAYMENTS.md. ADR-007 documenta filesystem inicial y futura extensión S3.
 - Verificación local: migraciones V35/V36 y cuatro casos de pagos de dominio sobre PostgreSQL 18 aislado; 32 pruebas frontend, seis flujos sintéticos de navegador y 51 escenarios axe sin desbordamientos ni infracciones detectadas. Flyway advierte que su versión está probada hasta PostgreSQL 17; los manifests de producción conservan PostgreSQL 17.
+
+## 23 de octubre: Supabase para demo y salida a VPS
+
+- Supabase se utiliza como PostgreSQL externo; Auth0 y la autorización de Spring se conservan.
+- Decisión final del usuario: Render no es recuperable; iniciar datos nuevos en Supabase, conservando Auth0. Ya no se exige recuperar/importar la fuente.
+- DATABASE_URL explícita prevalece sobre la variable heredada de Render; el Blueprint deja de depender de la base gratuita vencida.
+- Credenciales separadas para Flyway y ejecución, bootstrap de permisos y prerrequisito btree_gist para restauración.
+- Se agrega variante VPS con PostgreSQL externo; se conserva la variante con PostgreSQL privado local.
+- Guía: docs/SUPABASE_MIGRATION.md. Pendiente remoto: recuperar fuente/respaldo, crear proyecto, comprobar versiones, restaurar y validar antes del corte.
+- Verificación local: Maven, contrato de arranque, Compose, 36 migraciones, health UP y dump/restore PostgreSQL 18 a 18 con permisos limitados. No equivale a migración remota realizada.

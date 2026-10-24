@@ -63,3 +63,8 @@ docs/product/*
 !deploy/vps/.env.example
 deploy/vps/.env.production
 deploy/vps/backups/
+!docs/SUPABASE_MIGRATION.md
+!docs/adr/ADR-008-postgresql-portable-supabase-demo.md
+!deploy/supabase/.env.example
+deploy/supabase/.env.production
+deploy/supabase/backups/

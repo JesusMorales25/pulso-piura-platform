@@ -6,6 +6,10 @@ spring:
     url: ${DATABASE_URL}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+  flyway:
+    url: ${MIGRATION_DATABASE_URL:${DATABASE_URL}}
+    user: ${MIGRATION_POSTGRES_USER:${POSTGRES_USER}}
+    password: ${MIGRATION_POSTGRES_PASSWORD:${POSTGRES_PASSWORD}}
   security:
     oauth2:
       resourceserver:

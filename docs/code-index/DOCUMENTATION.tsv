@@ -11,6 +11,7 @@ architecture-decision	ADR-004: diferir la validación externa sin inventar evide
 architecture-decision	ADR-005: integración de pagos desacoplada	docs/adr/ADR-005-pagos-desacoplados.md
 architecture-decision	ADR-006: Proveedor OIDC configurable	docs/adr/ADR-006-proveedor-oidc-configurable.md
 architecture-decision	ADR-007 — Pagos externos con comprobantes privados	docs/adr/ADR-007-pagos-externos-comprobantes-privados.md
+architecture-decision	ADR-008 — PostgreSQL portable para la demostración	docs/adr/ADR-008-postgresql-portable-supabase-demo.md
 documentation	Análisis de requerimientos importados	docs/ANALISIS_REQUERIMIENTOS_IMPORTADOS.md
 documentation	Revisión de arquitectura, seguridad y estrategia de entrega	docs/ARQUITECTURA_SEGURIDAD_REVIEW.md
 documentation	Recursos visuales de la demostración	docs/ASSET_PROVENANCE.md
@@ -69,6 +70,7 @@ product-doc	AGENTS.md — Reglas obligatorias del proyecto	docs/product/AGENTS.t
 product-doc	Plataforma deportiva Piura — Documentación del producto	docs/product/README.md
 documentation	Reservas y pagos de prueba — 7 de septiembre de 2026	docs/RESERVATIONS_PAYMENTS.md
 documentation	Revisión de seguridad OWASP — 12 de septiembre de 2026	docs/REVISION_SEGURIDAD_OWASP_2026-09-12.md
+documentation	Supabase para demo y PostgreSQL portable a VPS	docs/SUPABASE_MIGRATION.md
 documentation	Canchas, disponibilidad y reserva móvil Implementation Plan	docs/superpowers/plans/2026-09-27-canchas-reserva-mobile-plan.md
 documentation	Organizador, cupos y pagos de pichanga Implementation Plan	docs/superpowers/plans/2026-09-27-organizador-cupos-pagos-plan.md
 documentation	Mejoras de partidos, reservas y experiencia movil	docs/superpowers/specs/2026-09-27-mejoras-partidos-reservas-mobile-design.md
