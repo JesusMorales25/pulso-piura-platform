@@ -1539,14 +1539,17 @@ button:disabled {
   margin-top: 28px;
 }
 .platformRequestCard {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  justify-content: space-between;
   gap: 22px;
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--panel);
+}
+.platformRequestCard > div {
+  min-width: 0;
 }
 .platformRequestCard h2 {
   margin: 12px 0 7px;
@@ -1555,12 +1558,23 @@ button:disabled {
 .platformRequestCard p {
   margin: 0;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 .platformRequestActions {
   display: flex;
   flex-wrap: wrap;
   gap: 9px;
-  flex: 0 0 auto;
+  max-width: 100%;
+}
+.platformRequestActions > button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+}
+@media (min-width: 768px) {
+  .platformRequestCard {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
 }
 .paymentChoice {
   display: grid;

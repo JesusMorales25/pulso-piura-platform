@@ -391,7 +391,7 @@ documentation	md	17579	docs/ITERATION_3_VENUES_PLAN.md
 documentation	md	13709	docs/ITERATION_4_RESERVATIONS_PLAN.md
 documentation	md	3620	docs/ITERATION_5_MATCHES_PLAN.md
 documentation	md	4785	docs/NEXT_INCREMENT.md
-documentation	md	15668	docs/OBSERVATIONS_OCTOBER_2026.md
+documentation	md	16139	docs/OBSERVATIONS_OCTOBER_2026.md
 documentation	yaml	10391	docs/openapi-external-payments.yaml
 documentation	yaml	54836	docs/openapi-identity.yaml
 documentation	md	10606	docs/PRODUCCION_ORACLE_FREE_TIER.md
@@ -473,7 +473,7 @@ frontend-route	tsx	8285	frontend/app/plataforma/organizaciones/page.tsx
 frontend-route	tsx	4605	frontend/app/plataforma/page.tsx
 frontend-route	tsx	7032	frontend/app/plataforma/solicitudes/page.tsx
 frontend-route	tsx	288	frontend/app/reservas-cancha/page.tsx
-frontend-route	css	237061	frontend/app/styles.css
+frontend-route	css	237338	frontend/app/styles.css
 frontend-route	tsx	1066	frontend/app/tercer-tiempo/page.tsx
 root-or-support	md	11	frontend/CLAUDE.md
 root-or-support	tsx	3715	frontend/components/AccessibleDialogs.tsx
