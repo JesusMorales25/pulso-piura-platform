@@ -203,3 +203,17 @@ Verificación de esta integración: mvn clean verify correcto; cinco pruebas nue
 Supabase y cuatro de pagos con PostgreSQL local pasan (adelanto/saldo, cupos e historial).
 Frontend: 34 pruebas y typecheck correctos. Pendiente prueba remota con bucket/secreto reales y
 activación/despliegue de Render. No se han enviado transferencias ni comprobantes de usuarios.
+
+## Verificación en producción — 24 de octubre de 2026
+
+- Corrección de selección exclusiva del adaptador publicada en f5dda00; Render Live.
+- API de capacidades: enabled=true, reviewMinutes=30.
+- Bucket payment-proofs: privado, 0 políticas públicas, PNG y máximo 5 MB, verificado en panel.
+- Ensayo con jugador.demo: reserva del 26/10/2026, 20:00–21:00, total S/85, adelanto S/17.
+- Imagen PRUEBA TECNICA SIN VALOR y referencia PRUEBA-TECNICA-SIN-TRANSFERENCIA cargadas;
+  lectura privada comprobada desde pagador y propietario. Sin transferencia bancaria real.
+- Antes de aprobar: S/17 en revisión, S/0 confirmado, retención de 30 minutos.
+- Propietario aprobó el ensayo: reserva CONFIRMED, S/17 registrado, S/68 pendiente,
+  S/0 en revisión y nota explícita de ensayo sin transferencia. No se borró el historial.
+- Este registro de ensayo permanece identificado; no representa dinero recibido realmente.
+- El selector Plin comparte el flujo, pero este ensayo remoto se ejecutó con Yape.
