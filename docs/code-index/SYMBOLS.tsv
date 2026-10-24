@@ -337,6 +337,7 @@ java	payments	class	ExternalPaymentTargetsTest	backend/src/test/java/com/pulsopi
 java	payments	class	PaymentOrderServiceTest	backend/src/test/java/com/pulsopiura/platform/payments/application/PaymentOrderServiceTest.java
 java	payments	class	PaymentProofRetentionTest	backend/src/test/java/com/pulsopiura/platform/payments/application/PaymentProofRetentionTest.java
 java	payments	class	FileSystemPaymentProofStorageTest	backend/src/test/java/com/pulsopiura/platform/payments/infrastructure/storage/FileSystemPaymentProofStorageTest.java
+java	payments	class	PaymentProofStorageSelectionTest	backend/src/test/java/com/pulsopiura/platform/payments/infrastructure/storage/PaymentProofStorageSelectionTest.java
 java	payments	class	SupabasePaymentProofStorageTest	backend/src/test/java/com/pulsopiura/platform/payments/infrastructure/storage/SupabasePaymentProofStorageTest.java
 java	profiles	class	LegalAcceptanceTest	backend/src/test/java/com/pulsopiura/platform/profiles/application/LegalAcceptanceTest.java
 java	ProjectConventionsTest.java	class	ProjectConventionsTest	backend/src/test/java/com/pulsopiura/platform/ProjectConventionsTest.java

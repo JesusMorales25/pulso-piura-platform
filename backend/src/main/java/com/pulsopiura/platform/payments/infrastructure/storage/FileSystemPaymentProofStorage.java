@@ -12,6 +12,10 @@ import org.springframework.stereotype.Component;
 
 /** Images are decoded and re-encoded as PNG; original names and metadata are never retained. */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name = "app.payments.proof-storage",
+        havingValue = "filesystem",
+        matchIfMissing = true)
 public class FileSystemPaymentProofStorage implements PaymentProofStorage {
     private static final int MAX_BYTES = 5 * 1024 * 1024;
     private final Path root;

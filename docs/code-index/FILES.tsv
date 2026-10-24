@@ -133,7 +133,7 @@ backend-main	java	958	backend/src/main/java/com/pulsopiura/platform/payments/inf
 backend-main	java	593	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/persistence/ReservationPaymentAdapter.java
 backend-main	java	810	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/provider/MatchPaymentProviderAdapter.java
 backend-main	java	900	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/provider/SandboxPaymentProvider.java
-backend-main	java	4621	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/storage/FileSystemPaymentProofStorage.java
+backend-main	java	4810	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/storage/FileSystemPaymentProofStorage.java
 backend-main	java	2655	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/storage/PaymentProofImages.java
 backend-main	java	7340	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/storage/SupabasePaymentProofStorage.java
 backend-main	java	201	backend/src/main/java/com/pulsopiura/platform/profiles/application/LegalDocuments.java
@@ -307,6 +307,7 @@ backend-test	java	11187	backend/src/test/java/com/pulsopiura/platform/payments/a
 backend-test	java	10478	backend/src/test/java/com/pulsopiura/platform/payments/application/PaymentOrderServiceTest.java
 backend-test	java	2634	backend/src/test/java/com/pulsopiura/platform/payments/application/PaymentProofRetentionTest.java
 backend-test	java	3260	backend/src/test/java/com/pulsopiura/platform/payments/infrastructure/storage/FileSystemPaymentProofStorageTest.java
+backend-test	java	2079	backend/src/test/java/com/pulsopiura/platform/payments/infrastructure/storage/PaymentProofStorageSelectionTest.java
 backend-test	java	5859	backend/src/test/java/com/pulsopiura/platform/payments/infrastructure/storage/SupabasePaymentProofStorageTest.java
 backend-test	java	3085	backend/src/test/java/com/pulsopiura/platform/profiles/application/LegalAcceptanceTest.java
 backend-test	java	285	backend/src/test/java/com/pulsopiura/platform/ProjectConventionsTest.java
