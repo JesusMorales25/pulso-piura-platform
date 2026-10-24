@@ -54,8 +54,15 @@ No se cambian cuentas Auth0, claims, permisos ni migraciones. Regresión:
 `CurrentUserConcurrencyDatabaseTest`, ejecutable en PostgreSQL local aislado con
 `mvn clean verify -DrunIdentityDatabaseTests=true`. Antes reproducía 23505/25P02;
 después ambas peticiones devuelven el mismo usuario y queda un perfil. Verificado
-localmente antes de publicar la corrección; el primer despliegue Supabase sigue
-identificado arriba por su commit.
+localmente antes de publicar la corrección: 224 pruebas, 0 fallos/errores,
+10 omitidas (integraciones opt-in/plataforma), incluida la regresión concurrente
+real activada. Corrección publicada en `91fe1e9`, desplegada manualmente en Render
+como `dep-dbe2ii0ae00c73bea43g`, Live el 23 de octubre aproximadamente a las 22:46
+(America/Lima). La nueva instancia validó las 36 migraciones sin cambios y la
+consulta pública de health posterior al despliegue devolvió UP. El flujo completo
+de inicio de sesión/consentimiento y creación de datos en Vercel queda para la
+validación funcional con las cuentas del usuario; no se introdujeron contraseñas
+ni identidades ficticias para simularlo.
 
 No publicar datos ficticios como si fueran complejos reales ni inventar subjects
 Auth0 para asignar privilegios. Los datos operativos nuevos deben quedar ligados
