@@ -39,6 +39,11 @@ app:
     max-active-temporary-per-customer: ${RESERVATION_MAX_ACTIVE_TEMPORARY_PER_CUSTOMER:3}
   payments:
     mode: ${PAYMENTS_MODE:disabled}
+    proof-storage: ${PAYMENT_PROOF_STORAGE:filesystem}
+    supabase:
+      url: ${SUPABASE_STORAGE_URL:}
+      secret-key: ${SUPABASE_STORAGE_SECRET_KEY:}
+      bucket: ${SUPABASE_STORAGE_BUCKET:payment-proofs}
     proof-directory: ${PAYMENT_PROOF_DIRECTORY:.local/payment-proofs}
     review-minutes: ${EXTERNAL_PAYMENT_REVIEW_MINUTES:30}
     proof-retention-days: ${PAYMENT_PROOF_RETENTION_DAYS:90}

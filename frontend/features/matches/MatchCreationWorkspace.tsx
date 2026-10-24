@@ -57,7 +57,7 @@ export function MatchCreationWorkspace() {
         </section>
       </header>
       {tab === "mine" ? (
-        <MatchOrganizerDashboard embedded onCreate={() => setTab("create")} />
+        <MatchOrganizerDashboard embedded />
       ) : (
         <section className="card matchCreateIntro">
           <p className="eyebrow">NUEVO PARTIDO</p>

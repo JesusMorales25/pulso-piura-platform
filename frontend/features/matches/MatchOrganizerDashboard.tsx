@@ -33,8 +33,7 @@ import { MatchCheckInScanner } from "./MatchCheckInScanner";
 
 export function MatchOrganizerDashboard({
   embedded = false,
-  onCreate,
-}: { embedded?: boolean; onCreate?: () => void } = {}) {
+}: { embedded?: boolean } = {}) {
   const Root = embedded ? "div" : "main";
   const { accessToken, login } = useAuth();
   const { capabilities, loading: capabilitiesLoading } = useUserCapabilities();
@@ -380,12 +379,7 @@ export function MatchOrganizerDashboard({
             Controla cupos, participantes y pagos registrados.
           </p>
         </div>
-        {onCreate ? (
-          <button className="primary" type="button" onClick={onCreate}>
-            <PlusCircle size={20} />
-            Crear partido
-          </button>
-        ) : (
+        {!embedded && (
           <Link className="primary" href="/crear">
             <PlusCircle size={20} />
             Crear partido

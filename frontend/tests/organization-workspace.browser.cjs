@@ -199,6 +199,9 @@ async function main() {
       }
       const metrics = page.locator(".ownerOverviewMetrics");
       if (scenario === "create") {
+        await expect(page.getByRole("button", { name: "Crear complejo", exact: true })).toHaveCount(0);
+        await page.getByRole("button", { name: "Crear complejos", exact: true }).click();
+        await expect(metrics).toHaveCount(0);
         await page
           .getByRole("button", { name: "Crear complejo", exact: true })
           .click();

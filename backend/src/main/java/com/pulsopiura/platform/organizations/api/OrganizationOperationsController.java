@@ -43,7 +43,7 @@ public class OrganizationOperationsController {
     List<OrganizationScheduleQuery.Turn> schedule(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID organizationId,
-            @RequestParam LocalDate date,
+            @RequestParam(required = false) LocalDate date,
             @RequestParam(required = false) UUID spaceId) {
         return schedule.schedule(users.provision(jwt).id(), organizationId, date, spaceId);
     }

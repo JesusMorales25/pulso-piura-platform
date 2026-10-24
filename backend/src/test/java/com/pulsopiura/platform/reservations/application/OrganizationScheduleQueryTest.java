@@ -48,4 +48,30 @@ class OrganizationScheduleQueryTest {
         verify(jdbc).queryForObject(anyString(), eq(Boolean.class), eq(court), eq(organization));
         verifyNoMoreInteractions(jdbc);
     }
+
+    @Test
+    void missingDateListsActiveReservationsWithoutDependingOnAvailabilityRules() {
+        var jdbc = mock(JdbcTemplate.class);
+        var authorization = mock(OrganizationAuthorization.class);
+        var actor = UUID.randomUUID();
+        var organization = UUID.randomUUID();
+        new OrganizationScheduleQuery(jdbc, authorization)
+                .schedule(actor, organization, null, null);
+        verify(authorization).require(actor, organization, OrganizationPermission.OPERATE);
+        var sql = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(jdbc)
+                .query(
+                        sql.capture(),
+                        any(org.springframework.jdbc.core.RowMapper.class),
+                        eq(organization),
+                        isNull(),
+                        isNull());
+        assertThat(sql.getValue())
+                .contains(
+                        "b.ends_at > now()",
+                        "b.expires_at > now()",
+                        "b.organization_id = ?",
+                        "order by b.starts_at")
+                .doesNotContain("availability_rules", "COMPLETED");
+    }
 }

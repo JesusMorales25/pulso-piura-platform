@@ -146,3 +146,60 @@ de responsables en el proveedor antes del piloto. No alternar modos entre répli
 - La base de desarrollo habitual y producción no se modificaron; las migraciones se ejecutaron
   en una base aislada de prueba. La configuración local está preparada como external_manual;
   reiniciar el backend aplica las migraciones pendientes en su base habitual.
+
+## Integración Supabase Storage (23 de octubre de 2026)
+
+Diseño aprobado: backend como único intermediario, puerto PaymentProofStorage sin cambios y
+normalización de imágenes compartida con filesystem. Auth0 sigue autenticando a las personas;
+no se agregan sesiones Supabase al navegador ni se habilita la Data API de las tablas app.
+Plan: extraer normalización, añadir adaptador HTTP con límites/timeouts y bucket privado,
+configurar proveedor, probar almacenamiento y regresiones de pago, documentar puesta en marcha.
+Esta ampliación reemplaza la restricción anterior de Render: ahora puede usar almacenamiento
+externo privado sin depender de su disco efímero. No se implementa S3.
+
+### Configuración en Supabase
+
+1. Storage > New bucket: ID payment-proofs, Public desactivado, límite 5242880 bytes,
+   MIME permitido image/png. El backend convierte JPG/PNG válidos a PNG.
+2. No crear políticas que permitan acceso anon/authenticated al bucket. No usar URLs públicas.
+3. Settings > API Keys: crear una clave secreta de servidor sb_secret_ para el backend.
+   Esta clave tiene privilegios elevados y omite RLS; mantenerla solo en Render como secreto,
+   nunca en Vercel/NEXT_PUBLIC, Git, logs o el chat. No es la contraseña de PostgreSQL.
+4. El bucket y la clave son configuración externa; no se crean con Flyway ni al arrancar.
+
+### Variables en Render
+
+```dotenv
+PAYMENTS_MODE=external_manual
+PAYMENT_PROOF_STORAGE=supabase
+SUPABASE_STORAGE_URL=https://cwspxfhlarshflihhtsr.supabase.co
+SUPABASE_STORAGE_BUCKET=payment-proofs
+SUPABASE_STORAGE_SECRET_KEY=<clave sb_secret_ creada en Supabase>
+EXTERNAL_PAYMENT_REVIEW_MINUTES=30
+PAYMENT_PROOF_RETENTION_DAYS=90
+```
+
+No se necesitan nuevas variables en Vercel. El frontend consulta las capacidades de la API y
+muestra el flujo externo en lugar de simulación. Redeploy del backend tras guardar las variables.
+El propietario configura titular, teléfono Yape/Plin y métodos en Reservas antes de aceptar pagos.
+Probar con un comprobante de prueba claramente identificado antes de aceptar transferencias.
+
+El cliente HTTP usa HTTPS, no sigue redirecciones, no reintenta automáticamente subidas y no
+incluye respuestas remotas ni credenciales en errores. El bucket se verifica privado en cada
+operación. Las lecturas tienen límite 5 MiB y nombres UUID estrictos. La API de negocio sigue
+comprobando pagador/propietario/organizador, identidad, organización y estado antes del acceso.
+La clave de servidor no proporciona permisos por persona: estos los impone nuestro backend.
+
+Para VPS puede elegirse PAYMENT_PROOF_STORAGE=filesystem con volumen privado persistente.
+No cambiar de adaptador con comprobantes existentes sin copiar y verificar primero sus objetos
+con los mismos UUID; no existe migración automática de imágenes.
+
+Verificación: contrato HTTP local (subida PNG, lectura, borrado idempotente, bucket público,
+entradas inválidas, error remoto y configuración insegura), regresión filesystem y servicios.
+La prueba contra Supabase real requiere bucket y secreto configurados; no confundir pruebas
+locales con validación del despliegue.
+
+Verificación de esta integración: mvn clean verify correcto; cinco pruebas nuevas del adaptador
+Supabase y cuatro de pagos con PostgreSQL local pasan (adelanto/saldo, cupos e historial).
+Frontend: 34 pruebas y typecheck correctos. Pendiente prueba remota con bucket/secreto reales y
+activación/despliegue de Render. No se han enviado transferencias ni comprobantes de usuarios.

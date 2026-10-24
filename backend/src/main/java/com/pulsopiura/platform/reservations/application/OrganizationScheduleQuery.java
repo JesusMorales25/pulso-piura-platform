@@ -29,6 +29,46 @@ public class OrganizationScheduleQuery {
                                 spaceId,
                                 organizationId)))
             throw new NoSuchElementException("Cancha no encontrada en este complejo");
+        if (date == null) {
+            return jdbc.query(
+                    """
+                    select s.id space_id, s.name space_name, v.name venue_name, v.public_slug,
+                      b.starts_at, b.ends_at, b.total_minor effective_price,
+                      case when b.status = 'CONFIRMED' then 'RENTED' else 'PENDING' end state,
+                      b.id reservation_id, u.display_name customer_name, b.total_minor,
+                      coalesce((select sum(p.amount_minor) from app.payment_orders p
+                        where p.reservation_id = b.id and p.status = 'PAID'), 0) paid_minor,
+                      null::text reason, false bookable
+                    from app.reservations b
+                    join app.sport_spaces s on s.id = b.sport_space_id and s.organization_id = b.organization_id
+                    join app.venues v on v.id = s.venue_id and v.organization_id = b.organization_id
+                    left join app.users u on u.id = b.customer_user_id
+                    where b.organization_id = ? and (?::uuid is null or b.sport_space_id = ?::uuid)
+                      and b.ends_at > now()
+                      and (b.status = 'CONFIRMED' or (b.status in ('HOLD','PENDING_PAYMENT')
+                        and (b.expires_at is null or b.expires_at > now())))
+                    order by b.starts_at, v.name, s.name, b.id
+                    """,
+                    (rs, row) ->
+                            new Turn(
+                                    rs.getObject("space_id", UUID.class),
+                                    rs.getString("space_name"),
+                                    rs.getString("venue_name"),
+                                    rs.getString("public_slug"),
+                                    rs.getTimestamp("starts_at").toInstant(),
+                                    rs.getTimestamp("ends_at").toInstant(),
+                                    rs.getLong("effective_price"),
+                                    rs.getString("state"),
+                                    rs.getObject("reservation_id", UUID.class),
+                                    rs.getString("customer_name"),
+                                    rs.getLong("total_minor"),
+                                    rs.getLong("paid_minor"),
+                                    rs.getString("reason"),
+                                    rs.getBoolean("bookable")),
+                    organizationId,
+                    spaceId,
+                    spaceId);
+        }
         return jdbc.query(
                 """
             with slots as (

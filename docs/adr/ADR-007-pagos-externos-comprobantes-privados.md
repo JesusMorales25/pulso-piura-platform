@@ -22,3 +22,7 @@ simulación siguen separados e identificados. No se habilita ninguna pasarela au
 
 Consecuencias: el receptor debe atender revisiones; se necesitan volumen, backups externos y
 política de conservación. No habilitar external_manual en Render gratuito con disco efímero.
+
+Ampliación aprobada el 23 de octubre de 2026: se implementa Supabase Storage privado mediante
+adaptador HTTP del mismo puerto. Render puede usar external_manual con ese almacenamiento externo.
+Filesystem permanece como opción para VPS; claves solo en servidor, permisos de negocio en backend.

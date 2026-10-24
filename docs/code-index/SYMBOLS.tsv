@@ -170,6 +170,8 @@ java	payments	class	ReservationPaymentAdapter	backend/src/main/java/com/pulsopiu
 java	payments	class	MatchPaymentProviderAdapter	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/provider/MatchPaymentProviderAdapter.java
 java	payments	class	SandboxPaymentProvider	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/provider/SandboxPaymentProvider.java
 java	payments	class	FileSystemPaymentProofStorage	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/storage/FileSystemPaymentProofStorage.java
+java	payments	class	PaymentProofImages	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/storage/PaymentProofImages.java
+java	payments	class	SupabasePaymentProofStorage	backend/src/main/java/com/pulsopiura/platform/payments/infrastructure/storage/SupabasePaymentProofStorage.java
 java	profiles	class	LegalDocuments	backend/src/main/java/com/pulsopiura/platform/profiles/application/LegalDocuments.java
 java	profiles	record	PlayerProfile	backend/src/main/java/com/pulsopiura/platform/profiles/application/PlayerProfile.java
 java	profiles	class	PlayerProfileService	backend/src/main/java/com/pulsopiura/platform/profiles/application/PlayerProfileService.java
@@ -335,6 +337,7 @@ java	payments	class	ExternalPaymentTargetsTest	backend/src/test/java/com/pulsopi
 java	payments	class	PaymentOrderServiceTest	backend/src/test/java/com/pulsopiura/platform/payments/application/PaymentOrderServiceTest.java
 java	payments	class	PaymentProofRetentionTest	backend/src/test/java/com/pulsopiura/platform/payments/application/PaymentProofRetentionTest.java
 java	payments	class	FileSystemPaymentProofStorageTest	backend/src/test/java/com/pulsopiura/platform/payments/infrastructure/storage/FileSystemPaymentProofStorageTest.java
+java	payments	class	SupabasePaymentProofStorageTest	backend/src/test/java/com/pulsopiura/platform/payments/infrastructure/storage/SupabasePaymentProofStorageTest.java
 java	profiles	class	LegalAcceptanceTest	backend/src/test/java/com/pulsopiura/platform/profiles/application/LegalAcceptanceTest.java
 java	ProjectConventionsTest.java	class	ProjectConventionsTest	backend/src/test/java/com/pulsopiura/platform/ProjectConventionsTest.java
 java	reservations	class	BookableAvailabilityServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/BookableAvailabilityServiceTest.java

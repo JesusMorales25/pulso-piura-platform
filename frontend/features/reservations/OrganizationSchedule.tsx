@@ -38,21 +38,13 @@ const time = (value: string) =>
     hour: "numeric",
     minute: "2-digit",
   });
-const today = () =>
-  new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Lima",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-
 export function OrganizationSchedule({
   organizationId,
 }: {
   organizationId: string;
 }) {
   const { accessToken } = useAuth();
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState("");
   const [space, setSpace] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [spaces, setSpaces] = useState<
@@ -98,9 +90,10 @@ export function OrganizationSchedule({
     return () => controller.abort();
   }, [accessToken, organizationId]);
   useEffect(() => {
-    if (!accessToken || !date) return;
+    if (!accessToken) return;
     const controller = new AbortController();
-    const params = new URLSearchParams({ date });
+    const params = new URLSearchParams();
+    if (date) params.set("date", date);
     if (space) params.set("spaceId", space);
     void apiRequest<Turn[]>(
       `/organizations/${organizationId}/schedule?${params}`,
@@ -138,7 +131,7 @@ export function OrganizationSchedule({
       </header>
       <div className="scheduleControls">
         <label>
-          Fecha
+          Fecha (opcional)
           <input
             type="date"
             value={date}
@@ -166,6 +159,23 @@ export function OrganizationSchedule({
           </select>
         </label>
       </div>
+      {date ? (
+        <button
+          className="secondary"
+          type="button"
+          onClick={() => {
+            setDate("");
+            setLoading(true);
+          }}
+        >
+          Ver todas las reservas activas
+        </button>
+      ) : (
+        <p className="muted">
+          Todas las reservas activas. Selecciona una fecha para ver también los
+          turnos libres.
+        </p>
+      )}
       <div className="scheduleLegend">
         {Object.entries(labels).map(([state, label]) => (
           <span className={`scheduleState ${state}`} key={state}>
@@ -183,8 +193,9 @@ export function OrganizationSchedule({
         </p>
       ) : !turns.length ? (
         <p className="empty">
-          No hay horarios configurados para esta fecha y selección. Configúralos
-          en Mis canchas.
+          {date
+            ? "No hay horarios configurados para esta fecha y selección. Configúralos en Mis canchas."
+            : "No hay reservas activas para esta selección."}
         </p>
       ) : (
         <div className="scheduleTurnGrid">
@@ -212,6 +223,16 @@ export function OrganizationSchedule({
                     {labels[turn.state]}
                   </span>
                 </header>
+                {!date && (
+                  <p>
+                    {new Date(turn.startsAt).toLocaleDateString("es-PE", {
+                      timeZone: "America/Lima",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                )}
                 <h3>{turn.spaceName}</h3>
                 <p>{turn.venueName}</p>
                 {turn.customerName && (

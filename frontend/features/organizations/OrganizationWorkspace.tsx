@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { DistrictSelect } from "@/components/forms/DistrictSelect";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
@@ -45,6 +46,7 @@ export function OrganizationWorkspace() {
   const [overviewLoading, setOverviewLoading] = useState(false);
   const [overviewRetry, setOverviewRetry] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
+  const [tab, setTab] = useState<"mine" | "create">("mine");
   const createDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (showCreate && createDialog.current && !createDialog.current.open) {
@@ -64,8 +66,12 @@ export function OrganizationWorkspace() {
       .then((result) => {
         if (active) {
           setOrganizations(result);
-          if (new URLSearchParams(window.location.search).get("create") === "1")
+          if (
+            new URLSearchParams(window.location.search).get("create") === "1"
+          ) {
+            setTab("create");
             setShowCreate(true);
+          }
         }
       })
       .catch((requestError: unknown) => {
@@ -144,6 +150,7 @@ export function OrganizationWorkspace() {
         },
       );
       setOrganizations((current) => [...current, created]);
+      setTab("mine");
       form.reset();
       setShowCreate(false);
     } catch (requestError) {
@@ -180,225 +187,286 @@ export function OrganizationWorkspace() {
 
   return (
     <>
-      <header className="ownerWorkspaceHero">
-        <div>
-          <p className="eyebrow">MI CANCHA</p>
-          <h1>Gestiona tu complejo</h1>
-          <p>Configura tus sedes y revisa la operación de hoy.</p>
-        </div>
-        {capabilities.canManageOrganizations && (
-          <button
-            className="primary borderless"
-            onClick={() => setShowCreate((current) => !current)}
-            type="button"
-          >
-            <Plus /> Crear complejo
-          </button>
-        )}
-      </header>
-      <div className="ownerOverviewMetrics" aria-label="Resumen de complejos">
-        {[
-          ["Complejos", organizations.length],
-          [
-            "Canchas habilitadas",
-            summaries.reduce((sum, item) => sum + item.spaces, 0),
-          ],
-          [
-            "Partidos hoy",
-            summaries.reduce((sum, item) => sum + item.matchesToday, 0),
-          ],
-          [
-            "Recaudación estimada hoy",
-            new Intl.NumberFormat("es-PE", {
-              style: "currency",
-              currency: "PEN",
-            }).format(
-              summaries.reduce((sum, item) => sum + item.expectedMinor, 0) /
-                100,
-            ),
-          ],
-        ].map(([label, value]) => (
-          <article key={label}>
-            <small>{label}</small>
-            <strong>
-              {label === "Complejos" || overviewComplete ? value : "—"}
-            </strong>
-          </article>
-        ))}
-      </div>
-      {overviewError && (
-        <div className="notice" role="alert">
-          <p>
-            No se pudo cargar todo el resumen. Tus complejos siguen disponibles.
-          </p>
-          <button
-            className="secondary"
-            type="button"
-            disabled={overviewLoading}
-            onClick={() => {
-              setOverviewLoading(true);
-              setOverviewRetry((current) => current + 1);
-            }}
-          >
-            Reintentar resumen
-          </button>
-        </div>
-      )}
-      <p className="muted">
-        Estimación basada en las reservas confirmadas de hoy; no equivale a
-        dinero cobrado.
-      </p>
-
-      <section
-        className="workspaceGrid ownerComplexWorkspace"
-        aria-label="Organizaciones deportivas"
-      >
-        <div>
-          <div className="sectionTitle workspaceTitle">
-            <div>
-              <p className="eyebrow">TUS ESPACIOS</p>
-              <h2>Mis complejos</h2>
-            </div>
-            <span className="countBadge">{organizations.length}</span>
+      <header className="hybridHome complexPanelHero">
+        <section className="hybridHero">
+          <div className="hybridHeroCarousel" aria-hidden="true">
+            <Image
+              src="/images/court-reference.svg"
+              alt=""
+              fill
+              sizes="(max-width: 760px) 100vw, 1120px"
+              className="hybridHeroImage active"
+              priority
+            />
           </div>
-
-          {organizations.length === 0 ? (
-            <div className="empty compactEmpty">
-              <h3>Crea tu primer complejo</h3>
-              <p>
-                Aquí podrás configurar el equipo, las canchas y su operación.
-              </p>
-            </div>
-          ) : (
-            <div className="organizationList">
-              {organizations.map((organization) => (
-                <article
-                  className="card organizationCard ownerComplexCard"
-                  key={organization.id}
-                >
-                  <div>
-                    <span className="pill">
-                      {organizationRoleLabel(organization.role)}
-                    </span>
-                    <span className="ownerComplexVisual" aria-hidden="true">
-                      <Buildings size={38} />
-                    </span>
-                    <h3>{organization.name}</h3>
-                    <p>
-                      <MapPin size={16} />{" "}
-                      {organization.address ||
-                        overviews[organization.id]?.locations ||
-                        "Ubicación pendiente de configurar"}
-                      {organization.districtCode
-                        ? ` · ${organization.districtCode}`
-                        : ""}
-                    </p>
-                    <p>{organizationStatusLabel(organization.status)}</p>
-                    <div className="ownerComplexFacts">
-                      <span>
-                        {overviews[organization.id]?.spaces ?? "—"} canchas
-                        habilitadas
-                      </span>
-                      <span>
-                        {overviews[organization.id]?.members ?? "—"}{" "}
-                        colaboradores
-                      </span>
-                      <span>
-                        {overviews[organization.id]?.reservationsToday ?? "—"}{" "}
-                        reservas hoy
-                      </span>
-                    </div>
-                  </div>
-                  <Link className="primary" href={`/admin/${organization.id}`}>
-                    Abrir panel <ArrowRight />
-                  </Link>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {capabilities.canManageOrganizations && showCreate ? (
-          <dialog
-            ref={createDialog}
-            className="createComplexDialog"
-            aria-labelledby="create-complex-title"
-            onCancel={() => setShowCreate(false)}
-            onClose={() => setShowCreate(false)}
-          >
-            <form
-              className="card adminForm createOrganization"
-              noValidate
-              onSubmit={createOrganization}
+          <div className="hybridHeroShade" />
+          <div className="hybridHeroContent">
+            <p className="prototypeGreeting">MI CANCHA</p>
+            <h1>Gestiona tu complejo</h1>
+            <div
+              className="homeModeSwitch complexPanelSwitch"
+              role="group"
+              aria-label="Gestionar complejos"
             >
-              <p className="eyebrow">NUEVO COMPLEJO</p>
-              <div className="createComplexDialogHeading">
-                <h2 id="create-complex-title">Crear complejo</h2>
-                <button
-                  type="button"
-                  className="secondary"
-                  aria-label="Cerrar formulario"
-                  onClick={() => setShowCreate(false)}
-                >
-                  ×
-                </button>
-              </div>
-              <p className="muted">
-                Serás propietario y podrás invitar administradores u operadores.
-              </p>
-              <label>
-                Nombre comercial
-                <input
-                  name="name"
-                  maxLength={160}
-                  placeholder="Ej. Arena Norte"
-                  autoComplete="organization"
-                  required
-                />
-              </label>
-              <DistrictSelect />
-              <label>
-                Dirección de la sede
-                <input
-                  name="address"
-                  maxLength={240}
-                  placeholder="Av. y número o referencia de ubicación"
-                  autoComplete="street-address"
-                  required
-                />
-              </label>
-              {error && (
-                <p className="errorNotice" role="alert">
-                  {error}
-                </p>
-              )}
-              <button className="primary borderless" disabled={creating}>
-                {creating ? "Creando…" : "Crear complejo"}
+              <button
+                type="button"
+                className={tab === "mine" ? "active" : ""}
+                aria-pressed={tab === "mine"}
+                onClick={() => setTab("mine")}
+              >
+                <Buildings size={20} />
+                Complejos creados
               </button>
               <button
                 type="button"
+                className={tab === "create" ? "active" : ""}
+                aria-pressed={tab === "create"}
+                onClick={() => setTab("create")}
+              >
+                <Plus size={20} />
+                Crear complejos
+              </button>
+            </div>
+          </div>
+        </section>
+      </header>
+      {tab === "mine" ? (
+        <>
+          <div
+            className="ownerOverviewMetrics"
+            aria-label="Resumen de complejos"
+          >
+            {[
+              ["Complejos", organizations.length],
+              [
+                "Canchas habilitadas",
+                summaries.reduce((sum, item) => sum + item.spaces, 0),
+              ],
+              [
+                "Partidos hoy",
+                summaries.reduce((sum, item) => sum + item.matchesToday, 0),
+              ],
+              [
+                "Recaudación estimada hoy",
+                new Intl.NumberFormat("es-PE", {
+                  style: "currency",
+                  currency: "PEN",
+                }).format(
+                  summaries.reduce((sum, item) => sum + item.expectedMinor, 0) /
+                    100,
+                ),
+              ],
+            ].map(([label, value]) => (
+              <article key={label}>
+                <small>{label}</small>
+                <strong>
+                  {label === "Complejos" || overviewComplete ? value : "—"}
+                </strong>
+              </article>
+            ))}
+          </div>
+          {overviewError && (
+            <div className="notice" role="alert">
+              <p>
+                No se pudo cargar todo el resumen. Tus complejos siguen
+                disponibles.
+              </p>
+              <button
                 className="secondary"
-                disabled={creating}
+                type="button"
+                disabled={overviewLoading}
+                onClick={() => {
+                  setOverviewLoading(true);
+                  setOverviewRetry((current) => current + 1);
+                }}
+              >
+                Reintentar resumen
+              </button>
+            </div>
+          )}
+          <p className="muted">
+            Estimación basada en las reservas confirmadas de hoy; no equivale a
+            dinero cobrado.
+          </p>
+
+          <section
+            className="workspaceGrid ownerComplexWorkspace"
+            aria-label="Organizaciones deportivas"
+          >
+            <div>
+              <div className="sectionTitle workspaceTitle">
+                <div>
+                  <p className="eyebrow">TUS ESPACIOS</p>
+                  <h2>Mis complejos</h2>
+                </div>
+                <span className="countBadge">{organizations.length}</span>
+              </div>
+
+              {organizations.length === 0 ? (
+                <div className="empty compactEmpty">
+                  <h3>Crea tu primer complejo</h3>
+                  <p>
+                    Aquí podrás configurar el equipo, las canchas y su
+                    operación.
+                  </p>
+                </div>
+              ) : (
+                <div className="organizationList">
+                  {organizations.map((organization) => (
+                    <article
+                      className="card organizationCard ownerComplexCard"
+                      key={organization.id}
+                    >
+                      <div>
+                        <span className="pill">
+                          {organizationRoleLabel(organization.role)}
+                        </span>
+                        <span className="ownerComplexVisual" aria-hidden="true">
+                          <Buildings size={38} />
+                        </span>
+                        <h3>{organization.name}</h3>
+                        <p>
+                          <MapPin size={16} />{" "}
+                          {organization.address ||
+                            overviews[organization.id]?.locations ||
+                            "Ubicación pendiente de configurar"}
+                          {organization.districtCode
+                            ? ` · ${organization.districtCode}`
+                            : ""}
+                        </p>
+                        <p>{organizationStatusLabel(organization.status)}</p>
+                        <div className="ownerComplexFacts">
+                          <span>
+                            {overviews[organization.id]?.spaces ?? "—"} canchas
+                            habilitadas
+                          </span>
+                          <span>
+                            {overviews[organization.id]?.members ?? "—"}{" "}
+                            colaboradores
+                          </span>
+                          <span>
+                            {overviews[organization.id]?.reservationsToday ??
+                              "—"}{" "}
+                            reservas hoy
+                          </span>
+                        </div>
+                      </div>
+                      <Link
+                        className="primary"
+                        href={`/admin/${organization.id}`}
+                      >
+                        Abrir panel <ArrowRight />
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        </>
+      ) : capabilities.canManageOrganizations ? (
+        <section className="card matchCreateIntro">
+          <p className="eyebrow">NUEVO COMPLEJO</p>
+          <h2>Crea tu complejo deportivo</h2>
+          <p>
+            Registra sus datos y después configura el equipo, las sedes y las
+            canchas.
+          </p>
+          <button
+            className="primary"
+            type="button"
+            onClick={() => setShowCreate(true)}
+          >
+            <Plus size={20} />
+            Crear complejo
+          </button>
+        </section>
+      ) : (
+        <p className="notice">
+          Solicita el acceso para propietarios desde tu{" "}
+          <Link href="/perfil">perfil</Link>.
+        </p>
+      )}
+      {capabilities.canManageOrganizations && showCreate ? (
+        <dialog
+          ref={createDialog}
+          className="createComplexDialog"
+          aria-labelledby="create-complex-title"
+          onCancel={() => setShowCreate(false)}
+          onClose={() => setShowCreate(false)}
+        >
+          <form
+            className="card adminForm createOrganization"
+            noValidate
+            onSubmit={createOrganization}
+          >
+            <p className="eyebrow">NUEVO COMPLEJO</p>
+            <div className="createComplexDialogHeading">
+              <h2 id="create-complex-title">Crear complejo</h2>
+              <button
+                type="button"
+                className="secondary"
+                aria-label="Cerrar formulario"
                 onClick={() => setShowCreate(false)}
               >
-                Cancelar
+                ×
               </button>
-            </form>
-          </dialog>
-        ) : !capabilities.canManageOrganizations ? (
-          <aside className="card adminForm createOrganization">
-            <p className="eyebrow">ACCESO PARA PROPIETARIOS</p>
-            <h2>Publica tu complejo</h2>
+            </div>
             <p className="muted">
-              Envía tu solicitud desde el perfil. Cuando la plataforma la
-              apruebe, podrás crear y configurar tus sedes y canchas.
+              Serás propietario y podrás invitar administradores u operadores.
             </p>
-            <Link className="primary" href="/perfil">
-              Ir a mi perfil
-            </Link>
-          </aside>
-        ) : null}
-      </section>
+            <label>
+              Nombre comercial
+              <input
+                name="name"
+                maxLength={160}
+                placeholder="Ej. Arena Norte"
+                autoComplete="organization"
+                required
+              />
+            </label>
+            <DistrictSelect />
+            <label>
+              Dirección de la sede
+              <input
+                name="address"
+                maxLength={240}
+                placeholder="Av. y número o referencia de ubicación"
+                autoComplete="street-address"
+                required
+              />
+            </label>
+            {error && (
+              <p className="errorNotice" role="alert">
+                {error}
+              </p>
+            )}
+            <button className="primary borderless" disabled={creating}>
+              {creating ? "Creando…" : "Crear complejo"}
+            </button>
+            <button
+              type="button"
+              className="secondary"
+              disabled={creating}
+              onClick={() => setShowCreate(false)}
+            >
+              Cancelar
+            </button>
+          </form>
+        </dialog>
+      ) : !capabilities.canManageOrganizations ? (
+        <aside className="card adminForm createOrganization">
+          <p className="eyebrow">ACCESO PARA PROPIETARIOS</p>
+          <h2>Publica tu complejo</h2>
+          <p className="muted">
+            Envía tu solicitud desde el perfil. Cuando la plataforma la apruebe,
+            podrás crear y configurar tus sedes y canchas.
+          </p>
+          <Link className="primary" href="/perfil">
+            Ir a mi perfil
+          </Link>
+        </aside>
+      ) : null}
       <FloatingNotice
         message={error || ""}
         tone="error"

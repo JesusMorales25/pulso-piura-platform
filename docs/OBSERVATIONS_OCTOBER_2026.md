@@ -126,3 +126,13 @@ Horario semanal: día, franja horaria, precio y duración en líneas separadas; 
 - Solicitudes de perfil: tarjeta responsive con acciones debajo del contenido en móvil y dos columnas desde 768 px. Correos largos ajustan línea y botones conservan área táctil mínima de 44 px. Reproducido el desbordamiento anterior y verificado el CSS completo con contenido sintético pendiente/aprobado en 320, 393, 480, 768 y 1024 px sin overflow ni botones fuera de tarjeta; Prettier correcto. No se modifican permisos ni las decisiones de aprobación/rechazo.
 - Mis canchas: el contador de complejos depende de la lista cargada, no de los resúmenes operativos. Los resúmenes se vuelven a consultar al crear un complejo; las respuestas parciales se conservan y los fallos ofrecen Reintentar resumen sin repetir el alta ni inventar importes/cantidades. Prueba de navegador reproduce el contador anterior en guion y valida creación y recuperación tras fallo 503 con identidad/API sintéticas locales; 32 pruebas frontend, tipos y lint correctos. Sin cambios backend ni permisos.
 - Sedes: GPS rellena una dirección vacía con una referencia explícita de coordenadas, conserva una dirección escrita y el resto del borrador, y Maps utiliza el punto capturado. No se implementa geocodificación inversa ni se inventa una calle. El selector ya no se desmonta al cambiar coordenadas, conservando el mensaje de estado. Teléfono público con prefijo fijo +51, campo numérico de nueve dígitos y pegado de número con prefijo; envío canónico +51 seguido de nueve dígitos, vacío como null. Crear/editar sede valida en backend nueve dígitos con +51 opcional por compatibilidad; sin migración. Verificación: 34 pruebas frontend, tipos/lint, flujo de navegador con GPS/identidad/API simulados y suite backend (225 pruebas, 0 fallos/errores, 11 omitidas).
+
+## Reservas del propietario sin fecha inicial
+- La malla inicia sin fecha y lista reservas activas futuras o en curso, confirmadas o pendientes vigentes, ordenadas cronológicamente y limitadas al complejo autorizado.
+- Seleccionar fecha muestra los turnos del día; quitar el filtro recupera todas las reservas activas. Se puede combinar con cancha. No depende de que sigan existiendo reglas de disponibilidad para mostrar reservas activas.
+
+## Acción de crear partido
+- La pestaña Partidos creados no muestra el botón de creación; la acción permanece en Crear partido, conservando el formulario emergente y el borrador.
+
+## Pestañas de Mis canchas
+- Gestiona tu complejo reutiliza el banner y selector de las otras secciones: Complejos creados muestra resumen y listado; Crear complejos contiene la acción que abre el popup existente. Al guardar vuelve al listado actualizado.
