@@ -10,6 +10,7 @@ export type Reservation = {
   status:
     | "HOLD"
     | "PENDING_PAYMENT"
+    | "PENDING_PAYMENT_CONFIRMATION"
     | "CONFIRMED"
     | "COMPLETED"
     | "CANCELLED"

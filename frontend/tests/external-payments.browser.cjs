@@ -72,7 +72,7 @@ async function main() {
           startsAt: new Date(Date.now() + 86400000).toISOString(),
           endsAt: new Date(Date.now() + 90000000).toISOString(),
           expiresAt: new Date(Date.now() + 900000).toISOString(),
-          status: "HOLD",
+          status: role === "owner" ? "PENDING_PAYMENT_CONFIRMATION" : "HOLD",
           totalMinor: 10000,
           depositMinor: 2000,
           paidMinor: 0,
@@ -174,7 +174,16 @@ async function main() {
             return json({ simulationEnabled: false });
           if (endpoint === "/payment-orders") return json([]);
           if (endpoint === `/reservations/${reservationId}`)
-            return json(reservation);
+            return json({
+              ...reservation,
+              status: proofs.some(
+                (p) =>
+                  p.targetType === "RESERVATION" &&
+                  p.status === "PENDING_REVIEW",
+              )
+                ? "PENDING_PAYMENT_CONFIRMATION"
+                : reservation.status,
+            });
           if (endpoint === "/me/reservations")
             return json({ items: [reservation], page: 0, size: 10, total: 1 });
           if (endpoint === "/matches/participations/me")
@@ -196,6 +205,48 @@ async function main() {
                 checkedInAt: null,
               },
             ]);
+          if (endpoint.endsWith("/reservations/dashboard")) {
+            const second = endpoint.includes(secondOrganizationId);
+            const confirmed = proofs.some(
+              (proof) => proof.status === "CONFIRMED",
+            );
+            const count = second ? 0 : role === "owner" && !saved ? 0 : 1;
+            const row = {
+              ...reservation,
+              status: confirmed ? "CONFIRMED" : "PENDING_PAYMENT_CONFIRMATION",
+              paidMinor: confirmed ? 2000 : 0,
+              spaceName: "Cancha de prueba",
+              venueName: "Complejo de prueba",
+              customerEmail: "test@example.test",
+            };
+            const filter = url.searchParams.get("filter");
+            if (filter) reservationListRequests++;
+            const matchFilter =
+              filter === "ALL" ||
+              (confirmed &&
+                ["CONFIRMED", "PAID", "BALANCE"].includes(filter)) ||
+              (!confirmed && filter === "PENDING_PAYMENT_CONFIRMATION");
+            return json({
+              counts: {
+                all: count,
+                confirmed: confirmed ? count : 0,
+                pendingPayment: 0,
+                pendingConfirmation: confirmed ? 0 : count,
+                cancelled: 0,
+                completed: 0,
+                expired: 0,
+                paid: confirmed ? count : 0,
+                balance: confirmed ? count : 0,
+              },
+              paidMinor: confirmed ? 2000 : 0,
+              balanceMinor: confirmed ? 8000 : 0,
+              retainedMinor: 0,
+              items: filter && count && matchFilter ? [row] : [],
+              total: filter && matchFilter ? count : 0,
+              page: 0,
+              size: 10,
+            });
+          }
           if (endpoint === `/organizations/${id}/reservations`) {
             reservationListRequests++;
             return json({
@@ -203,6 +254,10 @@ async function main() {
               total: saved ? 1 : 0,
             });
           }
+          if (
+            endpoint === `/organizations/${secondOrganizationId}/reservations`
+          )
+            return json({ items: [], total: 0 });
           if (endpoint.endsWith("/reservations/summary"))
             return json({
               total: 1,
@@ -362,6 +417,25 @@ async function main() {
             .click();
           await panel.getByText("Celular: 987654321").waitFor();
           assert.equal(preparedCalls, 1);
+          const amount = panel
+            .getByRole("status")
+            .filter({ hasText: "Importe verificado" })
+            .locator("strong");
+          assert.equal(
+            await amount.evaluate((el) => getComputedStyle(el).whiteSpace),
+            "nowrap",
+          );
+          assert.equal(
+            await amount.evaluate((el) => el.getClientRects().length),
+            1,
+          );
+          assert.equal(
+            await panel
+              .getByRole("combobox", { name: "Método", exact: true })
+              .evaluate((el) => getComputedStyle(el).minHeight),
+            "44px",
+          );
+
           assert.match(
             await panel
               .getByRole("status")
@@ -443,7 +517,23 @@ async function main() {
             await page.getByRole("button", { name: /Simular pago/ }).count(),
             0,
           );
+          await page
+            .getByRole("dialog", { name: "Tu reserva", exact: true })
+            .getByRole("button", { name: "Cerrar formulario" })
+            .click();
+          await page
+            .locator(".focusedReservationList > .card")
+            .getByText(/Pendiente de confirmación de pago/)
+            .waitFor();
           await page.goto(`${base}/actividad`);
+          await page
+            .getByRole("button", { name: /^Por confirmar pago/ })
+            .click();
+          await page
+            .getByRole("button", {
+              name: /Pago de partido retirado.*Ver inscripción/,
+            })
+            .click();
           await page
             .getByText("Solicitud en revisión", { exact: false })
             .waitFor();
@@ -455,6 +545,19 @@ async function main() {
             .waitFor();
         } else {
           await page.goto(`${base}/reservas-cancha`);
+          assert.equal(
+            await page
+              .getByRole("heading", {
+                name: "Cuenta receptora del complejo",
+                exact: true,
+              })
+              .count(),
+            0,
+          );
+          assert.equal(reservationListRequests, 0);
+          await page
+            .getByRole("button", { name: "Reservas y pagos", exact: true })
+            .click();
           const settings = page
             .getByRole("region", { name: "Revisión de pagos externos" })
             .filter({
@@ -510,13 +613,15 @@ async function main() {
           await page
             .locator(".ownerOrganizationPicker select")
             .selectOption(id);
-          assert.equal(
-            reservationListRequests,
-            0,
-            "Account can be configured before any reservation list exists.",
-          );
+
           await page
             .getByRole("button", { name: "Reservas y pagos", exact: true })
+            .click();
+          await page
+            .getByRole("button", { name: /^Por confirmar pago/ })
+            .click();
+          await page
+            .getByRole("button", { name: /Cancha de prueba.*Ver reserva/ })
             .click();
           const review = page
             .getByRole("region", { name: "Revisión de pagos externos" })

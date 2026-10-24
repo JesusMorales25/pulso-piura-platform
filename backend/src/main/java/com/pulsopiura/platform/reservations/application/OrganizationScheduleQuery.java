@@ -34,7 +34,7 @@ public class OrganizationScheduleQuery {
                     """
                     select s.id space_id, s.name space_name, v.name venue_name, v.public_slug,
                       b.starts_at, b.ends_at, b.total_minor effective_price,
-                      case when b.status = 'CONFIRMED' then 'RENTED' else 'PENDING' end state,
+                      case when b.status = 'CONFIRMED' then 'RENTED' when b.status = 'PENDING_PAYMENT_CONFIRMATION' then 'PAYMENT_REVIEW' else 'PENDING' end state,
                       b.id reservation_id, u.display_name customer_name, b.total_minor,
                       coalesce((select sum(p.amount_minor) from app.payment_orders p
                         where p.reservation_id = b.id and p.status = 'PAID'), 0) paid_minor,
@@ -45,7 +45,7 @@ public class OrganizationScheduleQuery {
                     left join app.users u on u.id = b.customer_user_id
                     where b.organization_id = ? and (?::uuid is null or b.sport_space_id = ?::uuid)
                       and b.ends_at > now()
-                      and (b.status = 'CONFIRMED' or (b.status in ('HOLD','PENDING_PAYMENT')
+                      and (b.status = 'CONFIRMED' or (b.status in ('HOLD','PENDING_PAYMENT','PENDING_PAYMENT_CONFIRMATION')
                         and (b.expires_at is null or b.expires_at > now())))
                     order by b.starts_at, v.name, s.name, b.id
                     """,
@@ -89,6 +89,7 @@ public class OrganizationScheduleQuery {
             )
             select slots.*, coalesce(price.price_minor, slots.price_minor) effective_price,
               case when booking.status in ('CONFIRMED','COMPLETED') then 'RENTED'
+                   when booking.status = 'PENDING_PAYMENT_CONFIRMATION' then 'PAYMENT_REVIEW'
                    when booking.id is not null then 'PENDING'
                    when blocked.id is not null then 'MAINTENANCE' else 'FREE' end state,
               booking.id reservation_id, booking.total_minor,
@@ -102,7 +103,7 @@ public class OrganizationScheduleQuery {
             left join lateral (select b.* from app.reservations b where b.organization_id = ?
               and b.sport_space_id = slots.space_id and b.starts_at < slots.ends_at and b.ends_at > slots.starts_at
               and (b.status in ('CONFIRMED','COMPLETED') or
-                (b.status in ('HOLD','PENDING_PAYMENT') and (b.expires_at is null or b.expires_at > now())))
+                (b.status in ('HOLD','PENDING_PAYMENT','PENDING_PAYMENT_CONFIRMATION') and (b.expires_at is null or b.expires_at > now())))
               order by b.created_at desc limit 1) booking on true
             left join app.users u on u.id = booking.customer_user_id
             left join lateral (select e.* from app.availability_exceptions e where e.organization_id = ?

@@ -125,7 +125,9 @@ export function ReservationCheckout({
       )
     : 0;
   const temporary =
-    reservation.status === "HOLD" || reservation.status === "PENDING_PAYMENT";
+    reservation.status === "HOLD" ||
+    reservation.status === "PENDING_PAYMENT" ||
+    reservation.status === "PENDING_PAYMENT_CONFIRMATION";
   const expired = temporary && remaining === 0;
   const balancePayment =
     reservation.status === "CONFIRMED" &&
@@ -422,6 +424,7 @@ export function ReservationCheckout({
           </div>
         )}
       {!externalPayments &&
+        simulation !== false &&
         paymentActive &&
         ((temporary && !expired) || balancePayment) && (
           <div className="mobileReservationAction">

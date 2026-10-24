@@ -4,22 +4,29 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
 import { ReservationCheckout } from "./ReservationCheckout";
-import { useExternalPayments } from "@/features/payments/ExternalPaymentPanel";
-import type { Reservation, ReservationPage } from "./types";
+import { FormSheet } from "@/components/forms/FormSheet";
+import { reservationDate, reservationStatus } from "./presentation";
+import { PlayerReservationOverview } from "./PlayerReservationOverview";
+import type { Reservation } from "./types";
 function ReservationItem({
   initial,
   accessToken,
   highlighted = false,
   paymentActive = true,
   onSelectPayment,
+  onChange,
 }: {
   initial: Reservation;
   accessToken: string;
   highlighted?: boolean;
   paymentActive?: boolean;
   onSelectPayment?: () => void;
+  onChange?: (reservation: Reservation) => void;
 }) {
   const [reservation, setReservation] = useState(initial);
+  useEffect(() => {
+    onChange?.(reservation);
+  }, [reservation, onChange]);
   const update = useCallback(
     (next: Reservation) =>
       setReservation((current) =>
@@ -72,6 +79,7 @@ function FocusedReservation({
   reservationId: string;
 }) {
   const [reservation, setReservation] = useState<Reservation | null>(null);
+  const [detailOpen, setDetailOpen] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -108,11 +116,33 @@ function FocusedReservation({
 
   return (
     <div className="reservationList focusedReservationList">
-      <ReservationItem
-        accessToken={accessToken}
-        highlighted
-        initial={reservation}
-      />
+      <div className="card">
+        <p className="eyebrow">TU RESERVA</p>
+        <h2>{reservation.spaceName ?? "Cancha"}</h2>
+        <p>
+          {reservationDate(reservation.startsAt)} ·{" "}
+          {reservationStatus[reservation.status]}
+        </p>
+        <button
+          className="primary"
+          type="button"
+          onClick={() => setDetailOpen(true)}
+        >
+          Ver reserva y pago
+        </button>
+      </div>
+      <FormSheet
+        open={detailOpen}
+        title="Tu reserva"
+        onClose={() => setDetailOpen(false)}
+      >
+        <ReservationItem
+          accessToken={accessToken}
+          highlighted
+          initial={reservation}
+          onChange={setReservation}
+        />
+      </FormSheet>
       <Link
         className="secondary focusedReservationHistoryLink"
         href="/actividad"
@@ -123,119 +153,18 @@ function FocusedReservation({
   );
 }
 
-function ReservationsList({
-  accessToken,
-  highlightedReservationId,
-}: {
-  accessToken: string;
-  highlightedReservationId: string;
-}) {
-  const externalPayments = useExternalPayments();
-  const [result, setResult] = useState<ReservationPage | null>(null);
-  const [page, setPage] = useState(0);
-  const [selectedPaymentId, setSelectedPaymentId] = useState("");
-  const [error, setError] = useState("");
-  useEffect(() => {
-    const controller = new AbortController();
-    if (accessToken)
-      apiRequest<ReservationPage>(
-        `/me/reservations?size=10&page=${page}`,
-        accessToken,
-        { signal: controller.signal },
-      )
-        .then((value) => {
-          if (!controller.signal.aborted) setResult(value);
-        })
-        .catch((reason) => {
-          if (!controller.signal.aborted)
-            setError(
-              reason instanceof Error
-                ? reason.message
-                : "No se pudieron cargar tus reservas.",
-            );
-        });
-    return () => controller.abort();
-  }, [accessToken, page]);
-  useEffect(() => {
-    if (!result || !highlightedReservationId) return;
-    const timer = window.setTimeout(() => {
-      document
-        .getElementById(`reservation-${highlightedReservationId}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [highlightedReservationId, result]);
-  if (error)
-    return (
-      <p className="inlineAlert errorNotice" role="alert">
-        {error}
-      </p>
-    );
-  if (!result) return <p className="notice">Cargando tus reservas…</p>;
-  const activePaymentId = result.items.some(
-    (item) => item.id === selectedPaymentId,
-  )
-    ? selectedPaymentId
-    : result.items.find(canPay)?.id;
+function ReservationsList({ accessToken }: { accessToken: string }) {
   return (
-    <div className="reservationList activeReservationList">
-      <aside className="reservationListNotice">
-        <strong>
-          {externalPayments
-            ? "Pagos pendientes de validación"
-            : "Pagos de demostración"}
-        </strong>
-        <span>
-          {externalPayments
-            ? "El responsable verifica cada transferencia. Una captura no confirma la reserva."
-            : "No se realizan cobros reales. Puedes cancelar hasta 2 horas antes."}
-        </span>
-      </aside>
-      {result.items.length === 0 ? (
-        <div className="empty">
-          <h2>Aún no tienes reservas</h2>
-          <Link className="primary" href="/?mode=venues">
-            Explorar canchas
-          </Link>
-        </div>
-      ) : (
-        result.items.map((reservation) => (
-          <ReservationItem
-            key={reservation.id}
-            initial={reservation}
-            accessToken={accessToken}
-            highlighted={reservation.id === highlightedReservationId}
-            paymentActive={reservation.id === activePaymentId}
-            onSelectPayment={() => setSelectedPaymentId(reservation.id)}
-          />
-        ))
+    <PlayerReservationOverview
+      accessToken={accessToken}
+      renderDetail={(reservation) => (
+        <ReservationItem
+          key={reservation.id}
+          initial={reservation}
+          accessToken={accessToken}
+        />
       )}
-      <nav className="checkoutActions" aria-label="Páginas de reservas">
-        <button
-          className="secondary"
-          disabled={page === 0}
-          onClick={() => {
-            setResult(null);
-            setPage(page - 1);
-          }}
-        >
-          Anterior
-        </button>
-        <span>
-          Página {page + 1} · {result.total} reservas
-        </span>
-        <button
-          className="secondary"
-          disabled={(page + 1) * 10 >= result.total}
-          onClick={() => {
-            setResult(null);
-            setPage(page + 1);
-          }}
-        >
-          Siguiente
-        </button>
-      </nav>
-    </div>
+    />
   );
 }
 
@@ -247,7 +176,8 @@ function canPay(reservation: Reservation) {
     );
   return (
     (reservation.status === "HOLD" ||
-      reservation.status === "PENDING_PAYMENT") &&
+      reservation.status === "PENDING_PAYMENT" ||
+      reservation.status === "PENDING_PAYMENT_CONFIRMATION") &&
     (!reservation.expiresAt || Date.parse(reservation.expiresAt) > Date.now())
   );
 }
@@ -274,10 +204,11 @@ export function MyReservations({
     );
   return highlightedReservationId ? (
     <FocusedReservation
+      key={highlightedReservationId}
       accessToken={accessToken}
       reservationId={highlightedReservationId}
     />
   ) : (
-    <ReservationsList accessToken={accessToken} highlightedReservationId="" />
+    <ReservationsList accessToken={accessToken} />
   );
 }

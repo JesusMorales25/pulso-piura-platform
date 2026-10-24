@@ -241,3 +241,28 @@ sin recarga completa. Los pagos al complejo y al partido siguen siendo obligacio
 Prueba sintética del organizador: edición del destino MATCH, revisión de comprobante, refresco de
 padrón/finanzas y sin desbordamientos en 320, 393 y 768 px. No se ejecutó transferencia real ni
 se alteraron cobros de partidos en producción durante este ajuste.
+
+## Estado explícito de confirmación del pago
+
+V37 incorpora PENDING_PAYMENT_CONFIRMATION (Pendiente de confirmación de pago) para la reserva
+que tiene comprobante inicial enviado y pendiente de revisión. HOLD mantiene la retención inicial;
+PENDING_PAYMENT conserva el pago aún sin comprobante o una corrección/rechazo dentro del plazo.
+El estado nuevo bloquea la franja, cuenta como retención activa, aparece en la actividad del jugador,
+el panel del propietario, su resumen de pendientes y ambas consultas de la malla. Al aprobar pasa
+a CONFIRMED; corrección/rechazo regresa a PENDING_PAYMENT sin prolongar el vencimiento; al vencer
+pasa a EXPIRED sin recuperar el horario en una revisión tardía. Cada transición conserva historial.
+Un comprobante de BALANCE no cambia una reserva ya CONFIRMED: el estado de revisión del saldo
+se conserva en el comprobante para no perder una reserva con adelanto confirmado.
+
+La migración amplía checks, historial, índice de expiración y exclusión GiST anti-solapamiento.
+Traslada las reservas PENDING_PAYMENT con comprobante inicial PENDING_REVIEW al nuevo estado,
+registrando transición de migración sin tocar importes ni comprobantes. No modifica migraciones
+previas ni pagos de simulación. Despliegue: publicar primero frontend compatible con ambos estados,
+luego backend con Flyway V37. No ejecutar DDL manual ni modificar directamente estados en producción.
+
+Verificación del estado: V37 aplicada correctamente en PostgreSQL local; cinco pruebas de integración
+pasan, incluida exclusión real de una reserva superpuesta durante revisión (SQLSTATE 23P01).
+Pruebas de dominio cubren revisión, confirmación, corrección sin extensión y expiración sin recuperación.
+Suite backend sin fallos ni errores (238 casos registrados, 7 omitidos por condiciones de ejecución),
+34 pruebas frontend correctas y seis escenarios móviles sin desbordamientos ni fallos axe.
+Pendiente publicación y aplicación de V37 en el despliegue; no se alteró Supabase de producción.

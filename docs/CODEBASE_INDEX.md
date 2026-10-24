@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: f50829a9d2e6161a
-- Archivos indexados: 653
+- Huella del inventario: dcdc79905af2491a
+- Archivos indexados: 673
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -81,11 +81,11 @@
 - auth (2): AuthButton.tsx, AuthProvider.tsx
 - feedback (1): CardSkeletons.tsx
 - home (12): FeaturedMatchCard.module.css, FeaturedMatchCard.tsx, FeaturedMatchCardV2.module.css, FeaturedMatchCardV2.tsx, HomeDashboard.tsx, HomeModeSwitch.tsx, HomeVenuePreview.tsx, MatchDiscoveryPanel.tsx, NextMatchCard.module.css, NextMatchCard.tsx, ThirdTimeSection.tsx, VenueAgendaPanel.tsx
-- matches (16): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, draft.ts, MatchBuilder.tsx, MatchCatalog.tsx, MatchCheckInScanner.tsx, MatchCreationWorkspace.tsx, MatchDetail.tsx, MatchInvitationAcceptance.tsx, MatchOrganizerDashboard.tsx, MatchQrPass.tsx, mobile-checkout.ts, MobileMatchCheckout.tsx, MyMatchParticipations.tsx, presentation.ts, types.ts
+- matches (18): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, draft.ts, MatchBuilder.tsx, MatchCatalog.tsx, MatchCheckInScanner.tsx, MatchCreationWorkspace.tsx, MatchDetail.tsx, MatchInvitationAcceptance.tsx, MatchOrganizerDashboard.module.css, MatchOrganizerDashboard.tsx, MatchQrPass.tsx, mobile-checkout.ts, MobileMatchCheckout.tsx, MyMatchParticipations.tsx, organizer-summary.ts, presentation.ts, types.ts
 - navigation (3): AppNavigation.tsx, LocationProvider.tsx, LocationSelector.tsx
-- organizations (5): InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx, PlatformUserDirectory.tsx, user-directory.ts
+- organizations (6): InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx, PlatformRequestsDashboard.tsx, PlatformUserDirectory.tsx, user-directory.ts
 - payments (3): ExternalPaymentPanel.module.css, ExternalPaymentPanel.tsx, proof-validation.ts
-- reservations (11): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationQrPass.tsx, types.ts, VenueOwnerReservationsDashboard.tsx
+- reservations (14): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, PlayerReservationOverview.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationDrilldown.module.css, ReservationQrPass.tsx, types.ts, useReservationDashboard.ts, VenueOwnerReservationsDashboard.tsx
 - venues (7): AvailabilityAdmin.tsx, PublicVenueCatalog.tsx, VenueAdmin.tsx, VenueBookingCard.module.css, VenueBookingCard.tsx, VenueScheduleDialog.module.css, VenueScheduleDialog.tsx
 
 ### Compartido
@@ -108,7 +108,7 @@
 - partners: 2 clases, 2 pruebas.
 - payments: 24 clases, 9 pruebas.
 - profiles: 7 clases, 1 pruebas.
-- reservations: 41 clases, 11 pruebas.
+- reservations: 46 clases, 13 pruebas.
 - shared: 2 clases, 1 pruebas.
 - venues: 44 clases, 10 pruebas.
 
@@ -130,6 +130,7 @@
 - /api/v1/organizations/{organizationId}/reservations | backend/src/main/java/com/pulsopiura/platform/reservations/api/OrganizationReservationController.java | POST /{reservationId}/cancel; GET /summary; GET
 - /api/v1 | backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationCheckInController.java | POST /reservations/{reservationId}/check-in-pass; POST /organizations/{organizationId}/reservations/check-in/preview; POST /organizations/{organizationId}/reservations/check-in
 - /api/v1/reservations | backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationController.java | GET /{reservationId}; POST /{reservationId}/confirm; POST /{reservationId}/cancel; POST
+- sin prefijo | backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationDashboardController.java | GET /api/v1/me/reservations/dashboard; GET /api/v1/organizations/{organizationId}/reservations/dashboard
 - /api/v1/organizations/{organizationId}/spaces/{spaceId} | backend/src/main/java/com/pulsopiura/platform/venues/api/AvailabilityController.java | POST /availability-rules; PUT /availability-rules/{ruleId}; GET /availability-rules; POST /availability-rules/{ruleId}/activate; DELETE /availability-rules/{ruleId}; POST /exceptions; GET /exceptions; DELETE /exceptions/{exceptionId}
 - /api/v1 | backend/src/main/java/com/pulsopiura/platform/venues/api/PublicVenueController.java | GET /venues/districts; GET /venues; GET /venues/{publicSlug}; GET /venues/{publicSlug}/spaces; GET /spaces/{spaceId}/availability
 - /api/v1/organizations/{organizationId}/spaces | backend/src/main/java/com/pulsopiura/platform/venues/api/SportSpaceController.java | PUT /{spaceId}; POST /{spaceId}/publish; DELETE /{spaceId}
@@ -174,6 +175,7 @@
 - backend/src/main/resources/db/migration/V34__canonical_piura_districts.sql
 - backend/src/main/resources/db/migration/V35__shared_write_rate_limits.sql
 - backend/src/main/resources/db/migration/V36__external_manual_payments.sql
+- backend/src/main/resources/db/migration/V37__reservation_payment_confirmation_state.sql
 
 ## Operacion y validacion
 

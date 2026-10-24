@@ -208,7 +208,7 @@ public class ExternalPaymentTargets {
         if (!now.isBefore(r.timeRange().startsAt())) return false;
         if ("BALANCE".equals(proof.plan())) {
             if (r.status() != ReservationStatus.CONFIRMED) return false;
-        } else if (r.status() != ReservationStatus.PENDING_PAYMENT
+        } else if (r.status() != ReservationStatus.PENDING_PAYMENT_CONFIRMATION
                 || r.expiresAt() == null
                 || !now.isBefore(r.expiresAt())) return false;
         if (proof.amountMinor() > r.total().minor() - payments.sumPaid(r.id())) return false;
@@ -239,7 +239,26 @@ public class ExternalPaymentTargets {
     }
 
     public void release(Proof proof, Instant now) {
-        if (proof.targetType() == TargetType.MATCH) matchPayments.release(proof, now);
+        if (proof.targetType() == TargetType.MATCH) {
+            matchPayments.release(proof, now);
+        } else if (!"BALANCE".equals(proof.plan())) {
+            var reservation = reservations.findByIdForUpdate(proof.targetId()).orElseThrow();
+            var previous = reservation.status();
+            if (reservation.finishExternalReview(now)) {
+                reservations.save(reservation);
+                history.append(
+                        new ReservationStatusTransition(
+                                reservation.organizationId(),
+                                reservation.id(),
+                                previous,
+                                reservation.status(),
+                                ReservationTransitionActor.SYSTEM,
+                                null,
+                                "EXTERNAL_PAYMENT_REVIEW_RELEASED",
+                                null,
+                                now));
+            }
+        }
     }
 
     private ReservationConflictException conflict(String message) {

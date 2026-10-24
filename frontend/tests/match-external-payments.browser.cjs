@@ -152,6 +152,34 @@ async function main() {
         });
       });
       await page.goto("http://localhost:3002/organizador");
+      const reviewSummary = page.getByRole("button", {
+        name: /Por confirmar pago/,
+      });
+      await reviewSummary.filter({ hasText: "1" }).waitFor();
+      assert.equal(
+        await page.locator(".organizerMatchCard:visible").count(),
+        0,
+        "Dashboard must initially show only summaries",
+      );
+      assert.equal(
+        await page
+          .getByRole("button", { name: "Editar cuenta receptora", exact: true })
+          .count(),
+        0,
+      );
+      await reviewSummary.click();
+      const reviewSheet = page.getByRole("dialog", {
+        name: "Por confirmar pago",
+        exact: true,
+      });
+      await reviewSheet
+        .getByRole("button", {
+          name: /Partido prueba.*1 comprobantes por revisar/,
+        })
+        .click();
+      await reviewSheet
+        .getByRole("button", { name: "Revisar pagos", exact: true })
+        .waitFor();
       await page
         .getByRole("button", { name: "Editar cuenta receptora", exact: true })
         .click();
@@ -184,6 +212,27 @@ async function main() {
         rosterReads > before,
         "Approving a match proof must refresh its roster and finances.",
       );
+      // A pre-join proof was counted even though the initial roster was empty.
+      // After approval, the selected detail remains open while the proof leaves the list.
+      await page.waitForFunction(() => {
+        const button = [...document.querySelectorAll("button")].find((item) =>
+          item.textContent.includes("Por confirmar pago"),
+        );
+        return button?.querySelector("strong")?.textContent === "0";
+      });
+      await reviewSheet
+        .getByRole("button", { name: "← Volver a la lista", exact: true })
+        .click();
+      await reviewSheet
+        .getByText("No hay partidos en esta categoría.", { exact: true })
+        .waitFor();
+      await reviewSheet
+        .getByRole("button", { name: "Cerrar formulario", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: /Pagos registrados/ })
+        .filter({ hasText: "1" })
+        .waitFor();
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth > innerWidth + 1,

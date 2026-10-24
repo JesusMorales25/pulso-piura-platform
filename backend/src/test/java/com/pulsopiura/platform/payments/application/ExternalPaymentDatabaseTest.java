@@ -142,6 +142,8 @@ class ExternalPaymentDatabaseTest {
                         recipient.version(),
                         file);
         assertThat(first.amountMinor()).isEqualTo(2250);
+        assertThat(reservations.findByIdForUpdate(r.id()).orElseThrow().status())
+                .isEqualTo(ReservationStatus.PENDING_PAYMENT_CONFIRMATION);
         assertThat(
                         payments.submit(
                                         player,
@@ -180,6 +182,8 @@ class ExternalPaymentDatabaseTest {
                         recipient.version(),
                         image(0x445566));
         assertThat(balance.amountMinor()).isEqualTo(6750);
+        assertThat(reservations.findByIdForUpdate(r.id()).orElseThrow().status())
+                .isEqualTo(ReservationStatus.CONFIRMED);
         payments.decide(owner, balance.id(), Decision.CONFIRMED, null);
         assertThat(
                         jdbc.queryForObject(
@@ -213,6 +217,8 @@ class ExternalPaymentDatabaseTest {
                         file);
         payments.decide(
                 owner, first.id(), Decision.CORRECTION_REQUIRED, "Adjunta la captura completa");
+        assertThat(reservations.findByIdForUpdate(r.id()).orElseThrow().status())
+                .isEqualTo(ReservationStatus.PENDING_PAYMENT);
         var replacement =
                 payments.submit(
                         player,
@@ -355,5 +361,54 @@ class ExternalPaymentDatabaseTest {
                                 Boolean.class,
                                 proofs.get(proof.id()).ledgerOrderId()))
                 .isFalse();
+    }
+
+    @Test
+    void receiptReviewKeepsDatabaseOverlapProtection() throws Exception {
+        var r = reservation(player, 4, 2250);
+        var recipient = configureReservation();
+        payments.submit(
+                player,
+                TargetType.RESERVATION,
+                r.id(),
+                PaymentMethod.YAPE,
+                PaymentPlan.DEPOSIT,
+                "OP-BLOCK",
+                "block-key",
+                recipient.version(),
+                image(0x123456));
+        entityManager.flush();
+        assertThat(
+                        reservations.findBlocking(
+                                space,
+                                r.timeRange().startsAt(),
+                                r.timeRange().endsAt(),
+                                Instant.now()))
+                .extracting(Reservation::id)
+                .contains(r.id());
+        jdbc.execute(
+                (org.springframework.jdbc.core.ConnectionCallback<Void>)
+                        connection -> {
+                            var savepoint = connection.setSavepoint();
+                            try (var statement =
+                                    connection.prepareStatement(
+                                            "insert into app.reservations (id,organization_id,sport_space_id,customer_user_id,starts_at,ends_at,status,total_minor,deposit_minor,currency,expires_at,idempotency_key,request_fingerprint,created_at,updated_at) select ?,organization_id,sport_space_id,customer_user_id,starts_at,ends_at,'HOLD',total_minor,deposit_minor,currency,expires_at,?,request_fingerprint,created_at,updated_at from app.reservations where id=?")) {
+                                statement.setObject(1, UUID.randomUUID());
+                                statement.setString(2, "overlap-" + UUID.randomUUID());
+                                statement.setObject(3, r.id());
+                                assertThatThrownBy(statement::executeUpdate)
+                                        .isInstanceOf(java.sql.SQLException.class)
+                                        .satisfies(
+                                                ex ->
+                                                        assertThat(
+                                                                        ((java.sql.SQLException) ex)
+                                                                                .getSQLState())
+                                                                .isEqualTo("23P01"));
+                            } finally {
+                                connection.rollback(savepoint);
+                                connection.releaseSavepoint(savepoint);
+                            }
+                            return null;
+                        });
     }
 }

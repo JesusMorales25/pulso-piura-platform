@@ -239,6 +239,32 @@ paths:
         "409": {$ref: "#/components/responses/Conflict"}
         "422": {description: La franja no coincide con una regla vigente o pertenece al pasado}
         "429": {description: El cliente alcanzó el máximo de reservas temporales activas}
+  /me/reservations/dashboard:
+    get:
+      summary: Resumen global y lista por categoría de las reservas propias
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - {in: query, name: filter, description: "Omitir para obtener solo resumen; ALL incluye todo el historial. PAID y BALANCE son filtros financieros.", schema: {type: string, enum: [ALL, CONFIRMED, PENDING_PAYMENT, PENDING_PAYMENT_CONFIRMATION, CANCELLED, COMPLETED, EXPIRED, PAID, BALANCE]}}
+        - {in: query, name: page, schema: {type: integer, minimum: 0, default: 0}}
+        - {in: query, name: size, schema: {type: integer, minimum: 1, maximum: 50, default: 10}}
+      responses:
+        "200": {description: "counts globales, paidMinor, balanceMinor, retainedMinor y página items/total/page/size. Sin filter, items vacío. Los vencimientos se reflejan aunque el job aún no se ejecute."}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "401": {description: Token ausente o inválido}
+  /organizations/{organizationId}/reservations/dashboard:
+    get:
+      summary: Resumen global y lista por categoría para el propietario del complejo
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - {in: path, name: organizationId, required: true, schema: {type: string, format: uuid}}
+        - {in: query, name: filter, description: "Omitir para obtener solo resumen; ALL incluye todo el historial. PAID y BALANCE son filtros financieros.", schema: {type: string, enum: [ALL, CONFIRMED, PENDING_PAYMENT, PENDING_PAYMENT_CONFIRMATION, CANCELLED, COMPLETED, EXPIRED, PAID, BALANCE]}}
+        - {in: query, name: page, schema: {type: integer, minimum: 0, default: 0}}
+        - {in: query, name: size, schema: {type: integer, minimum: 1, maximum: 50, default: 10}}
+      responses:
+        "200": {description: "Mismo resumen global; items contiene reservas del complejo con nombres de cancha/sede y cliente. Solo OWNER activo autorizado."}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "401": {description: Token ausente o inválido}
+        "403": {description: Sin permiso de propietario sobre el complejo}
   /me/reservations:
     get:
       summary: Lista las reservas del usuario autenticado
@@ -980,7 +1006,7 @@ components:
         sportSpaceId: {type: string, format: uuid}
         startsAt: {type: string, format: date-time}
         endsAt: {type: string, format: date-time}
-        status: {type: string, enum: [HOLD, PENDING_PAYMENT, CONFIRMED, COMPLETED, CANCELLED, EXPIRED]}
+        status: {type: string, enum: [HOLD, PENDING_PAYMENT, PENDING_PAYMENT_CONFIRMATION, CONFIRMED, COMPLETED, CANCELLED, EXPIRED]}
         totalMinor: {type: integer, format: int64, minimum: 0}
         depositMinor: {type: integer, format: int64, minimum: 0}
         currency: {type: string, const: PEN}

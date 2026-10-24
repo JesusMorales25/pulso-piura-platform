@@ -533,7 +533,7 @@ function ExternalPaymentPanelInner({
               ))}
             </select>
           </label>
-          <button type="submit" disabled={busy}>
+          <button className="primary" type="submit" disabled={busy}>
             {busy
               ? "Verificando disponibilidad…"
               : prepared
@@ -550,23 +550,25 @@ function ExternalPaymentPanelInner({
           }}
         >
           {preparedActive ? (
-            <p role="status">
-              Importe verificado:{" "}
-              <strong>
+            <div role="status" className={styles.preparationNotice}>
+              <p>Importe verificado</p>
+              <strong className={styles.preparationAmount}>
                 {new Intl.NumberFormat("es-PE", {
                   style: "currency",
                   currency: prepared.currency,
                 }).format(prepared.amountMinor / 100)}
-              </strong>{" "}
-              · {prepared.method} · Retenido hasta{" "}
-              {new Date(prepared.expiresAt).toLocaleTimeString("es-PE", {
-                timeZone: "America/Lima",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })}
-              . Transfiere y envía el comprobante antes de ese momento.
-            </p>
+              </strong>
+              <p>
+                {prepared.method === "YAPE" ? "Yape" : "Plin"} · Retenido hasta{" "}
+                {new Date(prepared.expiresAt).toLocaleTimeString("es-PE", {
+                  timeZone: "America/Lima",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })}
+              </p>
+              <p>Envía el comprobante antes de esa hora.</p>
+            </div>
           ) : (
             <p role="alert">
               La preparación venció. No transfieras. Si ya pagaste, no vuelvas a
@@ -587,7 +589,7 @@ function ExternalPaymentPanelInner({
               required
             />
           </label>
-          <label>
+          <label className={styles.methodChoice}>
             <input type="checkbox" required />
             Acepto las{" "}
             <Link
@@ -599,7 +601,11 @@ function ExternalPaymentPanelInner({
             </Link>{" "}
             y entiendo que el pago requiere validación manual.
           </label>
-          <button type="submit" disabled={busy || !preparedActive}>
+          <button
+            className="primary"
+            type="submit"
+            disabled={busy || !preparedActive}
+          >
             {busy ? "Enviando…" : "Enviar para validación"}
           </button>
         </form>

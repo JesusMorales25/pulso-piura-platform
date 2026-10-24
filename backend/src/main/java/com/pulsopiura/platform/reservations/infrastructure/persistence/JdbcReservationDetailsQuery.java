@@ -29,7 +29,7 @@ class JdbcReservationDetailsQuery implements ReservationDetailsQuery {
         return jdbc.queryForObject(
                 """
             select count(*), count(*) filter (where r.status='CONFIRMED'),
-            count(*) filter (where r.status in ('HOLD','PENDING_PAYMENT') and r.expires_at > now()),
+            count(*) filter (where r.status in ('HOLD','PENDING_PAYMENT','PENDING_PAYMENT_CONFIRMATION') and r.expires_at > now()),
             count(*) filter (where r.status='CANCELLED'), coalesce(sum(p.paid),0),
             coalesce(sum(case when r.status in ('CONFIRMED','COMPLETED') then greatest(r.total_minor-coalesce(p.paid,0),0) else 0 end),0),
             coalesce(sum(case when r.status='CANCELLED' then p.paid else 0 end),0)

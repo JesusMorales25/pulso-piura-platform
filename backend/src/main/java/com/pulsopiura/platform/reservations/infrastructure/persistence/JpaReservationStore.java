@@ -46,7 +46,10 @@ class JpaReservationStore implements ReservationStore {
                         end,
                         now,
                         ReservationStatus.CONFIRMED,
-                        List.of(ReservationStatus.HOLD, ReservationStatus.PENDING_PAYMENT))
+                        List.of(
+                                ReservationStatus.HOLD,
+                                ReservationStatus.PENDING_PAYMENT,
+                                ReservationStatus.PENDING_PAYMENT_CONFIRMATION))
                 .stream()
                 .map(ReservationJpaEntity::toDomain)
                 .toList();
@@ -58,7 +61,10 @@ class JpaReservationStore implements ReservationStore {
                 .findVisibleByCustomerUserId(
                         userId,
                         List.of(ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED),
-                        List.of(ReservationStatus.HOLD, ReservationStatus.PENDING_PAYMENT),
+                        List.of(
+                                ReservationStatus.HOLD,
+                                ReservationStatus.PENDING_PAYMENT,
+                                ReservationStatus.PENDING_PAYMENT_CONFIRMATION),
                         "PAID",
                         PageRequest.of(page, size))
                 .stream()
@@ -71,7 +77,10 @@ class JpaReservationStore implements ReservationStore {
         return reservations.countVisibleByCustomerUserId(
                 userId,
                 List.of(ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED),
-                List.of(ReservationStatus.HOLD, ReservationStatus.PENDING_PAYMENT),
+                List.of(
+                        ReservationStatus.HOLD,
+                        ReservationStatus.PENDING_PAYMENT,
+                        ReservationStatus.PENDING_PAYMENT_CONFIRMATION),
                 "PAID");
     }
 
@@ -128,7 +137,10 @@ class JpaReservationStore implements ReservationStore {
     public long countActiveTemporaryByCustomer(UUID customerUserId, Instant now) {
         return reservations.countActiveTemporaryByCustomerUserId(
                 customerUserId,
-                List.of(ReservationStatus.HOLD, ReservationStatus.PENDING_PAYMENT),
+                List.of(
+                        ReservationStatus.HOLD,
+                        ReservationStatus.PENDING_PAYMENT,
+                        ReservationStatus.PENDING_PAYMENT_CONFIRMATION),
                 now);
     }
 
@@ -138,7 +150,10 @@ class JpaReservationStore implements ReservationStore {
         return reservations
                 .findExpiredOverlappingHoldsForUpdate(
                         sportSpaceId,
-                        List.of(ReservationStatus.HOLD, ReservationStatus.PENDING_PAYMENT),
+                        List.of(
+                                ReservationStatus.HOLD,
+                                ReservationStatus.PENDING_PAYMENT,
+                                ReservationStatus.PENDING_PAYMENT_CONFIRMATION),
                         startsAt,
                         endsAt,
                         now)

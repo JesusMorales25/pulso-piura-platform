@@ -129,19 +129,21 @@ export function VenueOwnerReservationsDashboard() {
         </label>
       )}
 
-      <ExternalPaymentPanel
-        key={`destination:${activeId}`}
-        accessToken={accessToken}
-        targetType="RESERVATION"
-        targetId={activeId}
-        reviewer
-        allowUpload={false}
-        organizationSettings
-      />
       {tab === "schedule" ? (
         <OrganizationSchedule key={activeId} organizationId={activeId} />
       ) : (
         <OrganizationReservations key={activeId} organizationId={activeId} />
+      )}
+      {tab === "reservations" && (
+        <ExternalPaymentPanel
+          key={`destination:${activeId}`}
+          accessToken={accessToken}
+          targetType="RESERVATION"
+          targetId={activeId}
+          reviewer
+          allowUpload={false}
+          organizationSettings
+        />
       )}
     </>
   );

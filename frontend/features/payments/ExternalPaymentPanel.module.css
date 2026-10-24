@@ -68,9 +68,9 @@
 .panel .destinationForm {
   gap: 16px;
 }
-.destinationForm input:not([type="checkbox"]),
-.destinationForm select,
-.destinationForm textarea {
+.panel input:not([type="checkbox"]),
+.panel select,
+.panel textarea {
   background: var(--bg, #071827);
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -79,7 +79,9 @@
   padding: 12px;
   min-height: 44px;
 }
-.destinationForm input:focus-visible {
+.panel input:focus-visible,
+.panel select:focus-visible,
+.panel textarea:focus-visible {
   outline: 2px solid var(--primary, #18c6c8);
   outline-offset: 2px;
 }
@@ -100,4 +102,54 @@
 .accountTitle {
   margin: 0;
   font-size: 0.875rem;
+}
+
+.panel select {
+  color-scheme: dark;
+  cursor: pointer;
+  padding-right: 32px;
+  font-size: 0.875rem;
+}
+.panel select option {
+  background: #071827;
+  color: #fff;
+}
+.panel input[type="file"] {
+  font-size: 0.875rem;
+}
+.panel input[type="file"]::file-selector-button {
+  background: #103746;
+  color: #18c6c8;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px;
+  margin-right: 8px;
+  font: inherit;
+}
+
+.panel p {
+  display: block;
+}
+.panel .preparationNotice {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(24, 198, 200, 0.06);
+}
+.panel .preparationNotice p {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.preparationAmount {
+  display: block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  font-size: 1.125rem;
+  color: var(--text, #fff);
+  font-variant-numeric: tabular-nums;
 }

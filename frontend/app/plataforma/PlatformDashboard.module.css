@@ -1,0 +1,26 @@
+.kpis article {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.kpis button {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.kpis button span {
+  min-width: 0;
+  max-width: 100%;
+}
+.kpis button:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 6px;
+}

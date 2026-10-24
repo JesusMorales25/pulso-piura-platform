@@ -145,3 +145,34 @@ Horario semanal: día, franja horaria, precio y duración en líneas separadas; 
 - Cuenta del organizador por partido, edición en popup y confirmación de titular/celular.
 - Comprobantes y aprobación con el mismo almacenamiento privado y control de propiedad del partido.
 - Al aprobar, el panel actualiza cupos, participantes e ingresos sin recargar la página.
+
+## Controles de pago del jugador
+- Método e importe usan fondo oscuro, texto claro, bordes y foco turquesa, altura mínima de 44 px. Preparar y enviar comprobante usan la acción primaria del sistema; selector de archivo y aceptación mantienen el mismo patrón.
+
+## Importe preparado legible
+- Corregida la herencia de display:flex de los párrafos de las tarjetas, que comprimía importe y palabras.
+- Preparación separada en importe, método/hora límite y siguiente acción. El monto no se divide entre líneas.
+- Se conserva el cálculo del servidor en céntimos: 1700 se presenta como S/17.00; no cambia el monto cobrado.
+
+## Cuenta receptora en su pestaña
+- La cuenta receptora del complejo solo aparece en Reservas y pagos; no se muestra ni consulta desde Malla de canchas.
+
+## Pendiente de confirmación de pago
+- Estado real de reserva PENDING_PAYMENT_CONFIRMATION al enviar comprobante inicial.
+- Transiciones, vencimiento, retención, anti-solapamiento, historial, listados, resúmenes y malla actualizados.
+- V37 conserva y clasifica los comprobantes en revisión existentes. El saldo de una reserva confirmada se revisa sin desconfirmarla.
+
+## Paneles compactos por rol
+- Aprobado por el usuario: resumen inicial con tarjetas accionables y listados/detalles en FormSheet, sin listados completos permanentes. Se incluye Actividad del jugador, organización, propietario, complejos y administración.
+- Reservas: nuevos GET /api/v1/me/reservations/dashboard y /api/v1/organizations/{organizationId}/reservations/dashboard. Sin filter devuelven solo resumen; filter abre lista paginada (10 por defecto, máximo 50). Incluye historial cancelado/vencido y estados financieros PAID/BALANCE.
+- Consultas limitadas al actor o al complejo autorizado del propietario, con snapshot transaccional común para cantidades y página. Los plazos vencidos se reflejan como EXPIRED aunque el job aún no haya persistido el cambio.
+- Refresco periódico de reservas/comprobantes e inmediato tras decisiones; errores de carga no se convierten en falsos ceros. El resumen de una reserva enfocada recibe los cambios del pago.
+- Corregido Escape en visores anidados y barra de pago dentro de popup para evitar cerrar el detalle padre o tapar acciones.
+- Cambios locales: requieren publicar frontend y backend compatibles. Los nuevos endpoints son necesarios para los resúmenes de reservas. No se ha desplegado este cambio durante esta tarea.
+
+### Verificación de paneles compactos
+- Frontend: typecheck, ESLint y 37 pruebas unitarias correctas.
+- Backend: Maven verify correcto; pruebas adicionales PostgreSQL locales: 5 de pagos y 1 de resumen/paginación/importes correctas, con datos autocontenidos y rollback.
+- Chrome local con API sintética: jugador, propietario, organizador y administración en 320/393/768 px; listas filtradas, paginación, aprobación/cancelación y actualización de cantidades. Flujo de pagos con axe: sin violaciones detectadas en sus seis escenarios.
+- La revisión independiente detectó un resumen enfocado desactualizado; corregido propagando cambios de pago/reserva al resumen y verificado al cerrar el popup.
+- Base local de pruebas arrancada en 15432 porque Windows impedía enlazar 55439; no se modificó Supabase ni producción.

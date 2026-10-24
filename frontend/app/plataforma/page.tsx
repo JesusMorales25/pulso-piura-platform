@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import styles from "./PlatformDashboard.module.css";
+import { FormSheet } from "@/components/forms/FormSheet";
+import { PlatformRequestsDashboard } from "@/features/organizations/PlatformRequestsDashboard";
 import { useEffect, useState } from "react";
 import {
   Buildings,
@@ -29,6 +32,8 @@ export default function PlatformPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [users, setUsers] = useState<PlatformUser[]>([]);
   const [error, setError] = useState("");
+  const [showPending, setShowPending] = useState(false);
+  const [showUsers, setShowUsers] = useState(false);
 
   useEffect(() => {
     if (!accessToken || !capabilities.canManagePlatform) return;
@@ -94,16 +99,31 @@ export default function PlatformPage() {
         </p>
       )}
 
-      <section className="platformKpis" aria-label="Resumen de plataforma">
+      <section
+        className={`platformKpis ${styles.kpis}`}
+        aria-label="Resumen de plataforma"
+      >
         <article>
-          <UsersThree size={26} />
-          <span>Usuarios activos</span>
-          <strong>{summary?.activeUsers ?? "—"}</strong>
+          <button
+            className="secondary"
+            type="button"
+            onClick={() => setShowUsers(true)}
+          >
+            <UsersThree size={26} />
+            <span>Usuarios activos</span>
+            <strong>{summary?.activeUsers ?? "—"}</strong>
+          </button>
         </article>
         <article>
-          <CheckSquareOffset size={26} />
-          <span>Solicitudes pendientes</span>
-          <strong>{summary?.pendingRequests ?? "—"}</strong>
+          <button
+            className="secondary"
+            type="button"
+            onClick={() => setShowPending(true)}
+          >
+            <CheckSquareOffset size={26} />
+            <span>Solicitudes pendientes</span>
+            <strong>{summary?.pendingRequests ?? "—"}</strong>
+          </button>
         </article>
         <article>
           <Buildings size={26} />
@@ -117,40 +137,75 @@ export default function PlatformPage() {
         </article>
       </section>
 
-      <section
-        className="platformModules"
-        aria-label="Módulos de administración"
+      <details>
+        <summary>Herramientas de administración</summary>
+        <section
+          className="platformModules"
+          aria-label="Módulos de administración"
+        >
+          <Link href="/plataforma/solicitudes">
+            <CheckSquareOffset size={30} />
+            <span>
+              <strong>Permisos y solicitudes</strong>
+              <small>
+                Aprobar o retirar acceso de organizadores y dueños de cancha.
+              </small>
+            </span>
+          </Link>
+          <Link href="/plataforma/organizaciones">
+            <Buildings size={30} />
+            <span>
+              <strong>Complejos y dueños</strong>
+              <small>
+                Revisar organizaciones y asignar o retirar propietarios.
+              </small>
+            </span>
+          </Link>
+          <Link href="/plataforma/negocios">
+            <Storefront size={30} />
+            <span>
+              <strong>Choperías y restaurantes</strong>
+              <small>
+                Administrar el directorio que aparece en “El tercer tiempo”.
+              </small>
+            </span>
+          </Link>
+        </section>
+      </details>
+      <FormSheet
+        open={showUsers}
+        title="Usuarios activos"
+        onClose={() => setShowUsers(false)}
       >
-        <Link href="/plataforma/solicitudes">
-          <CheckSquareOffset size={30} />
-          <span>
-            <strong>Permisos y solicitudes</strong>
-            <small>
-              Aprobar o retirar acceso de organizadores y dueños de cancha.
-            </small>
-          </span>
-        </Link>
-        <Link href="/plataforma/organizaciones">
-          <Buildings size={30} />
-          <span>
-            <strong>Complejos y dueños</strong>
-            <small>
-              Revisar organizaciones y asignar o retirar propietarios.
-            </small>
-          </span>
-        </Link>
-        <Link href="/plataforma/negocios">
-          <Storefront size={30} />
-          <span>
-            <strong>Choperías y restaurantes</strong>
-            <small>
-              Administrar el directorio que aparece en “El tercer tiempo”.
-            </small>
-          </span>
-        </Link>
-      </section>
-
-      <PlatformUserDirectory users={users} />
+        {summary ? (
+          <PlatformUserDirectory
+            users={users.filter((user) => user.status === "ACTIVE")}
+          />
+        ) : (
+          !error && (
+            <p className="notice" role="status">
+              Cargando usuarios…
+            </p>
+          )
+        )}
+      </FormSheet>
+      {showPending && (
+        <PlatformRequestsDashboard
+          embedded
+          onChange={() => {
+            void apiRequest<Summary>("/platform/summary", accessToken)
+              .then(setSummary)
+              .catch((reason: Error) => setError(reason.message));
+          }}
+          initialStatus="PENDING"
+          onClose={() => {
+            setShowPending(false);
+            void apiRequest<Summary>("/platform/summary", accessToken)
+              .then(setSummary)
+              .catch((reason: Error) => setError(reason.message));
+          }}
+        />
+      )}
     </main>
   );
 }

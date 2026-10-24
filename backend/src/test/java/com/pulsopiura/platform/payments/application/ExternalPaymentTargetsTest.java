@@ -167,7 +167,7 @@ class ExternalPaymentTargetsTest {
                         now,
                         deadline);
         assertThat(result.amountMinor()).isEqualTo(2250);
-        assertThat(r.status()).isEqualTo(ReservationStatus.PENDING_PAYMENT);
+        assertThat(r.status()).isEqualTo(ReservationStatus.PENDING_PAYMENT_CONFIRMATION);
         assertThat(r.expiresAt()).isEqualTo(deadline);
         verify(reservations).save(r);
         verify(history).append(any());

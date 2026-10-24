@@ -197,10 +197,17 @@ async function main() {
         await context.close();
         continue;
       }
-      const metrics = page.locator(".ownerOverviewMetrics");
+      const metrics = page.getByRole("region", {
+        name: "Resumen de complejos",
+        exact: true,
+      });
       if (scenario === "create") {
-        await expect(page.getByRole("button", { name: "Crear complejo", exact: true })).toHaveCount(0);
-        await page.getByRole("button", { name: "Crear complejos", exact: true }).click();
+        await expect(
+          page.getByRole("button", { name: "Crear complejo", exact: true }),
+        ).toHaveCount(0);
+        await page
+          .getByRole("button", { name: "Crear complejos", exact: true })
+          .click();
         await expect(metrics).toHaveCount(0);
         await page
           .getByRole("button", { name: "Crear complejo", exact: true })
@@ -213,7 +220,9 @@ async function main() {
           .getByRole("button", { name: "Crear complejo", exact: true })
           .click();
         await expect(
-          metrics.locator("article").first().locator("strong"),
+          metrics
+            .getByRole("button", { name: /^Complejos / })
+            .locator("strong"),
         ).toHaveText("1");
         await expect(page.locator(".ownerComplexFacts")).toContainText(
           "1 colaboradores",
@@ -224,7 +233,7 @@ async function main() {
         );
       } else {
         await expect(
-          metrics.locator("article").first().locator("strong"),
+          metrics.getByRole("button", {name:/^Complejos /}).locator("strong"),
         ).toHaveText("1");
         await page
           .getByRole("button", { name: "Reintentar resumen", exact: true })
@@ -233,13 +242,16 @@ async function main() {
         await page
           .getByRole("button", { name: "Reintentar resumen", exact: true })
           .click();
+        await metrics.getByRole("button", { name: /^Complejos / }).click();
         await expect(page.locator(".ownerComplexFacts")).toContainText(
           "1 colaboradores",
         );
         assert.ok(overviewCalls >= 2);
       }
       await expect(
-        metrics.locator("article").nth(1).locator("strong"),
+        metrics
+          .getByRole("button", { name: /^Canchas habilitadas/ })
+          .locator("strong"),
       ).toHaveText("0");
       assert.equal(
         await page.evaluate(

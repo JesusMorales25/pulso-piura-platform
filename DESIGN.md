@@ -49,3 +49,10 @@ compartido debe actualizar primero la fuente canónica correspondiente.
 Inicio comparte geometría de banner, saludo, título y selector entre partidos y reservas.
 Los filtros de deportes y días usan dimensiones comunes definidas en app/styles.css,
 según el contrato de identidad visual. La selección respeta movimiento reducido.
+
+## Resúmenes y detalle bajo demanda
+
+- Los paneles de jugador, organizador, propietario y administración presentan primero cantidades por categoría en tarjetas que funcionan como botones.
+- La tarjeta abre un FormSheet con la lista de esa categoría; seleccionar un registro abre su gestión dentro del mismo popup, con regreso a la lista. No se apilan fichas completas, comprobantes, QR ni formularios en la página inicial.
+- El popup conserva el estilo nocturno, foco visible y controles táctiles de 44 px; cierra con Escape y devuelve el foco. Cerrar un visor de comprobante anidado conserva abierto el detalle de origen.
+- Los contadores usan todos los registros autorizados, no solo la página visible. Carga/error no se presentan como cero; las decisiones actualizan resumen y listas. Las categorías financieras pueden superponerse con los estados de reserva.

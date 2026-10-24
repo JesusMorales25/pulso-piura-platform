@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { apiRequest } from "@/lib/api";
-import { ExternalPaymentPanel } from "@/features/payments/ExternalPaymentPanel";
-import { useUserCapabilities } from "@/features/access/useUserCapabilities";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { ExternalPaymentPanel } from "@/features/payments/ExternalPaymentPanel";
+import { FormSheet } from "@/components/forms/FormSheet";
+import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import {
   money,
   reservationDate,
@@ -12,20 +13,16 @@ import {
 } from "./presentation";
 import type { Reservation } from "./types";
 import { ReservationCheckInScanner } from "./ReservationCheckInScanner";
-import styles from "./OrganizationReservations.module.css";
+import {
+  useReservationDashboard,
+  reservationFilterLabels,
+  type ReservationFilter,
+} from "./useReservationDashboard";
+import styles from "./ReservationDrilldown.module.css";
 type Item = Reservation & {
   spaceName: string;
   venueName: string;
   customerEmail: string | null;
-};
-type Summary = {
-  total: number;
-  confirmed: number;
-  pending: number;
-  cancelled: number;
-  paidMinor: number;
-  balanceMinor: number;
-  retainedMinor: number;
 };
 function Dashboard({
   organizationId,
@@ -34,96 +31,84 @@ function Dashboard({
   organizationId: string;
   accessToken: string;
 }) {
-  const { memberships } = useUserCapabilities();
-  const canReviewPayments = memberships.some(
-    (membership) =>
-      membership.id === organizationId && membership.role === "OWNER",
+  const dashboard = useReservationDashboard<Item>(
+    accessToken,
+    `/organizations/${organizationId}/reservations/dashboard`,
   );
-  const [items, setItems] = useState<Item[]>([]);
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(0);
+  const [selected, setSelected] = useState<Item | null>(null);
+  const [scanner, setScanner] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [confirmation, setConfirmation] = useState<string | null>(null);
-  const [refresh, setRefresh] = useState(0);
-  const inFlight = useRef(false);
-  const revision = useRef(0);
-  useEffect(() => {
-    const controller = new AbortController();
-    let timer: number;
-    async function load() {
-      const started = revision.current;
-      try {
-        const [result, stats] = await Promise.all([
-          apiRequest<{ items: Item[]; total: number }>(
-            `/organizations/${organizationId}/reservations?page=${page}&size=20`,
-            accessToken,
-            { signal: controller.signal },
-          ),
-          apiRequest<Summary>(
-            `/organizations/${organizationId}/reservations/summary`,
-            accessToken,
-            { signal: controller.signal },
-          ),
-        ]);
-        if (
-          !controller.signal.aborted &&
-          !inFlight.current &&
-          started === revision.current
-        ) {
-          setItems(result.items);
-          setTotal(result.total);
-          setSummary(stats);
-          setError("");
-        }
-      } catch (reason) {
-        if (!controller.signal.aborted)
-          setError(
-            reason instanceof Error
-              ? reason.message
-              : "No se pudieron cargar las reservas.",
-          );
-      } finally {
-        if (!controller.signal.aborted)
-          timer = window.setTimeout(() => void load(), 8000);
-      }
+  const choose = (value: string) => {
+    setSelected(null);
+    setConfirmCancel(false);
+    setError("");
+    dashboard.select(value as ReservationFilter);
+  };
+  async function refreshSelected() {
+    dashboard.refresh();
+    if (!selected) return;
+    try {
+      const value = await apiRequest<Reservation>(
+        `/reservations/${selected.id}`,
+        accessToken,
+      );
+      setSelected((current) =>
+        current?.id === value.id
+          ? {
+              ...current,
+              ...value,
+              spaceName: value.spaceName ?? current.spaceName,
+              venueName: value.venueName ?? current.venueName,
+            }
+          : current,
+      );
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "No se pudo actualizar la reserva.",
+      );
     }
-    void load();
-    return () => {
-      controller.abort();
-      window.clearTimeout(timer);
-    };
-  }, [accessToken, organizationId, page, refresh]);
-  async function cancel(id: string) {
-    if (inFlight.current) return;
-    inFlight.current = true;
-    revision.current += 1;
-    setBusyId(id);
+  }
+  async function cancel() {
+    if (!selected || busy) return;
+    setBusy(true);
     setError("");
     try {
-      await apiRequest(
-        `/organizations/${organizationId}/reservations/${id}/cancel`,
+      const value = await apiRequest<Reservation>(
+        `/organizations/${organizationId}/reservations/${selected.id}/cancel`,
         accessToken,
         {
           method: "POST",
           headers: { "X-Correlation-Id": crypto.randomUUID() },
         },
       );
-      setConfirmation(null);
-      setRefresh((value) => value + 1);
+      setSelected((current) =>
+        current
+          ? {
+              ...current,
+              ...value,
+              spaceName: value.spaceName ?? current.spaceName,
+              venueName: value.venueName ?? current.venueName,
+            }
+          : current,
+      );
+      setConfirmCancel(false);
+      dashboard.refresh();
     } catch (reason) {
       setError(
         reason instanceof Error ? reason.message : "No se pudo cancelar.",
       );
     } finally {
-      inFlight.current = false;
-      setBusyId(null);
+      setBusy(false);
     }
   }
+  const data = dashboard.data;
   return (
     <section
-      className="reservationDashboard"
+      className={styles.overview}
       aria-labelledby="reservation-dashboard-title"
     >
       <div className="sectionHeading">
@@ -131,155 +116,269 @@ function Dashboard({
           <p className="eyebrow">OPERACIÓN</p>
           <h2 id="reservation-dashboard-title">Reservas de tus canchas</h2>
         </div>
-        <span className="pill">{total} registradas</span>
       </div>
-      <details className="muted">
-        <summary>Sobre los pagos anteriores</summary>
-        <p>
-          Los pagos de simulación no acreditan dinero recibido. Las reservas con
-          pagos registrados no se pueden cancelar desde este panel.
-        </p>
-      </details>
-      <ReservationCheckInScanner
-        organizationId={organizationId}
-        accessToken={accessToken}
-        onCheckedIn={() => setRefresh((value) => value + 1)}
-      />
-      {summary && (
-        <dl className="reservationMetrics">
-          {[
-            ["Confirmadas", summary.confirmed],
-            ["Pendientes vigentes", summary.pending],
-            ["Canceladas", summary.cancelled],
-            ["Pagos registrados", money(summary.paidMinor)],
-            ["Saldo por cobrar", money(summary.balanceMinor)],
-            ["Retenido sin devolución", money(summary.retainedMinor)],
-          ].map(([label, value]) => (
-            <div className="card" key={label}>
-              <dt>{label}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      {error && (
-        <p className="inlineAlert errorNotice" role="alert">
-          {error}
-        </p>
-      )}
-      {!summary && !error ? (
-        <p>Cargando reservas…</p>
-      ) : items.length === 0 ? (
-        <p className="empty">Todavía no hay reservas.</p>
-      ) : (
-        <div className="reservationDashboardList">
-          {items.map((item) => (
-            <article
-              className={`card reservationDashboardCard ${styles.card}`}
-              key={item.id}
-            >
-              <div>
-                <span className="reservationStatus">
-                  {reservationStatus[item.status]}
-                </span>
-                <h3>{item.spaceName}</h3>
-                <p className="muted">{item.venueName}</p>
-              </div>
-              <p>{reservationDate(item.startsAt)}</p>
-              <p>
-                {reservationTime(item.startsAt)} –{" "}
-                {reservationTime(item.endsAt)}
-              </p>
-              {canReviewPayments && (
-                <ExternalPaymentPanel
-                  accessToken={accessToken}
-                  targetType="RESERVATION"
-                  targetId={item.id}
-                  reviewer
-                  allowUpload={false}
-                  onChange={() => setRefresh((value) => value + 1)}
-                />
-              )}
-              <p>Cliente: {item.customerEmail ?? "Cliente registrado"}</p>
-              <dl className="reservationSummary">
-                <div>
-                  <dt>Total</dt>
-                  <dd>{money(item.totalMinor)}</dd>
-                </div>
-                <div>
-                  <dt>Pagos registrados</dt>
-                  <dd>{money(item.paidMinor)}</dd>
-                </div>
-                <div>
-                  <dt>
-                    {item.status === "CANCELLED"
-                      ? "Retenido"
-                      : "Saldo pendiente"}
-                  </dt>
-                  <dd>
-                    {money(
-                      item.status === "CANCELLED"
-                        ? item.paidMinor
-                        : Math.max(0, item.totalMinor - item.paidMinor),
-                    )}
-                  </dd>
-                </div>
-              </dl>
-              {["HOLD", "PENDING_PAYMENT", "CONFIRMED"].includes(item.status) &&
-                (item.paidMinor > 0 ? (
-                  <p className="muted">
-                    Cancelación bloqueada: tiene pagos registrados.
-                  </p>
-                ) : confirmation === item.id ? (
-                  <div>
-                    <p>¿Cancelar y liberar este horario?</p>
-                    <button
-                      className="secondary"
-                      disabled={!!busyId}
-                      onClick={() => setConfirmation(null)}
-                    >
-                      Conservar
-                    </button>
-                    <button
-                      className="secondary"
-                      disabled={!!busyId}
-                      onClick={() => void cancel(item.id)}
-                    >
-                      {busyId === item.id
-                        ? "Cancelando…"
-                        : "Confirmar cancelación"}
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    className="secondary"
-                    disabled={!!busyId}
-                    onClick={() => setConfirmation(item.id)}
-                  >
-                    Cancelar reserva
-                  </button>
-                ))}
-            </article>
-          ))}
+      <p className="muted">
+        Selecciona una categoría para revisar sus reservas.
+      </p>
+      {dashboard.error && (
+        <div className="errorNotice" role="alert">
+          {dashboard.error}
+          <button className="secondary" onClick={dashboard.refresh}>
+            Reintentar
+          </button>
         </div>
       )}
-      <nav className="checkoutActions" aria-label="Páginas de reservas">
-        <button
-          className="secondary"
-          disabled={page === 0}
-          onClick={() => setPage(page - 1)}
-        >
-          Anterior
-        </button>
-        <span>Página {page + 1}</span>
-        <button
-          className="secondary"
-          disabled={(page + 1) * 20 >= total}
-          onClick={() => setPage(page + 1)}
-        >
-          Siguiente
-        </button>
-      </nav>
+      {!data ? (
+        <p role="status">Cargando resumen…</p>
+      ) : (
+        <SummaryCards
+          selectedId={dashboard.filter}
+          onSelect={choose}
+          items={[
+            {
+              id: "PENDING_PAYMENT_CONFIRMATION",
+              label: "Por confirmar pago",
+              value: data.counts.pendingConfirmation,
+            },
+            {
+              id: "PENDING_PAYMENT",
+              label: "Pendientes de pago",
+              value: data.counts.pendingPayment,
+            },
+            {
+              id: "CONFIRMED",
+              label: "Confirmadas",
+              value: data.counts.confirmed,
+            },
+            {
+              id: "PAID",
+              label: "Pagos registrados",
+              value: money(data.paidMinor),
+              description: `${data.counts.paid} reservas`,
+            },
+            {
+              id: "BALANCE",
+              label: "Saldo por cobrar",
+              value: money(data.balanceMinor),
+              description: `${data.counts.balance} reservas`,
+            },
+            {
+              id: "ALL",
+              label: "Todas e historial",
+              value: data.counts.all,
+              description: "Incluye finalizadas, canceladas y vencidas",
+            },
+          ]}
+        />
+      )}
+      <button
+        className="secondary"
+        type="button"
+        onClick={() => setScanner(true)}
+      >
+        Validar llegada con QR
+      </button>
+      <details className="muted">
+        <summary>Sobre los pagos registrados</summary>
+        <p>
+          Las simulaciones anteriores no acreditan dinero recibido. Consulta el
+          comprobante confirmado de cada reserva.
+        </p>
+      </details>
+      <FormSheet
+        open={dashboard.filter !== null}
+        title={
+          selected
+            ? "Detalle de reserva"
+            : reservationFilterLabels[dashboard.filter ?? "ALL"]
+        }
+        onClose={() => dashboard.select(null)}
+      >
+        {selected ? (
+          <div className={styles.detail}>
+            <button
+              className="secondary"
+              type="button"
+              onClick={() => {
+                setSelected(null);
+                setError("");
+                setConfirmCancel(false);
+                dashboard.refresh();
+              }}
+            >
+              ← Volver a la lista
+            </button>
+            <header>
+              <h3>{selected.spaceName}</h3>
+              <span className="pill">{reservationStatus[selected.status]}</span>
+            </header>
+            <p>{selected.venueName}</p>
+            <p>
+              {reservationDate(selected.startsAt)} ·{" "}
+              {reservationTime(selected.startsAt)} –{" "}
+              {reservationTime(selected.endsAt)}
+            </p>
+            <p>Cliente: {selected.customerEmail ?? "Cliente registrado"}</p>
+            <dl className="reservationSummary">
+              <div>
+                <dt>Total</dt>
+                <dd>{money(selected.totalMinor)}</dd>
+              </div>
+              <div>
+                <dt>Pagos registrados</dt>
+                <dd>{money(selected.paidMinor)}</dd>
+              </div>
+              <div>
+                <dt>Saldo pendiente</dt>
+                <dd>
+                  {money(Math.max(0, selected.totalMinor - selected.paidMinor))}
+                </dd>
+              </div>
+            </dl>
+            <ExternalPaymentPanel
+              accessToken={accessToken}
+              targetType="RESERVATION"
+              targetId={selected.id}
+              reviewer
+              allowUpload={false}
+              onChange={() => void refreshSelected()}
+            />
+            {error && (
+              <p role="alert" className="errorNotice">
+                {error}
+              </p>
+            )}
+            {[
+              "HOLD",
+              "PENDING_PAYMENT",
+              "PENDING_PAYMENT_CONFIRMATION",
+              "CONFIRMED",
+            ].includes(selected.status) &&
+              (selected.paidMinor > 0 ? (
+                <p className="muted">
+                  No se puede cancelar desde aquí: tiene pagos registrados.
+                </p>
+              ) : confirmCancel ? (
+                <div>
+                  <p>¿Cancelar y liberar este horario?</p>
+                  <button
+                    className="secondary"
+                    disabled={busy}
+                    onClick={() => setConfirmCancel(false)}
+                  >
+                    Conservar
+                  </button>
+                  <button
+                    className="secondary"
+                    disabled={busy}
+                    onClick={() => void cancel()}
+                  >
+                    {busy ? "Cancelando…" : "Confirmar cancelación"}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="secondary"
+                  onClick={() => setConfirmCancel(true)}
+                >
+                  Cancelar reserva
+                </button>
+              ))}
+          </div>
+        ) : (
+          <>
+            <div className={styles.controls}>
+              <label>
+                Categoría
+                <select
+                  value={dashboard.filter ?? "ALL"}
+                  onChange={(event) => choose(event.target.value)}
+                >
+                  {Object.entries(reservationFilterLabels).map(
+                    ([id, label]) => (
+                      <option key={id} value={id}>
+                        {label}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
+            </div>
+            {dashboard.loading ? (
+              <p role="status">Cargando reservas…</p>
+            ) : dashboard.error ? (
+              <p role="alert" className="errorNotice">
+                {dashboard.error}
+              </p>
+            ) : (
+              <div className={styles.list}>
+                {!data?.items.length ? (
+                  <p className="empty">No hay reservas en esta categoría.</p>
+                ) : (
+                  data.items.map((item) => (
+                    <button
+                      className={styles.row}
+                      type="button"
+                      key={item.id}
+                      onClick={() => {
+                        setSelected(item);
+                        setError("");
+                      }}
+                    >
+                      <strong>{item.spaceName}</strong>
+                      <small>
+                        {item.venueName} · {reservationDate(item.startsAt)}
+                      </small>
+                      <small>
+                        {reservationTime(item.startsAt)} –{" "}
+                        {reservationTime(item.endsAt)}
+                      </small>
+                      <span>
+                        {reservationStatus[item.status]} · Ver reserva →
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+            <nav className={styles.controls} aria-label="Páginas de reservas">
+              <button
+                className="secondary"
+                disabled={dashboard.loading || dashboard.page === 0}
+                onClick={() => dashboard.setPage(dashboard.page - 1)}
+              >
+                Anterior
+              </button>
+              <span>
+                {data?.total ?? 0} reservas · Página {dashboard.page + 1}
+              </span>
+              <button
+                className="secondary"
+                disabled={
+                  dashboard.loading ||
+                  (dashboard.page + 1) * 10 >= (data?.total ?? 0)
+                }
+                onClick={() => dashboard.setPage(dashboard.page + 1)}
+              >
+                Siguiente
+              </button>
+            </nav>
+          </>
+        )}
+      </FormSheet>
+      <FormSheet
+        open={scanner}
+        title="Validar llegada"
+        onClose={() => setScanner(false)}
+      >
+        {scanner && (
+          <ReservationCheckInScanner
+            organizationId={organizationId}
+            accessToken={accessToken}
+            onCheckedIn={dashboard.refresh}
+          />
+        )}
+      </FormSheet>
     </section>
   );
 }

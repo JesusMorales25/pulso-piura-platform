@@ -141,4 +141,36 @@ class ReservationTest {
     private ReservationTimeRange range() {
         return new ReservationTimeRange(NOW.plusSeconds(3600), NOW.plusSeconds(7200));
     }
+
+    @Test
+    void externalProofHasExplicitBlockingReviewState() {
+        var r = hold(9000, 3000);
+        r.holdForExternalReview(NOW.plusSeconds(10), NOW.plusSeconds(1800));
+        assertThat(r.status()).isEqualTo(ReservationStatus.PENDING_PAYMENT_CONFIRMATION);
+        assertThat(r.status().blocksTime()).isTrue();
+        assertThat(r.expiresAt()).isEqualTo(NOW.plusSeconds(1800));
+        assertThat(r.confirmPaid(NOW.plusSeconds(20))).isTrue();
+        assertThat(r.status()).isEqualTo(ReservationStatus.CONFIRMED);
+    }
+
+    @Test
+    void correctionReturnsToPaymentWithoutExtendingHold() {
+        var r = hold(9000, 3000);
+        r.holdForExternalReview(NOW.plusSeconds(10), NOW.plusSeconds(1800));
+        r.finishExternalReview(NOW.plusSeconds(20));
+        assertThat(r.status()).isEqualTo(ReservationStatus.PENDING_PAYMENT);
+        assertThat(r.expiresAt()).isEqualTo(NOW.plusSeconds(1800));
+        r.holdForExternalReview(NOW.plusSeconds(30), NOW.plusSeconds(1800));
+        assertThat(r.status()).isEqualTo(ReservationStatus.PENDING_PAYMENT_CONFIRMATION);
+    }
+
+    @Test
+    void expiredReviewCannotBeConfirmedOrReclaimTime() {
+        var r = hold(9000, 3000);
+        r.holdForExternalReview(NOW.plusSeconds(10), NOW.plusSeconds(1800));
+        assertThat(r.finishExternalReview(NOW.plusSeconds(1800))).isTrue();
+        assertThat(r.status()).isEqualTo(ReservationStatus.EXPIRED);
+        assertThatThrownBy(() -> r.confirmPaid(NOW.plusSeconds(1801)))
+                .isInstanceOf(IllegalStateException.class);
+    }
 }

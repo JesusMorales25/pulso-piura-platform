@@ -3,6 +3,7 @@ package com.pulsopiura.platform.reservations.domain;
 public enum ReservationStatus {
     HOLD(true),
     PENDING_PAYMENT(true),
+    PENDING_PAYMENT_CONFIRMATION(true),
     CONFIRMED(true),
     COMPLETED(false),
     CANCELLED(false),

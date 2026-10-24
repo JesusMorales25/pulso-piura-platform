@@ -10661,6 +10661,7 @@ body:has(.scheduleModal) .appNavigation {
   color: var(--lime);
   background: rgba(184, 230, 58, 0.12);
 }
+.scheduleState.PAYMENT_REVIEW,
 .scheduleState.PENDING {
   color: #f4cd67;
   background: rgba(244, 205, 103, 0.12);
@@ -10685,6 +10686,7 @@ body:has(.scheduleModal) .appNavigation {
 .scheduleTurn.RENTED {
   border-left-color: var(--lime);
 }
+.scheduleTurn.PAYMENT_REVIEW,
 .scheduleTurn.PENDING {
   border-left-color: #f4cd67;
 }
@@ -11651,7 +11653,7 @@ body:has(.resourceFormSheet[open]) {
   }
 }
 @media (max-width: 760px) {
-  body:has(.mobileReservationAction):not(
+  body:has(.mobileReservationAction):not(:has(.resourceFormSheet .mobileReservationAction)):not(
       :has(.reservationList:not(.focusedReservationList))
     )
     main {
@@ -11758,3 +11760,6 @@ body:has(.resourceFormSheet[open]) {
     scroll-behavior: auto;
   }
 }
+
+/* Payment controls in a sheet stay inside its scroll area, never over other actions. */
+.resourceFormSheet .mobileReservationAction {position: static; inset: auto; width: 100%; margin-top: 14px; box-sizing: border-box; box-shadow: none; grid-template-columns: minmax(0,1fr) minmax(0,2fr);}

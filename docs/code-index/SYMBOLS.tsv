@@ -187,6 +187,7 @@ java	reservations	class	ReservationCheckInController	backend/src/main/java/com/p
 java	reservations	record	ScanRequest	backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationCheckInController.java
 java	reservations	class	ReservationController	backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationController.java
 java	reservations	record	CreateReservationRequest	backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationController.java
+java	reservations	class	ReservationDashboardController	backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationDashboardController.java
 java	reservations	class	BookableAvailabilityService	backend/src/main/java/com/pulsopiura/platform/reservations/application/BookableAvailabilityService.java
 java	reservations	class	CreateReservationService	backend/src/main/java/com/pulsopiura/platform/reservations/application/CreateReservationService.java
 java	reservations	record	CreationResult	backend/src/main/java/com/pulsopiura/platform/reservations/application/CreateReservationService.java
@@ -196,6 +197,7 @@ java	reservations	interface	ReservationCheckInDetailsQuery	backend/src/main/java
 java	reservations	record	Details	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationCheckInDetailsQuery.java
 java	reservations	interface	ReservationCheckInPassStore	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationCheckInPassStore.java
 java	reservations	record	PassRecord	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationCheckInPassStore.java
+java	reservations	interface	ReservationDashboardQuery	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationDashboardQuery.java
 java	reservations	interface	ReservationDetailsQuery	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationDetailsQuery.java
 java	reservations	record	Names	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationDetailsQuery.java
 java	reservations	record	Summary	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationDetailsQuery.java
@@ -209,6 +211,10 @@ java	reservations	record	CheckInPass	backend/src/main/java/com/pulsopiura/platfo
 java	reservations	record	CheckInReservation	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationCheckInService.java
 java	reservations	class	ReservationConflictException	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationConflictException.java
 java	reservations	class	ReservationCreationTransaction	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationCreationTransaction.java
+java	reservations	record	ReservationDashboard	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationDashboard.java
+java	reservations	enum	Filter	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationDashboard.java
+java	reservations	record	Counts	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationDashboard.java
+java	reservations	class	ReservationDashboardService	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationDashboardService.java
 java	reservations	class	ReservationQueryService	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationQueryService.java
 java	reservations	record	ReservationPage	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationQueryService.java
 java	reservations	record	OrganizationReservationPage	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationQueryService.java
@@ -228,6 +234,7 @@ java	reservations	class	ReservationConfiguration	backend/src/main/java/com/pulso
 java	reservations	record	ReservationProperties	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/config/ReservationProperties.java
 java	reservations	class	JdbcReservationCheckInDetailsQuery	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationCheckInDetailsQuery.java
 java	reservations	class	JdbcReservationCheckInPassStore	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationCheckInPassStore.java
+java	reservations	class	JdbcReservationDashboardQuery	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationDashboardQuery.java
 java	reservations	class	JdbcReservationDetailsQuery	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationDetailsQuery.java
 java	reservations	class	JpaReservationHistoryStore	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JpaReservationHistoryStore.java
 java	reservations	class	JpaReservationStore	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JpaReservationStore.java
@@ -348,10 +355,12 @@ java	reservations	class	ReservationAccessTest	backend/src/test/java/com/pulsopiu
 java	reservations	class	ReservationCancellationPolicyTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationCancellationPolicyTest.java
 java	reservations	class	ReservationCheckInServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationCheckInServiceTest.java
 java	reservations	class	ReservationCreationTransactionTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationCreationTransactionTest.java
+java	reservations	class	ReservationDashboardServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationDashboardServiceTest.java
 java	reservations	class	ReservationPaymentConcurrencyTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationPaymentConcurrencyTest.java
 java	reservations	class	ReservationTransitionServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationTransitionServiceTest.java
 java	reservations	class	ReservationTest	backend/src/test/java/com/pulsopiura/platform/reservations/domain/ReservationTest.java
 java	reservations	class	JdbcReservationCheckInPassStoreTest	backend/src/test/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationCheckInPassStoreTest.java
+java	reservations	class	ReservationDashboardDatabaseTest	backend/src/test/java/com/pulsopiura/platform/reservations/infrastructure/persistence/ReservationDashboardDatabaseTest.java
 java	shared	class	DistrictCatalogTest	backend/src/test/java/com/pulsopiura/platform/shared/DistrictCatalogTest.java
 java	venues	class	AvailabilityControllerTest	backend/src/test/java/com/pulsopiura/platform/venues/api/AvailabilityControllerTest.java
 java	venues	class	VenuePhoneValidationTest	backend/src/test/java/com/pulsopiura/platform/venues/api/VenuePhoneValidationTest.java
@@ -393,6 +402,8 @@ typescript	reservas-cancha	function	VenueOwnerReservationsPage	frontend/app/rese
 typescript	tercer-tiempo	function	ThirdTimePage	frontend/app/tercer-tiempo/page.tsx
 typescript	-	function	AccessibleDialogs	frontend/components/AccessibleDialogs.tsx
 typescript	-	function	BusinessImage	frontend/components/BusinessImage.tsx
+typescript	-	type	SummaryCard	frontend/components/dashboard/SummaryCards.tsx
+typescript	-	function	SummaryCards	frontend/components/dashboard/SummaryCards.tsx
 typescript	-	function	FloatingNotice	frontend/components/feedback/FloatingNotice.tsx
 typescript	-	function	DistrictSelect	frontend/components/forms/DistrictSelect.tsx
 typescript	-	function	FormSheet	frontend/components/forms/FormSheet.tsx
@@ -434,6 +445,8 @@ typescript	matches	type	MatchPaymentMethod	frontend/features/matches/mobile-chec
 typescript	matches	function	mobileCheckoutStatus	frontend/features/matches/mobile-checkout.ts
 typescript	matches	function	MobileMatchCheckout	frontend/features/matches/MobileMatchCheckout.tsx
 typescript	matches	function	MyMatchParticipations	frontend/features/matches/MyMatchParticipations.tsx
+typescript	matches	function	organizerPaymentParticipants	frontend/features/matches/organizer-summary.ts
+typescript	matches	function	organizerPendingProofs	frontend/features/matches/organizer-summary.ts
 typescript	matches	type	MatchFinanceSummary	frontend/features/matches/presentation.ts
 typescript	matches	function	summarizeMatchFinances	frontend/features/matches/presentation.ts
 typescript	matches	function	isProtectedOrganizerRow	frontend/features/matches/presentation.ts
@@ -449,6 +462,7 @@ typescript	navigation	function	LocationSelector	frontend/features/navigation/Loc
 typescript	organizations	function	InvitationAcceptance	frontend/features/organizations/InvitationAcceptance.tsx
 typescript	organizations	function	OrganizationAdmin	frontend/features/organizations/OrganizationAdmin.tsx
 typescript	organizations	function	OrganizationWorkspace	frontend/features/organizations/OrganizationWorkspace.tsx
+typescript	organizations	function	PlatformRequestsDashboard	frontend/features/organizations/PlatformRequestsDashboard.tsx
 typescript	organizations	function	PlatformUserDirectory	frontend/features/organizations/PlatformUserDirectory.tsx
 typescript	organizations	type	PlatformUser	frontend/features/organizations/user-directory.ts
 typescript	organizations	const	userProfiles	frontend/features/organizations/user-directory.ts
@@ -465,6 +479,7 @@ typescript	reservations	function	OrganizationReservations	frontend/features/rese
 typescript	reservations	function	OrganizationSchedule	frontend/features/reservations/OrganizationSchedule.tsx
 typescript	reservations	type	ReservationPaymentPlan	frontend/features/reservations/payment-options.ts
 typescript	reservations	function	reservationPaymentOptions	frontend/features/reservations/payment-options.ts
+typescript	reservations	function	PlayerReservationOverview	frontend/features/reservations/PlayerReservationOverview.tsx
 typescript	reservations	const	reservationStatus	frontend/features/reservations/presentation.ts
 typescript	reservations	const	money	frontend/features/reservations/presentation.ts
 typescript	reservations	const	reservationDate	frontend/features/reservations/presentation.ts
@@ -475,6 +490,10 @@ typescript	reservations	function	ReservationCheckout	frontend/features/reservati
 typescript	reservations	function	ReservationQrPass	frontend/features/reservations/ReservationQrPass.tsx
 typescript	reservations	type	Reservation	frontend/features/reservations/types.ts
 typescript	reservations	type	ReservationPage	frontend/features/reservations/types.ts
+typescript	reservations	type	ReservationFilter	frontend/features/reservations/useReservationDashboard.ts
+typescript	reservations	const	reservationFilterLabels	frontend/features/reservations/useReservationDashboard.ts
+typescript	reservations	type	ReservationDashboard	frontend/features/reservations/useReservationDashboard.ts
+typescript	reservations	function	useReservationDashboard	frontend/features/reservations/useReservationDashboard.ts
 typescript	reservations	function	VenueOwnerReservationsDashboard	frontend/features/reservations/VenueOwnerReservationsDashboard.tsx
 typescript	venues	function	AvailabilityAdmin	frontend/features/venues/AvailabilityAdmin.tsx
 typescript	venues	function	PublicVenueCatalog	frontend/features/venues/PublicVenueCatalog.tsx

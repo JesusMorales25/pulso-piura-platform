@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { FormSheet } from "@/components/forms/FormSheet";
+import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { DistrictSelect } from "@/components/forms/DistrictSelect";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
@@ -46,6 +48,7 @@ export function OrganizationWorkspace() {
   const [overviewLoading, setOverviewLoading] = useState(false);
   const [overviewRetry, setOverviewRetry] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
+  const [overviewCategory, setOverviewCategory] = useState<string | null>(null);
   const [tab, setTab] = useState<"mine" | "create">("mine");
   const createDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -151,6 +154,7 @@ export function OrganizationWorkspace() {
       );
       setOrganizations((current) => [...current, created]);
       setTab("mine");
+      setOverviewCategory("complexes");
       form.reset();
       setShowCreate(false);
     } catch (requestError) {
@@ -184,6 +188,19 @@ export function OrganizationWorkspace() {
     overviews[organization.id] ? [overviews[organization.id]] : [],
   );
   const overviewComplete = summaries.length === organizations.length;
+  const filteredOrganizations = organizations.filter((organization) => {
+    const overview = overviews[organization.id];
+    switch (overviewCategory) {
+      case "spaces":
+        return !!overview && overview.spaces > 0;
+      case "matches":
+        return !!overview && overview.matchesToday > 0;
+      case "revenue":
+        return !!overview && overview.expectedMinor > 0;
+      default:
+        return true;
+    }
+  });
 
   return (
     <>
@@ -232,39 +249,54 @@ export function OrganizationWorkspace() {
       </header>
       {tab === "mine" ? (
         <>
-          <div
-            className="ownerOverviewMetrics"
-            aria-label="Resumen de complejos"
-          >
-            {[
-              ["Complejos", organizations.length],
-              [
-                "Canchas habilitadas",
-                summaries.reduce((sum, item) => sum + item.spaces, 0),
-              ],
-              [
-                "Partidos hoy",
-                summaries.reduce((sum, item) => sum + item.matchesToday, 0),
-              ],
-              [
-                "Recaudación estimada hoy",
-                new Intl.NumberFormat("es-PE", {
-                  style: "currency",
-                  currency: "PEN",
-                }).format(
-                  summaries.reduce((sum, item) => sum + item.expectedMinor, 0) /
-                    100,
-                ),
-              ],
-            ].map(([label, value]) => (
-              <article key={label}>
-                <small>{label}</small>
-                <strong>
-                  {label === "Complejos" || overviewComplete ? value : "—"}
-                </strong>
-              </article>
-            ))}
-          </div>
+          <section aria-label="Resumen de complejos">
+            <SummaryCards
+              selectedId={overviewCategory}
+              onSelect={setOverviewCategory}
+              items={[
+                {
+                  id: "complexes",
+                  label: "Complejos",
+                  value: organizations.length,
+                },
+                {
+                  id: "spaces",
+                  label: "Canchas habilitadas",
+                  value: overviewComplete
+                    ? summaries.reduce((sum, item) => sum + item.spaces, 0)
+                    : "—",
+                  description: "Ver complejos con canchas",
+                },
+                {
+                  id: "matches",
+                  label: "Partidos hoy",
+                  value: overviewComplete
+                    ? summaries.reduce(
+                        (sum, item) => sum + item.matchesToday,
+                        0,
+                      )
+                    : "—",
+                  description: "Ver complejos con partidos",
+                },
+                {
+                  id: "revenue",
+                  label: "Recaudación estimada hoy",
+                  value: overviewComplete
+                    ? new Intl.NumberFormat("es-PE", {
+                        style: "currency",
+                        currency: "PEN",
+                      }).format(
+                        summaries.reduce(
+                          (sum, item) => sum + item.expectedMinor,
+                          0,
+                        ) / 100,
+                      )
+                    : "—",
+                  description: "No equivale a dinero cobrado",
+                },
+              ]}
+            />
+          </section>
           {overviewError && (
             <div className="notice" role="alert">
               <p>
@@ -289,80 +321,110 @@ export function OrganizationWorkspace() {
             dinero cobrado.
           </p>
 
-          <section
-            className="workspaceGrid ownerComplexWorkspace"
-            aria-label="Organizaciones deportivas"
+          <FormSheet
+            open={overviewCategory !== null}
+            title={
+              overviewCategory === "spaces"
+                ? "Complejos con canchas habilitadas"
+                : overviewCategory === "matches"
+                  ? "Complejos con partidos hoy"
+                  : overviewCategory === "revenue"
+                    ? "Recaudación estimada por complejo"
+                    : "Mis complejos"
+            }
+            onClose={() => setOverviewCategory(null)}
           >
-            <div>
-              <div className="sectionTitle workspaceTitle">
-                <div>
-                  <p className="eyebrow">TUS ESPACIOS</p>
-                  <h2>Mis complejos</h2>
+            <section
+              className="workspaceGrid ownerComplexWorkspace"
+              aria-label="Organizaciones deportivas"
+            >
+              <div>
+                <div className="sectionTitle workspaceTitle">
+                  <div>
+                    <p className="eyebrow">TUS ESPACIOS</p>
+                    <h2>Mis complejos</h2>
+                  </div>
+                  <span className="countBadge">
+                    {filteredOrganizations.length}
+                  </span>
                 </div>
-                <span className="countBadge">{organizations.length}</span>
-              </div>
 
-              {organizations.length === 0 ? (
-                <div className="empty compactEmpty">
-                  <h3>Crea tu primer complejo</h3>
-                  <p>
-                    Aquí podrás configurar el equipo, las canchas y su
-                    operación.
-                  </p>
-                </div>
-              ) : (
-                <div className="organizationList">
-                  {organizations.map((organization) => (
-                    <article
-                      className="card organizationCard ownerComplexCard"
-                      key={organization.id}
-                    >
-                      <div>
-                        <span className="pill">
-                          {organizationRoleLabel(organization.role)}
-                        </span>
-                        <span className="ownerComplexVisual" aria-hidden="true">
-                          <Buildings size={38} />
-                        </span>
-                        <h3>{organization.name}</h3>
-                        <p>
-                          <MapPin size={16} />{" "}
-                          {organization.address ||
-                            overviews[organization.id]?.locations ||
-                            "Ubicación pendiente de configurar"}
-                          {organization.districtCode
-                            ? ` · ${organization.districtCode}`
-                            : ""}
-                        </p>
-                        <p>{organizationStatusLabel(organization.status)}</p>
-                        <div className="ownerComplexFacts">
-                          <span>
-                            {overviews[organization.id]?.spaces ?? "—"} canchas
-                            habilitadas
-                          </span>
-                          <span>
-                            {overviews[organization.id]?.members ?? "—"}{" "}
-                            colaboradores
-                          </span>
-                          <span>
-                            {overviews[organization.id]?.reservationsToday ??
-                              "—"}{" "}
-                            reservas hoy
-                          </span>
-                        </div>
-                      </div>
-                      <Link
-                        className="primary"
-                        href={`/admin/${organization.id}`}
+                {organizations.length === 0 ? (
+                  <div className="empty compactEmpty">
+                    <h3>Crea tu primer complejo</h3>
+                    <p>
+                      Aquí podrás configurar el equipo, las canchas y su
+                      operación.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="organizationList">
+                    {filteredOrganizations.length === 0 && overviewComplete && (
+                      <p className="empty">
+                        No hay complejos en esta categoría.
+                      </p>
+                    )}
+                    {filteredOrganizations.map((organization) => (
+                      <article
+                        className="card organizationCard ownerComplexCard"
+                        key={organization.id}
                       >
-                        Abrir panel <ArrowRight />
-                      </Link>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
+                        <div>
+                          <span className="pill">
+                            {organizationRoleLabel(organization.role)}
+                          </span>
+                          <span
+                            className="ownerComplexVisual"
+                            aria-hidden="true"
+                          >
+                            <Buildings size={38} />
+                          </span>
+                          <h3>{organization.name}</h3>
+                          <p>
+                            <MapPin size={16} />{" "}
+                            {organization.address ||
+                              overviews[organization.id]?.locations ||
+                              "Ubicación pendiente de configurar"}
+                            {organization.districtCode
+                              ? ` · ${organization.districtCode}`
+                              : ""}
+                          </p>
+                          <p>{organizationStatusLabel(organization.status)}</p>
+                          <div className="ownerComplexFacts">
+                            <span>
+                              {overviews[organization.id]?.spaces ?? "—"}{" "}
+                              canchas habilitadas
+                            </span>
+                            <span>
+                              {overviews[organization.id]?.members ?? "—"}{" "}
+                              colaboradores
+                            </span>
+                            <span>
+                              {overviews[organization.id]?.reservationsToday ??
+                                "—"}{" "}
+                              reservas hoy
+                            </span>
+                          </div>
+                        </div>
+                        <Link
+                          className="primary"
+                          href={`/admin/${organization.id}`}
+                        >
+                          Abrir panel <ArrowRight />
+                        </Link>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+            {overviewCategory !== "complexes" && !overviewComplete && (
+              <p role="status">
+                El resumen está incompleto. Cierra esta ventana y reintenta la
+                carga.
+              </p>
+            )}
+          </FormSheet>
         </>
       ) : capabilities.canManageOrganizations ? (
         <section className="card matchCreateIntro">

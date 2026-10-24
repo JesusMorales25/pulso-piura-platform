@@ -171,21 +171,34 @@ public final class Reservation {
     }
 
     public void holdForExternalReview(Instant now, Instant deadline) {
-        if ((status != ReservationStatus.HOLD && status != ReservationStatus.PENDING_PAYMENT)
+        if ((status != ReservationStatus.HOLD
+                        && status != ReservationStatus.PENDING_PAYMENT
+                        && status != ReservationStatus.PENDING_PAYMENT_CONFIRMATION)
                 || expiresAt == null
                 || !now.isBefore(expiresAt)
                 || !now.isBefore(deadline)
                 || deadline.isAfter(timeRange.startsAt())) {
             throw new IllegalStateException("La retención de la reserva ya no está disponible");
         }
-        status = ReservationStatus.PENDING_PAYMENT;
+        status = ReservationStatus.PENDING_PAYMENT_CONFIRMATION;
         expiresAt = deadline;
         updatedAt = now;
     }
 
+    public boolean finishExternalReview(Instant now) {
+        if (status != ReservationStatus.PENDING_PAYMENT_CONFIRMATION) return false;
+        if (!expire(now)) {
+            status = ReservationStatus.PENDING_PAYMENT;
+            updatedAt = now;
+        }
+        return true;
+    }
+
     public boolean confirmPaid(Instant now) {
         if (status == ReservationStatus.CONFIRMED) return false;
-        requireStatus(ReservationStatus.PENDING_PAYMENT, "El pago no está pendiente");
+        if (status != ReservationStatus.PENDING_PAYMENT
+                && status != ReservationStatus.PENDING_PAYMENT_CONFIRMATION)
+            throw new IllegalStateException("El pago no está pendiente");
         if (!now.isBefore(expiresAt)) throw new IllegalStateException("El hold ya venció");
         status = ReservationStatus.CONFIRMED;
         expiresAt = null;
@@ -197,6 +210,7 @@ public final class Reservation {
         if (status == ReservationStatus.CANCELLED) return false;
         if (status != ReservationStatus.HOLD
                 && status != ReservationStatus.PENDING_PAYMENT
+                && status != ReservationStatus.PENDING_PAYMENT_CONFIRMATION
                 && status != ReservationStatus.CONFIRMED) {
             throw new IllegalStateException("La reserva no puede cancelarse en su estado actual");
         }
@@ -219,7 +233,9 @@ public final class Reservation {
 
     public boolean expire(Instant now) {
         if (status == ReservationStatus.EXPIRED) return false;
-        if ((status != ReservationStatus.HOLD && status != ReservationStatus.PENDING_PAYMENT)
+        if ((status != ReservationStatus.HOLD
+                        && status != ReservationStatus.PENDING_PAYMENT
+                        && status != ReservationStatus.PENDING_PAYMENT_CONFIRMATION)
                 || now.isBefore(expiresAt)) return false;
         status = ReservationStatus.EXPIRED;
         expiresAt = null;
@@ -242,7 +258,9 @@ public final class Reservation {
 
     private static void validateExpiration(
             ReservationStatus status, Instant expiresAt, Instant reference, boolean requireFuture) {
-        if (status == ReservationStatus.HOLD || status == ReservationStatus.PENDING_PAYMENT) {
+        if (status == ReservationStatus.HOLD
+                || status == ReservationStatus.PENDING_PAYMENT
+                || status == ReservationStatus.PENDING_PAYMENT_CONFIRMATION) {
             if (expiresAt == null || (requireFuture && !expiresAt.isAfter(reference))) {
                 throw new IllegalArgumentException("El hold debe vencer en el futuro");
             }

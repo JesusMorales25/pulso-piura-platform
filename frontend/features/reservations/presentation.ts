@@ -2,6 +2,7 @@ import type { Reservation } from "./types";
 export const reservationStatus: Record<Reservation["status"], string> = {
   HOLD: "Horario retenido",
   PENDING_PAYMENT: "Pendiente de pago",
+  PENDING_PAYMENT_CONFIRMATION: "Pendiente de confirmación de pago",
   CONFIRMED: "Confirmada",
   COMPLETED: "Atención completada",
   CANCELLED: "Cancelada",
@@ -25,5 +26,10 @@ export const reservationTime = (value: string) =>
     minute: "2-digit",
   }).format(new Date(value));
 export const canPlayerCancel = (reservation: Reservation, now: number) =>
-  ["HOLD", "PENDING_PAYMENT", "CONFIRMED"].includes(reservation.status) &&
+  [
+    "HOLD",
+    "PENDING_PAYMENT",
+    "PENDING_PAYMENT_CONFIRMATION",
+    "CONFIRMED",
+  ].includes(reservation.status) &&
   now <= new Date(reservation.startsAt).getTime() - 7200000;

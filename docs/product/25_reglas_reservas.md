@@ -37,8 +37,11 @@ Estado temporal que bloquea una franja durante confirmación.
 
 ```text
 HOLD → PENDING_PAYMENT → CONFIRMED → COMPLETED
+HOLD/PENDING_PAYMENT → PENDING_PAYMENT_CONFIRMATION → CONFIRMED
+PENDING_PAYMENT_CONFIRMATION → PENDING_PAYMENT (corrección o rechazo dentro del plazo)
+PENDING_PAYMENT_CONFIRMATION → EXPIRED (plazo vencido)
   └──────────→ EXPIRED
-PENDING_PAYMENT/CONFIRMED → CANCELLED
+HOLD/PENDING_PAYMENT/PENDING_PAYMENT_CONFIRMATION/CONFIRMED → CANCELLED
 CONFIRMED/CANCELLED → REFUND_PENDING → REFUNDED
 ```
 
@@ -111,7 +114,7 @@ Los porcentajes y ventanas no se fijarán hasta obtener evidencia y revisar cond
   mínimas.
 - El endpoint público devuelve solo franjas futuras sin reserva bloqueante vigente y no expone
   estados `reservado` u `ocupado`, identificadores de reserva ni datos del cliente.
-- Una reserva `CONFIRMED` y un `HOLD` o `PENDING_PAYMENT` no vencido bloquean la franja; un hold
+- Una reserva `CONFIRMED` y un `HOLD`, `PENDING_PAYMENT` o `PENDING_PAYMENT_CONFIRMATION` no vencido bloquean la franja; un hold
   vencido deja de bloquear y el turno vuelve a aparecer como disponible.
 - El titular consulta su historial en `Mis reservas`; el complejo consulta únicamente reservas de
   su organización con autorización contextual.

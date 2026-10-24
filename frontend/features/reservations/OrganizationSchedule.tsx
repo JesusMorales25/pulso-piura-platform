@@ -14,7 +14,7 @@ type Turn = {
   startsAt: string;
   endsAt: string;
   priceMinor: number;
-  state: "FREE" | "RENTED" | "PENDING" | "MAINTENANCE";
+  state: "FREE" | "RENTED" | "PENDING" | "PAYMENT_REVIEW" | "MAINTENANCE";
   reservationId: string | null;
   customerName: string | null;
   totalMinor: number;
@@ -25,7 +25,8 @@ type Turn = {
 const labels = {
   FREE: "Libre",
   RENTED: "Alquilado",
-  PENDING: "Pendiente",
+  PENDING: "Pendiente de pago",
+  PAYMENT_REVIEW: "Pendiente de confirmación de pago",
   MAINTENANCE: "Mantenimiento",
 };
 const currency = (minor: number) =>

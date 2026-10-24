@@ -116,3 +116,14 @@ La interfaz debe explicar:
 - cancelaciones por información incompleta;
 - tareas completadas sin soporte.
 
+
+## Consulta compacta por estado (24 de octubre de 2026)
+
+La primera pantalla presenta el resumen. Tocar una categoría abre su lista en un popup; tocar un registro permite consultar o gestionar ese registro y regresar a la lista sin abandonar el contexto.
+
+- Jugador: reservas por estado, saldos e historial; inscripciones por revisión de pago, pendientes, confirmadas, espera e historial. Comprobantes, pago y QR aparecen en el detalle. El enlace directo a una nueva reserva abre su pago y permite cerrarlo y volver a abrirlo.
+- Propietario: reservas por estado, pagos registrados y saldos; validación de llegada bajo demanda. La cuenta receptora permanece una sola vez, solo en Reservas y pagos, después del resumen. Mis canchas abre los complejos desde sus métricas.
+- Organizador: partidos por estado y participantes/pagos por atender. La revisión incluye comprobantes recibidos antes de incorporar al jugador a la lista de participantes. Gestión, cobros, invitaciones y asistencia se consultan dentro del partido seleccionado.
+- Administración: resúmenes accionables y listas de solicitudes/cuentas por categoría, con decisiones en el contexto correspondiente.
+
+Las reservas usan paginación del servidor; los contadores y montos abarcan todo el historial autorizado. Una aprobación o cancelación actualiza su categoría. Los estados de pago, reserva y asistencia siguen siendo conceptos separados.

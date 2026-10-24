@@ -1,0 +1,53 @@
+.matchList {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+}
+.matchRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--border, #29465b);
+  border-radius: 12px;
+  background: #10283b;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  min-height: 72px;
+}
+.matchRow span {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.matchRow small {
+  color: #b8c7d2;
+}
+.matchRow:focus-visible {
+  outline: 2px solid #18c6c8;
+  outline-offset: 3px;
+}
+.detail {
+  padding-top: 16px;
+}
+@media (max-width: 480px) {
+  .matchRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 16px;
+}
+.tabs [aria-pressed="true"] {
+  border-color: #18c6c8;
+  color: #18c6c8;
+}

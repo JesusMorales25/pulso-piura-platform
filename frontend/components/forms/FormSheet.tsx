@@ -16,16 +16,30 @@ export function FormSheet({
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const returnFocus = useRef<HTMLElement | null>(null);
   useEffect(() => {
-    if (open && !dialog.current?.open) dialog.current?.showModal();
-    if (!open && dialog.current?.open) dialog.current.close();
+    if (open && !dialog.current?.open) {
+      returnFocus.current =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+      dialog.current?.showModal();
+    }
+    if (!open && dialog.current?.open) {
+      dialog.current.close();
+      returnFocus.current?.focus({ preventScroll: true });
+    }
   }, [open]);
   return (
     <dialog
       ref={dialog}
       className="createComplexDialog resourceFormSheet"
       aria-labelledby={titleId}
-      onCancel={onClose}
+      onCancel={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onClose();
+      }}
     >
       <header className="createComplexDialogHeading">
         <h2 id={titleId}>{title}</h2>
