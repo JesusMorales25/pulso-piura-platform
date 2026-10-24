@@ -10,9 +10,11 @@ async function main() {
   assert.ok(issuer && client);
   const browser = await chromium.launch({ headless: true, channel: "chrome" });
   try {
-    for (const scenario of ["create", "retry"]) {
+    for (const scenario of ["create", "retry", "venue"]) {
       const context = await browser.newContext({
         viewport: { width: 393, height: 900 },
+        permissions: ["geolocation"],
+        geolocation: { latitude: -5.194, longitude: -80.632 },
       });
       const claims = {
         sub: "workspace-test",
@@ -44,7 +46,8 @@ async function main() {
         districtCode: "Piura",
         address: "Dirección de prueba",
       };
-      let created = scenario === "retry";
+      let created = scenario !== "create";
+      let venuePayload = null;
       let overviewCalls = 0;
       let fail = scenario === "retry";
       const page = await context.newPage();
@@ -76,6 +79,24 @@ async function main() {
         if (endpoint === "/me/capability-requests")
           data = [{ capability: "VENUE_OWNER", status: "APPROVED" }];
         if (endpoint === "/venue-catalogs/districts") data = ["Piura"];
+        if (endpoint === "/venue-catalogs")
+          data = { sports: [], formats: [], surfaces: [], amenities: [] };
+        if (endpoint === `/organizations/${organization.id}`)
+          data = organization;
+        if (
+          endpoint === `/organizations/${organization.id}/venues` &&
+          route.request().method() === "POST"
+        ) {
+          venuePayload = route.request().postDataJSON();
+          data = {
+            ...venuePayload,
+            id: "22345678-1234-1234-1234-123456789abc",
+            status: "DRAFT",
+            version: 0,
+            createdAt: new Date().toISOString(),
+          };
+          status = 201;
+        }
         if (endpoint === "/organizations") {
           if (route.request().method() === "POST") {
             created = true;
@@ -105,7 +126,77 @@ async function main() {
           body: JSON.stringify(data),
         });
       });
-      await page.goto(`${base}/organizaciones`);
+      await page.goto(
+        scenario === "venue"
+          ? `${base}/admin/${organization.id}`
+          : `${base}/organizaciones`,
+      );
+      if (scenario === "venue") {
+        await page
+          .getByRole("button", { name: "Nueva sede", exact: true })
+          .click();
+        const dialog = page.getByRole("dialog", {
+          name: "Nueva sede",
+          exact: true,
+        });
+        await dialog.locator('[name="name"]').fill("Sede de prueba");
+        await dialog
+          .getByRole("button", {
+            name: "Usar mi ubicación actual",
+            exact: true,
+          })
+          .click();
+        await expect(dialog.locator('[name="address"]')).toHaveValue(
+          "Ubicación GPS: -5.194000, -80.632000",
+        );
+        await expect(dialog).toContainText("Ubicación GPS agregada");
+        await dialog.locator('[name="address"]').fill("Av. Casuarinas 123");
+        await dialog
+          .getByRole("button", {
+            name: "Usar mi ubicación actual",
+            exact: true,
+          })
+          .click();
+        await expect(dialog.locator('[name="address"]')).toHaveValue(
+          "Av. Casuarinas 123",
+        );
+        await dialog.locator('[name="districtCode"]').selectOption("Piura");
+        const phone = dialog.locator('[name="publicPhone"]');
+        await expect(dialog.locator(".venuePhoneField")).toContainText("+51");
+        await phone.pressSequentially("987654321000");
+        await expect(phone).toHaveValue("987654321");
+        await phone.fill("987");
+        await dialog
+          .getByRole("button", { name: "Crear sede", exact: true })
+          .click();
+        await expect(dialog.getByRole("alert")).toContainText("9 dígitos");
+        assert.equal(venuePayload, null);
+        await phone.fill("987654321");
+        assert.equal(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth > innerWidth,
+          ),
+          false,
+        );
+        await dialog
+          .getByRole("button", { name: "Crear sede", exact: true })
+          .click();
+        await expect.poll(() => venuePayload?.publicPhone).toBe("+51987654321");
+        assert.equal(venuePayload.address, "Av. Casuarinas 123");
+        assert.equal(venuePayload.latitude, -5.194);
+        assert.equal(venuePayload.longitude, -80.632);
+        assert.equal(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth > innerWidth,
+          ),
+          false,
+        );
+        console.log(
+          "PASS: venue, GPS visible, written address retained, +51 and nine digits saved",
+        );
+        await context.close();
+        continue;
+      }
       const metrics = page.locator(".ownerOverviewMetrics");
       if (scenario === "create") {
         await page

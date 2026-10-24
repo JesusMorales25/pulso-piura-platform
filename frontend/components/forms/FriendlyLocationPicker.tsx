@@ -46,6 +46,13 @@ export function FriendlyLocationPicker({
     const directUrl = mapsUrlFieldName
       ? String(data.get(mapsUrlFieldName) ?? "").trim()
       : "";
+    const lat = String(data.get("latitude") ?? "").trim();
+    const lon = String(data.get("longitude") ?? "").trim();
+    const hasCoordinates =
+      lat !== "" &&
+      lon !== "" &&
+      Number.isFinite(Number(lat)) &&
+      Number.isFinite(Number(lon));
     if (directUrl && !trustedGoogleMapsUrl(directUrl)) {
       form
         .querySelector<HTMLInputElement>(`[name="${mapsUrlFieldName}"]`)
@@ -53,7 +60,7 @@ export function FriendlyLocationPicker({
       setFeedback("Pega un enlace válido compartido desde Google Maps.");
       return;
     }
-    if (!address) {
+    if (!address && !hasCoordinates && !directUrl) {
       form
         .querySelector<HTMLInputElement>(`[name="${addressFieldName}"]`)
         ?.focus();
@@ -62,6 +69,8 @@ export function FriendlyLocationPicker({
     }
     window.open(
       googleMapsUrl({
+        latitude: hasCoordinates ? Number(lat) : undefined,
+        longitude: hasCoordinates ? Number(lon) : undefined,
         mapsUrl: directUrl,
         address: [address, district, "Piura, Perú"].filter(Boolean).join(", "),
       }),
@@ -87,7 +96,9 @@ export function FriendlyLocationPicker({
           longitudeInput.current.value = nextLongitude;
         }
         onCoordinatesChange?.(nextLatitude, nextLongitude);
-        setFeedback("Ubicación exacta agregada.");
+        setFeedback(
+          "Ubicación GPS agregada. Revisa la dirección antes de guardar.",
+        );
         setLocating(false);
       },
       () => {

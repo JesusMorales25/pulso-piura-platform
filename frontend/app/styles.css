@@ -8381,6 +8381,28 @@ body:has(.scheduleModal) .appNavigation {
 .friendlyLocationPicker .locationPreviewButton {
   margin: 0;
 }
+.venuePhoneField {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--navy);
+}
+.venuePhoneField > span {
+  flex: 0 0 auto;
+  padding: 0 12px;
+  color: var(--muted);
+}
+.venuePhoneField > input {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+.venuePhoneField:focus-within {
+  border-color: var(--cyan);
+}
 .locationCurrentButton {
   display: inline-flex;
   min-height: 42px;

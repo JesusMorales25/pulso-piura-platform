@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { ArrowRight, Check } from "@phosphor-icons/react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { FriendlyLocationPicker } from "@/components/forms/FriendlyLocationPicker";
@@ -9,6 +10,11 @@ import { FormSheet } from "@/components/forms/FormSheet";
 import { AvailabilityAdmin } from "@/features/venues/AvailabilityAdmin";
 import { apiRequest } from "@/lib/api";
 import { normalizeAdminRatingInput } from "@/lib/venue-rating";
+import {
+  addressWithGps,
+  peruPhoneDigits,
+  peruPublicPhone,
+} from "@/lib/venue-contact";
 
 type CatalogItem = { code: string; name: string };
 type SportFormat = CatalogItem & {
@@ -268,7 +274,7 @@ export function VenueAdmin({
         districtCode: form.get("districtCode"),
         latitude: nullableNumber(form.get("latitude")),
         longitude: nullableNumber(form.get("longitude")),
-        publicPhone: nullableText(form.get("publicPhone")),
+        publicPhone: peruPublicPhone(String(form.get("publicPhone") ?? "")),
         amenityCodes: form.getAll("amenityCodes"),
         ...rating,
         ...(editingVenue ? { version: editingVenue.version } : {}),
@@ -368,7 +374,7 @@ export function VenueAdmin({
       name: venue.name,
       address: venue.address,
       districtCode: venue.districtCode,
-      publicPhone: venue.publicPhone ?? "",
+      publicPhone: peruPhoneDigits(venue.publicPhone ?? ""),
       adminRating: venue.adminRating === null ? "" : String(venue.adminRating),
       adminRatingCount:
         venue.adminRatingCount === null ? "" : String(venue.adminRatingCount),
@@ -900,7 +906,7 @@ function VenueForm({
 }: {
   initial: Venue | null;
   value: VenueDraft;
-  onChange: (value: VenueDraft) => void;
+  onChange: Dispatch<SetStateAction<VenueDraft>>;
   amenities: Amenity[];
   disabled: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -938,11 +944,16 @@ function VenueForm({
       <FriendlyLocationPicker
         addressFieldName="address"
         districtFieldName="districtCode"
-        key={`${initial?.id ?? "new"}-${value.latitude}-${value.longitude}`}
+        key={initial?.id ?? "new"}
         latitude={value.latitude}
         longitude={value.longitude}
         onCoordinatesChange={(latitude, longitude) =>
-          onChange({ ...value, latitude, longitude })
+          onChange((current) => ({
+            ...current,
+            latitude,
+            longitude,
+            address: addressWithGps(current.address, latitude, longitude),
+          }))
         }
       />
       <DistrictSelect
@@ -951,15 +962,34 @@ function VenueForm({
       />
       <label>
         Teléfono público
-        <input
-          name="publicPhone"
-          maxLength={30}
-          inputMode="tel"
-          onChange={(event) =>
-            onChange({ ...value, publicPhone: event.target.value })
-          }
-          value={value.publicPhone}
-        />
+        <span className="venuePhoneField">
+          <span>+51</span>
+          <input
+            name="publicPhone"
+            type="tel"
+            maxLength={9}
+            inputMode="numeric"
+            pattern="[0-9]{9}"
+            placeholder="987654321"
+            title="Ingresa 9 dígitos, sin el prefijo +51."
+            onChange={(event) =>
+              onChange({
+                ...value,
+                publicPhone: peruPhoneDigits(event.target.value),
+              })
+            }
+            onPaste={(event) => {
+              event.preventDefault();
+              onChange({
+                ...value,
+                publicPhone: peruPhoneDigits(
+                  event.clipboardData.getData("text"),
+                ),
+              });
+            }}
+            value={peruPhoneDigits(value.publicPhone)}
+          />
+        </span>
       </label>
       <fieldset className="venueRatingFields">
         <legend>Calificación informada por el complejo</legend>

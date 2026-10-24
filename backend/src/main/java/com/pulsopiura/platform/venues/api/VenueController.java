@@ -122,7 +122,11 @@ public class VenueController {
             @NotBlank @Size(max = 60) String districtCode,
             @DecimalMin("-90") @DecimalMax("90") BigDecimal latitude,
             @DecimalMin("-180") @DecimalMax("180") BigDecimal longitude,
-            @Size(max = 30) String publicPhone,
+            @Pattern(
+                            regexp = "(?:\\+51)?[0-9]{9}",
+                            message =
+                                    "El teléfono público debe tener 9 dígitos y el prefijo opcional +51.")
+                    String publicPhone,
             @DecimalMin("0.0") @DecimalMax("5.0") BigDecimal adminRating,
             @PositiveOrZero Integer adminRatingCount,
             Set<@NotBlank @Size(max = 40) String> amenityCodes) {}
@@ -133,7 +137,11 @@ public class VenueController {
             @NotBlank @Size(max = 60) String districtCode,
             @DecimalMin("-90") @DecimalMax("90") BigDecimal latitude,
             @DecimalMin("-180") @DecimalMax("180") BigDecimal longitude,
-            @Size(max = 30) String publicPhone,
+            @Pattern(
+                            regexp = "(?:\\+51)?[0-9]{9}",
+                            message =
+                                    "El teléfono público debe tener 9 dígitos y el prefijo opcional +51.")
+                    String publicPhone,
             @DecimalMin("0.0") @DecimalMax("5.0") BigDecimal adminRating,
             @PositiveOrZero Integer adminRatingCount,
             Set<@NotBlank @Size(max = 40) String> amenityCodes,

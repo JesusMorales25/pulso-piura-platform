@@ -350,6 +350,7 @@ java	reservations	class	ReservationTest	backend/src/test/java/com/pulsopiura/pla
 java	reservations	class	JdbcReservationCheckInPassStoreTest	backend/src/test/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationCheckInPassStoreTest.java
 java	shared	class	DistrictCatalogTest	backend/src/test/java/com/pulsopiura/platform/shared/DistrictCatalogTest.java
 java	venues	class	AvailabilityControllerTest	backend/src/test/java/com/pulsopiura/platform/venues/api/AvailabilityControllerTest.java
+java	venues	class	VenuePhoneValidationTest	backend/src/test/java/com/pulsopiura/platform/venues/api/VenuePhoneValidationTest.java
 java	venues	class	AvailabilityServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/AvailabilityServiceTest.java
 java	venues	class	PublicVenueQueryServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/PublicVenueQueryServiceTest.java
 java	venues	class	VenueCatalogServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/VenueCatalogServiceTest.java
@@ -500,6 +501,9 @@ typescript	lib	function	googleMapsUrl	frontend/lib/public-links.ts
 typescript	lib	function	trustedGoogleMapsUrl	frontend/lib/public-links.ts
 typescript	lib	function	createQrMatrix	frontend/lib/qr-code.ts
 typescript	lib	function	reconcileSelectedSlots	frontend/lib/venue-availability.ts
+typescript	lib	function	addressWithGps	frontend/lib/venue-contact.ts
+typescript	lib	function	peruPhoneDigits	frontend/lib/venue-contact.ts
+typescript	lib	function	peruPublicPhone	frontend/lib/venue-contact.ts
 typescript	lib	type	VenueSummary	frontend/lib/venue-discovery.ts
 typescript	lib	type	VenueOfferSummary	frontend/lib/venue-discovery.ts
 typescript	lib	type	VenueFilters	frontend/lib/venue-discovery.ts
