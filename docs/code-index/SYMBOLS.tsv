@@ -303,6 +303,7 @@ java	foundation	class	OidcUserClaimsTest	backend/src/test/java/com/pulsopiura/pl
 java	foundation	class	WriteRateLimitFilterTest	backend/src/test/java/com/pulsopiura/platform/foundation/security/WriteRateLimitFilterTest.java
 java	identity	class	PlatformAdminActiveAccountTest	backend/src/test/java/com/pulsopiura/platform/identity/api/PlatformAdminActiveAccountTest.java
 java	identity	class	CapabilityRequestServiceTest	backend/src/test/java/com/pulsopiura/platform/identity/application/CapabilityRequestServiceTest.java
+java	identity	class	CurrentUserConcurrencyDatabaseTest	backend/src/test/java/com/pulsopiura/platform/identity/application/CurrentUserConcurrencyDatabaseTest.java
 java	identity	class	CapabilityRequestEntityTest	backend/src/test/java/com/pulsopiura/platform/identity/infrastructure/persistence/CapabilityRequestEntityTest.java
 java	identity	class	UserEntityTest	backend/src/test/java/com/pulsopiura/platform/identity/infrastructure/persistence/UserEntityTest.java
 java	JwtValidationTest.java	class	JwtValidationTest	backend/src/test/java/com/pulsopiura/platform/JwtValidationTest.java

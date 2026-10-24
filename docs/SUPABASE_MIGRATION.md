@@ -30,12 +30,32 @@ Orden para este caso, sin restaurar datos:
    Auth0 correspondientes. No ejecutar `scripts/seed-demo-data.ps1`: es el cargador
    local ligado a Keycloak y sus identidades no corresponden a esta demo.
 
-Preparación remota verificada el 23 de octubre: 0 tablas iniciales en `app`;
-`btree_gist` instalada; esquema privado y rol `pulso_app` creados. Consulta de
-control: `login_enabled=false`, `app_usage=true`, `can_create_tables=false`,
-`btree_gist_ready=true`. Pendiente: contraseña/login del rol por el propietario,
-secretos en Render y primer arranque Flyway. No se afirma que las tablas ni los
-datos operativos ya estén cargados.
+Inicialización remota completada el 23 de octubre de 2026 a las 22:28 (America/Lima):
+Render desplegó `438117b` en el servicio `pulso-piura-api-jesusmorales25`,
+despliegue `dep-dbe29tjrjlhs738pqkjg`, y lo marcó Live. La API pública
+`https://pulso-piura-api-jesusmorales25.onrender.com/actuator/health` respondió UP.
+Flyway aplicó 36 migraciones sin fallos sobre Supabase PostgreSQL 17.11.
+Consulta SQL de verificación: `migrations_ok=36`, `migrations_failed=0`,
+`latest_version=36`, `app_tables=35`, `users_new_demo=0`,
+`runtime_can_create_tables=false`, `runtime_data_access=true`.
+
+El propietario configuró contraseña/login y secretos de Render; no se copiaron al
+repositorio. Auth0 conserva las cuentas existentes, pero no se importó información
+de Render ni se inventaron identidades. No se han cargado complejos, partidos o
+reservas de muestra. Los perfiles y datos operativos se crearán con los accesos
+reales de la demo. No se ha validado aún un flujo autenticado completo desde Vercel.
+El primer arranque demoró aproximadamente tres minutos en el cómputo gratuito.
+
+En la validación apareció una carrera de primer ingreso: dos peticiones de un
+mismo subject intentaban insertar el usuario, y el catch de clave duplicada dejaba
+la transacción PostgreSQL abortada. Se corrige con un advisory lock transaccional
+por subject solo cuando falta el usuario y una segunda lectura antes del INSERT.
+No se cambian cuentas Auth0, claims, permisos ni migraciones. Regresión:
+`CurrentUserConcurrencyDatabaseTest`, ejecutable en PostgreSQL local aislado con
+`mvn clean verify -DrunIdentityDatabaseTests=true`. Antes reproducía 23505/25P02;
+después ambas peticiones devuelven el mismo usuario y queda un perfil. Verificado
+localmente antes de publicar la corrección; el primer despliegue Supabase sigue
+identificado arriba por su commit.
 
 No publicar datos ficticios como si fueran complejos reales ni inventar subjects
 Auth0 para asignar privilegios. Los datos operativos nuevos deben quedar ligados

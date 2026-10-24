@@ -118,5 +118,7 @@ Horario semanal: día, franja horaria, precio y duración en líneas separadas; 
 - DATABASE_URL explícita prevalece sobre la variable heredada de Render; el Blueprint deja de depender de la base gratuita vencida.
 - Credenciales separadas para Flyway y ejecución, bootstrap de permisos y prerrequisito btree_gist para restauración.
 - Se agrega variante VPS con PostgreSQL externo; se conserva la variante con PostgreSQL privado local.
-- Guía: docs/SUPABASE_MIGRATION.md. Pendiente remoto: recuperar fuente/respaldo, crear proyecto, comprobar versiones, restaurar y validar antes del corte.
+- Guía: docs/SUPABASE_MIGRATION.md. Demo nueva inicializada en Supabase 17.11, sin importar Render; no se exige respaldo de la fuente por decisión final del usuario.
 - Verificación local: Maven, contrato de arranque, Compose, 36 migraciones, health UP y dump/restore PostgreSQL 18 a 18 con permisos limitados. No equivale a migración remota realizada.
+- Verificación remota posterior (23 de octubre, 22:28 America/Lima): Render Live en commit 438117b; API pública health UP; 36 migraciones correctas y 35 tablas en Supabase; usuario de ejecución con acceso a datos y sin CREATE. Cero usuarios al validar: los perfiles y datos demo se crearán con las cuentas Auth0 existentes. Pagos siguen en simulación; falta validar el flujo autenticado desde Vercel.
+- Se detectó y reprodujo con PostgreSQL real un fallo por primeras peticiones concurrentes (usuario duplicado/transacción abortada). CurrentUserService bloquea por subject y vuelve a leer antes de insertar; la regresión comprueba ambas respuestas, un usuario y un perfil. Suite backend y prueba de concurrencia activada sin fallos antes de publicar el ajuste.

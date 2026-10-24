@@ -7,7 +7,6 @@ import com.pulsopiura.platform.identity.infrastructure.persistence.UserRepositor
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -42,6 +41,12 @@ public class CurrentUserService {
         if (jwt.getSubject() == null || jwt.getSubject().isBlank())
             throw new AccessDeniedException("Token sin sujeto");
         var existing = users.findByIdentitySubject(jwt.getSubject());
+        if (existing.isEmpty()) {
+            // Lock before INSERT: a unique violation would abort the PostgreSQL transaction.
+            // Re-read after waiting so parallel first requests reuse the committed identity.
+            users.lockIdentitySubject(jwt.getSubject());
+            existing = users.findByIdentitySubject(jwt.getSubject());
+        }
         UserEntity user;
         boolean created = false;
         if (existing.isPresent()) user = existing.get();
@@ -53,12 +58,8 @@ public class CurrentUserService {
                             claims.emailVerified(jwt),
                             claims.name(jwt),
                             clock.instant());
-            try {
-                user = users.saveAndFlush(user);
-                created = true;
-            } catch (DataIntegrityViolationException race) {
-                user = users.findByIdentitySubject(jwt.getSubject()).orElseThrow(() -> race);
-            }
+            user = users.saveAndFlush(user);
+            created = true;
         }
         if (user.status() != UserStatus.ACTIVE) throw new AccessDeniedException("Cuenta no activa");
         user.refreshClaims(
