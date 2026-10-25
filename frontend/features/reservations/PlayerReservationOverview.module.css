@@ -27,3 +27,49 @@
     font-size: 0.75rem;
   }
 }
+.intro {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.filter {
+  margin-bottom: 22px;
+}
+.filter label {
+  font-size: 0.95rem;
+  gap: 10px;
+}
+.filter select {
+  min-height: 50px;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  margin-top: 24px;
+  padding-top: 20px;
+}
+.pagination > span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+.pagination button {
+  min-height: 44px;
+}
+@media (max-width: 440px) {
+  .pagination {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .pagination > span {
+    grid-column: 1/-1;
+    grid-row: 1;
+  }
+}

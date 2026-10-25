@@ -1,0 +1,156 @@
+.card {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) 18px;
+  gap: 16px;
+  align-items: start;
+  width: 100%;
+  min-width: 0;
+  padding: 20px;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 195, 214, 0.045),
+    rgba(3, 26, 39, 0.7)
+  );
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  cursor: pointer;
+}
+.card:hover {
+  border-color: var(--cyan);
+}
+.card:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+.photo {
+  position: relative;
+  display: block;
+  width: 88px;
+  height: 108px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--navy);
+}
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.content {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.content > strong {
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+.meta {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  font-size: 0.87rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.meta svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 9px 12px;
+  margin-top: 5px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 28%, transparent);
+  border-radius: 24px;
+  color: var(--cyan);
+  background: color-mix(in srgb, var(--cyan) 7%, transparent);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.action > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.action > span + span {
+  border-left: 1px solid color-mix(in srgb, var(--cyan) 25%, transparent);
+  padding-left: 12px;
+}
+.action svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+.action[data-confirmed="true"] > span:first-child {
+  color: #00dcb5;
+}
+.chevron {
+  color: var(--cyan);
+  width: 20px;
+  height: 20px;
+  margin-top: 14px;
+}
+@media (max-width: 480px) {
+  .card {
+    grid-template-columns: 66px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+  .photo {
+    width: 66px;
+    height: 88px;
+    border-radius: 11px;
+  }
+  .chevron {
+    display: none;
+  }
+  .content > strong {
+    font-size: 1rem;
+  }
+  .meta {
+    font-size: 0.78rem;
+    gap: 6px;
+  }
+  .meta svg {
+    width: 15px;
+    height: 15px;
+  }
+  .action {
+    font-size: 0.73rem;
+    padding: 8px 10px;
+    gap: 6px 8px;
+  }
+  .action > span + span {
+    padding-left: 8px;
+  }
+}
+@media (min-width: 361px) and (max-width: 480px) {
+  .action {
+    font-size: 0.67rem;
+    gap: 6px;
+    padding: 8px;
+  }
+  .action svg {
+    width: 15px;
+    height: 15px;
+  }
+  .action > span {
+    gap: 5px;
+  }
+  .action > span + span {
+    padding-left: 6px;
+  }
+}

@@ -525,6 +525,7 @@ typescript	reservations	const	canPlayerCancel	frontend/features/reservations/pre
 typescript	reservations	const	reservationCount	frontend/features/reservations/presentation.ts
 typescript	reservations	function	ReservationCheckInScanner	frontend/features/reservations/ReservationCheckInScanner.tsx
 typescript	reservations	function	ReservationCheckout	frontend/features/reservations/ReservationCheckout.tsx
+typescript	reservations	function	ReservationListCard	frontend/features/reservations/ReservationListCard.tsx
 typescript	reservations	function	ReservationQrPass	frontend/features/reservations/ReservationQrPass.tsx
 typescript	reservations	type	Reservation	frontend/features/reservations/types.ts
 typescript	reservations	type	ReservationPage	frontend/features/reservations/types.ts

@@ -107,3 +107,7 @@ Las tarjetas de categorías con valor numérico cero se omiten en todos los pane
 ## Tercer tiempo — directorio fotográfico
 
 Banner de cancha con título bicolor, tres accesos informativos y tarjetas fotográficas con nombre y zona. Ver detalles abre el FormSheet compartido con descripción, contacto y Maps; Ver todos muestra la lista completa y permite volver desde el detalle. Las fotos se toman del local publicado, con referencia identificada cuando no hay foto. No se presentan establecimientos, promociones ni cantidades ficticias. El carrusel desplaza dentro de su contenedor, con foco visible y soporte desde 320 px.
+
+## Lista de reservas del jugador
+
+El popup de categorías utiliza tarjetas con portada real de la cancha cuando está disponible, nombre, sede, fecha y horario en filas con iconos. La referencia deportiva de respaldo es decorativa. El estado y Ver reserva comparten una franja de acción; cada tarjeta es un único botón accesible. Se conserva filtro, paginación del servidor y lista/detalle adaptativo, con controles legibles desde 320 px.

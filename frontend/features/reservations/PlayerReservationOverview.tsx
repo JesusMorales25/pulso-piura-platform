@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { ReservationListCard } from "./ReservationListCard";
 import {
   CalendarCheck,
   CalendarDots,
@@ -15,13 +16,7 @@ import { FormSheet } from "@/components/forms/FormSheet";
 import { DesktopDrilldown } from "@/components/dashboard/DesktopDrilldown";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import type { Reservation } from "./types";
-import {
-  money,
-  reservationDate,
-  reservationTime,
-  reservationStatus,
-  reservationCount,
-} from "./presentation";
+import { money, reservationCount } from "./presentation";
 import {
   useReservationDashboard,
   reservationFilterLabels,
@@ -131,11 +126,18 @@ export function PlayerReservationOverview({
         }
         onClose={() => dashboard.select(null)}
       >
+        {!selected && (
+          <p className={overviewStyles.intro}>
+            {dashboard.filter === "CONFIRMED"
+              ? "Revisa tus reservas confirmadas."
+              : "Revisa tus reservas y abre una para ver el detalle."}
+          </p>
+        )}
         <DesktopDrilldown
           selected={selected !== null}
           list={
             <>
-              <div className={styles.controls}>
+              <div className={`${styles.controls} ${overviewStyles.filter}`}>
                 <label>
                   Categoría
                   <select
@@ -166,34 +168,18 @@ export function PlayerReservationOverview({
                     </p>
                   ) : (
                     data.items.map((item) => (
-                      <button
-                        className={styles.row}
-                        aria-current={
-                          selected?.id === item.id ? "true" : undefined
-                        }
+                      <ReservationListCard
                         key={item.id}
-                        type="button"
-                        onClick={() => setSelected(item)}
-                      >
-                        <strong>{item.spaceName ?? "Cancha"}</strong>
-                        <small>
-                          {item.venueName ?? "Complejo"} ·{" "}
-                          {reservationDate(item.startsAt)}
-                        </small>
-                        <small>
-                          {reservationTime(item.startsAt)} –{" "}
-                          {reservationTime(item.endsAt)}
-                        </small>
-                        <span>
-                          {reservationStatus[item.status]} · Ver reserva →
-                        </span>
-                      </button>
+                        reservation={item}
+                        selected={selected?.id === item.id}
+                        onSelect={() => setSelected(item)}
+                      />
                     ))
                   )}
                 </div>
               )}
               <nav
-                className={styles.controls}
+                className={overviewStyles.pagination}
                 aria-label="Páginas de mis reservas"
               >
                 <button
@@ -205,7 +191,11 @@ export function PlayerReservationOverview({
                 </button>
                 <span>
                   {reservationCount(data?.total ?? 0)} · Página{" "}
-                  {dashboard.page + 1}
+                  {dashboard.page + 1} de{" "}
+                  {Math.max(
+                    1,
+                    Math.ceil((data?.total ?? 0) / (data?.size ?? 10)),
+                  )}
                 </span>
                 <button
                   className="secondary"

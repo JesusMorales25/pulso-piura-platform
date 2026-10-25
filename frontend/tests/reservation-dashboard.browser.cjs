@@ -197,6 +197,37 @@ async function main() {
               `../../.local/dashboard-${role}-summary-mobile.png`,
             ),
           });
+        if (role === "payer") {
+          await page.getByRole("button", { name: /^Confirmadas/ }).click();
+          const confirmed = page.getByRole("dialog", {
+            name: "Confirmadas",
+            exact: true,
+          });
+          await expect(
+            confirmed.getByText("Revisa tus reservas confirmadas."),
+          ).toBeVisible();
+          await expect(
+            confirmed.getByRole("button", { name: /Cancha .*Ver reserva/ }),
+          ).toHaveCount(8);
+          await expect(
+            confirmed.getByText("8 reservas · Página 1 de 1", { exact: true }),
+          ).toBeVisible();
+          await expect(
+            confirmed.getByRole("button", { name: "Anterior", exact: true }),
+          ).toBeDisabled();
+          await expect(
+            confirmed.getByRole("button", { name: "Siguiente", exact: true }),
+          ).toBeDisabled();
+          await page.screenshot({
+            path: path.join(
+              __dirname,
+              "../../.local/confirmed-reservations-" + width + ".png",
+            ),
+          });
+          await confirmed
+            .getByRole("button", { name: "Cerrar formulario", exact: true })
+            .click();
+        }
         await review.click();
         const sheet = page.getByRole("dialog", {
           name: "Por confirmar pago",

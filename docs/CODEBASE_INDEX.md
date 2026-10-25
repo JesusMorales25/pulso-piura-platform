@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: 4858a91b48a1413e
-- Archivos indexados: 726
+- Huella del inventario: c11bdb1101fa3f2f
+- Archivos indexados: 728
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -86,7 +86,7 @@
 - navigation (3): AppNavigation.tsx, LocationProvider.tsx, LocationSelector.tsx
 - organizations (7): EnabledCourts.tsx, InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx, PlatformRequestsDashboard.tsx, PlatformUserDirectory.tsx, user-directory.ts
 - payments (3): ExternalPaymentPanel.module.css, ExternalPaymentPanel.tsx, proof-validation.ts
-- reservations (15): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, PlayerReservationOverview.module.css, PlayerReservationOverview.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationDrilldown.module.css, ReservationQrPass.tsx, types.ts, useReservationDashboard.ts, VenueOwnerReservationsDashboard.tsx
+- reservations (17): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, PlayerReservationOverview.module.css, PlayerReservationOverview.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationDrilldown.module.css, ReservationListCard.module.css, ReservationListCard.tsx, ReservationQrPass.tsx, types.ts, useReservationDashboard.ts, VenueOwnerReservationsDashboard.tsx
 - venues (9): AvailabilityAdmin.tsx, CourtPhotos.module.css, CourtPhotos.tsx, PublicVenueCatalog.tsx, VenueAdmin.tsx, VenueBookingCard.module.css, VenueBookingCard.tsx, VenueScheduleDialog.module.css, VenueScheduleDialog.tsx
 
 ### Compartido
