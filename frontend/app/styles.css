@@ -11773,3 +11773,17 @@ body:has(.resourceFormSheet[open]) {
   box-shadow: none;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
 }
+
+/* District occupies its own full-width row in the court discovery filters. */
+.exploreFilterRow .venueDistrictFilter {
+  flex-basis: 100%;
+  width: 100%;
+  min-width: 0;
+  grid-column: 1 / -1;
+}
+.exploreFilterRow .venueDistrictFilter select {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}

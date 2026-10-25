@@ -276,18 +276,37 @@ async function main() {
         name: "Disponibilidad de Complejo galería",
         exact: true,
       });
+      await page
+        .getByRole("button", { name: "Mostrar filtros", exact: true })
+        .click();
+      await expect(page.getByRole("checkbox")).toHaveCount(0);
+      await expect(
+        page.getByRole("combobox", { name: "Zona", exact: true }),
+      ).toBeVisible();
+      const districtFits = await page
+        .locator(".venueDistrictFilter")
+        .evaluate((el) => {
+          const row = el.parentElement.getBoundingClientRect();
+          const box = el.getBoundingClientRect();
+          return Math.abs(row.width - box.width) < 2;
+        });
+      assert.equal(districtFits, true);
       const turnButtons = bookingCard
         .getByRole("group", { name: "Elige un turno disponible" })
         .getByRole("button");
       await expect(turnButtons).toHaveCount(4);
       await expect(
-        bookingCard.getByText("Desde S/ 60", { exact: true }),
+        bookingCard
+          .getByRole("group", { name: "Precio y valoración" })
+          .getByText("S/ 60", { exact: true }),
       ).toBeVisible();
       await turnButtons.nth(1).click();
       await expect(turnButtons.nth(1)).toHaveAttribute("aria-pressed", "true");
       await expect(turnButtons.nth(0)).toHaveAttribute("aria-pressed", "false");
       await expect(
-        bookingCard.getByText("Desde S/ 60", { exact: true }),
+        bookingCard
+          .getByRole("group", { name: "Precio y valoración" })
+          .getByText("S/ 60", { exact: true }),
       ).toBeVisible();
       await expect(
         bookingCard.getByRole("button", {

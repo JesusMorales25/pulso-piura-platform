@@ -196,14 +196,6 @@ export function VenueBookingCard({
               ))}
             </div>
           </div>
-          <div className={styles.rating}>
-            <span>
-              <Star aria-hidden="true" size={16} weight="fill" /> {ratingLabel}
-            </span>
-            {venue.adminRating != null && (
-              <small>Informada por el complejo</small>
-            )}
-          </div>
         </header>
 
         <CourtPhotoGallery
@@ -213,9 +205,13 @@ export function VenueBookingCard({
           name={space.name}
           fallback={imageSrc}
         />
-        <div className={styles.detailsRow}>
+        <div
+          className={styles.priceRating}
+          role="group"
+          aria-label="Precio y valoración"
+        >
           <div className={styles.price}>
-            <strong>Desde {lowestSlot ? money(lowestSlot) : "—"}</strong>
+            <strong>{lowestSlot ? money(lowestSlot) : "—"}</strong>
             <small>
               {lowestSlot &&
               new Date(lowestSlot.endsAt).getTime() -
@@ -225,6 +221,16 @@ export function VenueBookingCard({
                 : "por turno"}
             </small>
           </div>
+          <div className={styles.rating}>
+            <span>
+              <Star aria-hidden="true" size={16} weight="fill" /> {ratingLabel}
+            </span>
+            {venue.adminRating != null && (
+              <small>Informada por el complejo</small>
+            )}
+          </div>
+        </div>
+        <div className={styles.detailsRow}>
           <div className={styles.links}>
             <button
               className="secondary"

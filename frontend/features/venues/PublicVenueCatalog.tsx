@@ -898,7 +898,7 @@ export function PublicVenueCatalog({
                 ))}
               </select>
             </label>
-            <label>
+            <label className="venueDistrictFilter">
               <MapPin aria-hidden="true" size={19} />
               <span className="srOnly">Zona</span>
               <select
@@ -917,32 +917,6 @@ export function PublicVenueCatalog({
                   </option>
                 ))}
               </select>
-            </label>
-            <label className="venueAttributeFilter">
-              <input
-                checked={venueFilters.covered}
-                onChange={(event) =>
-                  setVenueFilters((current) => ({
-                    ...current,
-                    covered: event.target.checked,
-                  }))
-                }
-                type="checkbox"
-              />
-              <span>Techada o cubierta</span>
-            </label>
-            <label className="venueAttributeFilter">
-              <input
-                checked={venueFilters.led}
-                onChange={(event) =>
-                  setVenueFilters((current) => ({
-                    ...current,
-                    led: event.target.checked,
-                  }))
-                }
-                type="checkbox"
-              />
-              <span>Iluminación LED</span>
             </label>
           </div>
         )}

@@ -19,7 +19,7 @@
 }
 .header {
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr) auto;
+  grid-template-columns: 112px minmax(0, 1fr);
   align-items: start;
   gap: 18px;
 }
@@ -94,7 +94,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  margin-top: 22px;
+  margin-top: 16px;
 }
 .price {
   display: grid;
@@ -309,10 +309,9 @@
   .rating {
     grid-column: 1 / -1;
     max-width: none;
-    display: flex;
-    align-items: center;
-    justify-content: end;
-    gap: 8px;
+    display: grid;
+    max-width: 60%;
+    gap: 4px;
   }
   .detailsRow {
     gap: 12px;
@@ -378,4 +377,13 @@
 
 .noWrap {
   white-space: nowrap;
+}
+
+.priceRating {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  min-width: 0;
 }
