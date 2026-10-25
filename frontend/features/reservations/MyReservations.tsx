@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { ActivitySignInPrompt } from "@/features/activity/ActivitySignInPrompt";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
@@ -187,21 +188,9 @@ export function MyReservations({
 }: {
   highlightedReservationId?: string;
 }) {
-  const { accessToken, loading: authLoading, login } = useAuth();
+  const { accessToken, loading: authLoading } = useAuth();
   if (authLoading) return <p className="notice">Revisando tu sesión…</p>;
-  if (!accessToken)
-    return (
-      <div className="empty">
-        <h2>Ingresa para ver tu actividad</h2>
-        <p>Tus reservas se mantienen asociadas a tu cuenta.</p>
-        <button
-          className="primary borderless"
-          onClick={() => void login(false, "/actividad")}
-        >
-          Ingresar
-        </button>
-      </div>
-    );
+  if (!accessToken) return <ActivitySignInPrompt type="reservations" />;
   return highlightedReservationId ? (
     <FocusedReservation
       key={highlightedReservationId}

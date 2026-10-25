@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ActivitySignInPrompt } from "@/features/activity/ActivitySignInPrompt";
 import styles from "./MyMatchParticipations.module.css";
 import { useEffect, useState } from "react";
 import {
@@ -61,7 +62,7 @@ const paymentLabels: Record<MatchActivity["paymentStatus"], string> = {
 };
 
 export function MyMatchParticipations() {
-  const { accessToken } = useAuth();
+  const { accessToken, loading: authLoading } = useAuth();
   const [items, setItems] = useState<MatchActivity[]>([]);
   const [loading, setLoading] = useState(Boolean(accessToken));
   const [error, setError] = useState("");
@@ -107,7 +108,13 @@ export function MyMatchParticipations() {
       clearInterval(timer);
     };
   }, [accessToken, revision]);
-  if (!accessToken) return null;
+  if (authLoading)
+    return (
+      <p className="notice" role="status">
+        Revisando tu sesión…
+      </p>
+    );
+  if (!accessToken) return <ActivitySignInPrompt type="matches" />;
   const groups = [
     {
       id: "review",

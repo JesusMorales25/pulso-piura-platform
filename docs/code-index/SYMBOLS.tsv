@@ -457,6 +457,7 @@ typescript	access	type	UserCapabilities	frontend/features/access/capabilities.ts
 typescript	access	function	resolveCapabilities	frontend/features/access/capabilities.ts
 typescript	access	function	useUserCapabilities	frontend/features/access/useUserCapabilities.ts
 typescript	activity	function	ActivityDashboard	frontend/features/activity/ActivityDashboard.tsx
+typescript	activity	function	ActivitySignInPrompt	frontend/features/activity/ActivitySignInPrompt.tsx
 typescript	auth	function	AuthButton	frontend/features/auth/AuthButton.tsx
 typescript	auth	function	AuthProvider	frontend/features/auth/AuthProvider.tsx
 typescript	auth	function	useAuth	frontend/features/auth/AuthProvider.tsx

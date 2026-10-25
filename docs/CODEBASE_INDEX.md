@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: ef053cf56f74f151
-- Archivos indexados: 742
+- Huella del inventario: 96831d0fd2f3e7cf
+- Archivos indexados: 744
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -78,7 +78,7 @@
 ### Features y archivos
 
 - access (2): capabilities.ts, useUserCapabilities.ts
-- activity (1): ActivityDashboard.tsx
+- activity (3): ActivityDashboard.tsx, ActivitySignInPrompt.module.css, ActivitySignInPrompt.tsx
 - auth (2): AuthButton.tsx, AuthProvider.tsx
 - feedback (1): CardSkeletons.tsx
 - home (15): FeaturedMatchCard.module.css, FeaturedMatchCard.tsx, FeaturedMatchCardV2.module.css, FeaturedMatchCardV2.tsx, HomeDashboard.tsx, HomeModeSwitch.tsx, HomeVenuePreview.tsx, MatchDiscoveryPanel.tsx, NextMatchCard.module.css, NextMatchCard.tsx, ThirdTimeHero.module.css, ThirdTimeHero.tsx, ThirdTimeSection.module.css, ThirdTimeSection.tsx, VenueAgendaPanel.tsx
