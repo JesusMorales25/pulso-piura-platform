@@ -127,3 +127,7 @@ Cabecera de reserva con foto a la derecha, estado junto a la etiqueta y filas in
 ## Actividad sin sesión
 
 Mis inscripciones y Mis reservas muestran una tarjeta de acceso con explicación y botón Iniciar sesión cuando no hay sesión autenticada. Durante la restauración de sesión aparece un estado de carga. No se interpreta ausencia de sesión como una cuenta sin registros ni se consultan datos privados sin token.
+
+## Directorio de jugadores de plataforma
+
+El popup Usuarios utiliza buscador y filtros internos con cantidades reales, avatares y tarjetas con nombre, rol, estado, correo y distrito. Gestionar privilegios mantiene la navegación existente al usuario correspondiente. Los filtros usan las categorías disponibles (Todos, Jugadores, Organizadores y Dueños); no se inventa un contador de administradores que la API no entrega. Búsqueda por nombre, correo, distrito y rol, controles con foco y sin desbordamiento desde 320 px. No se añaden menús de acciones sin funcionamiento.

@@ -41,7 +41,7 @@ export function filterDirectory(
     (user) =>
       belongsToProfile(user, profile) &&
       normalize(
-        `${user.displayName} ${user.email || ""} ${user.districtCode || ""}`,
+        `${user.displayName} ${user.email || ""} ${user.districtCode || ""} Jugador ${belongsToProfile(user, "Organizadores") ? "Organizador" : ""} ${belongsToProfile(user, "Dueños") ? "Dueño de cancha" : ""}`,
       ).includes(normalize(search.trim())),
   );
 }

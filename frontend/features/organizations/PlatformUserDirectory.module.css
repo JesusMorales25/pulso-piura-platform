@@ -1,0 +1,307 @@
+.directory {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.intro {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(19, 65, 85, 0.2);
+  min-width: 0;
+}
+.search > svg {
+  width: 24px;
+  height: 24px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.search input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  padding: 12px 0;
+  font: inherit;
+  font-size: 0.87rem;
+  background: transparent;
+  color: var(--text);
+  border: 0;
+  outline-offset: 2px;
+}
+.search button {
+  padding: 8px;
+  font-size: 0.7rem;
+  min-height: 36px;
+}
+.filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.filters button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  min-height: 48px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(0, 196, 213, 0.02);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.filters svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.filters b {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
+  border-radius: 50%;
+  background: #163e52;
+  font-size: 0.8rem;
+}
+.filters button[aria-pressed="true"] {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 1px rgba(0, 196, 213, 0.1);
+  background: rgba(0, 196, 213, 0.06);
+}
+.filters button[aria-pressed="true"] b {
+  background: var(--cyan);
+  color: #002331;
+}
+.grid {
+  display: grid;
+  gap: 14px;
+}
+.card {
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: linear-gradient(
+    130deg,
+    rgba(0, 196, 213, 0.035),
+    rgba(4, 28, 42, 0.65)
+  );
+}
+.card header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+}
+.card header > div {
+  min-width: 0;
+  flex: 1;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border: 1px solid var(--cyan);
+  border-radius: 50%;
+  background-color: #086d98;
+  background-size: cover;
+  background-position: center;
+  color: white;
+  font-size: 1.25rem;
+}
+.card h3 {
+  margin: 0 0 10px;
+  font-size: 1.08rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.role,
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+.role {
+  color: var(--cyan);
+  background: rgba(0, 196, 213, 0.07);
+}
+.role svg {
+  width: 17px;
+  height: 17px;
+}
+.state:before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.state[data-active="true"] {
+  color: var(--lime, #c9ff27);
+  background: rgba(176, 235, 35, 0.06);
+  border-color: rgba(176, 235, 35, 0.2);
+}
+.state[data-active="true"]:before {
+  background: var(--lime, #c9ff27);
+}
+.contact {
+  display: grid;
+  gap: 12px;
+}
+.contact p {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  min-width: 0;
+}
+.contact p span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.contact svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.extraRoles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.extraRoles:empty {
+  display: none;
+}
+.extraRoles span {
+  padding: 5px 8px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.manage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  min-height: 48px;
+  border: 1px solid #326078;
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 800;
+  background: rgba(28, 84, 108, 0.1);
+}
+.manage svg {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+.manage svg:last-child {
+  margin-left: auto;
+  color: var(--cyan);
+  width: 19px;
+}
+.directory :is(button, input, a):focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+@media (min-width: 600px) {
+  .filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .contact {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+  .contact p + p {
+    border-left: 1px solid var(--line);
+    padding-left: 14px;
+  }
+  .avatar {
+    width: 68px;
+    height: 68px;
+  }
+}
+@media (max-width: 360px) {
+  .card {
+    padding: 15px;
+    gap: 15px;
+  }
+  .card header {
+    gap: 10px;
+  }
+  .avatar {
+    width: 46px;
+    height: 46px;
+    font-size: 1rem;
+  }
+  .card h3 {
+    font-size: 0.95rem;
+  }
+  .manage {
+    font-size: 0.8rem;
+  }
+}
+@media (max-width: 480px) {
+  .filters button {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    justify-items: start;
+    gap: 7px;
+    padding: 10px 12px;
+  }
+  .filters svg {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .filters b {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .filters span {
+    grid-column: 1/-1;
+    grid-row: 2;
+    overflow-wrap: normal;
+    font-size: 0.76rem;
+  }
+}

@@ -387,7 +387,7 @@ infrastructure	example	762	deploy/vps/.env.example
 infrastructure	-	49	deploy/vps/Caddyfile
 infrastructure	yaml	2662	deploy/vps/compose.auth0.yaml
 infrastructure	yaml	2059	deploy/vps/compose.external-db.yaml
-root-or-support	md	12357	DESIGN.md
+root-or-support	md	12937	DESIGN.md
 root-or-support	md	2498	design-qa.md
 architecture-decision	md	334	docs/adr/ADR-001-monolito-modular.md
 architecture-decision	md	437	docs/adr/ADR-002-identidad-y-autorizacion.md
@@ -590,8 +590,9 @@ frontend-feature	tsx	2483	frontend/features/organizations/InvitationAcceptance.t
 frontend-feature	tsx	11699	frontend/features/organizations/OrganizationAdmin.tsx
 frontend-feature	tsx	19677	frontend/features/organizations/OrganizationWorkspace.tsx
 frontend-feature	tsx	9076	frontend/features/organizations/PlatformRequestsDashboard.tsx
-frontend-feature	tsx	4464	frontend/features/organizations/PlatformUserDirectory.tsx
-frontend-feature	ts	1243	frontend/features/organizations/user-directory.ts
+frontend-feature	css	5363	frontend/features/organizations/PlatformUserDirectory.module.css
+frontend-feature	tsx	6635	frontend/features/organizations/PlatformUserDirectory.tsx
+frontend-feature	ts	1378	frontend/features/organizations/user-directory.ts
 frontend-feature	css	5761	frontend/features/payments/ExternalPaymentPanel.module.css
 frontend-feature	tsx	32468	frontend/features/payments/ExternalPaymentPanel.tsx
 frontend-feature	ts	569	frontend/features/payments/proof-validation.ts
@@ -646,7 +647,7 @@ frontend-lib	ts	605	frontend/lib/venue-presentation.ts
 frontend-lib	ts	995	frontend/lib/venue-rating.ts
 frontend-lib	ts	207	frontend/lib/venue-selection.ts
 root-or-support	ts	1683	frontend/next.config.ts
-root-or-support	ts	296	frontend/next-env.d.ts
+root-or-support	ts	288	frontend/next-env.d.ts
 root-or-support	json	840	frontend/package.json
 root-or-support	json	218758	frontend/package-lock.json
 root-or-support	svg	274	frontend/public/images/avatar-reference.svg
@@ -659,7 +660,7 @@ root-or-support	svg	403	frontend/public/images/map-reference.svg
 root-or-support	svg	579	frontend/public/images/third-time-reference.svg
 root-or-support	svg	693	frontend/public/images/volleyball-reference.svg
 frontend-test	cjs	9912	frontend/tests/accessibility.browser.cjs
-frontend-test	cjs	6883	frontend/tests/admin-dashboard.browser.cjs
+frontend-test	cjs	8011	frontend/tests/admin-dashboard.browser.cjs
 frontend-test	cjs	10419	frontend/tests/auth-security.test.cjs
 frontend-test	cjs	13994	frontend/tests/court-gallery.browser.cjs
 frontend-test	cjs	21934	frontend/tests/desktop-responsive.browser.cjs

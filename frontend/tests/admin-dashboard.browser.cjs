@@ -40,7 +40,8 @@ async function main() {
           id: "request-1",
           userId: "user-1",
           displayName: "Ana pendiente",
-          email: "ana@example.test",
+          email:
+            "ana.con.un.correo.de.prueba.extenso@plataforma-de-ejemplo.test",
           capability: "VENUE_OWNER",
           status: "PENDING",
           reason: "Operar complejo",
@@ -85,7 +86,8 @@ async function main() {
             {
               id: "user-1",
               displayName: "Ana usuario",
-              email: "ana@example.test",
+              email:
+                "ana.con.un.correo.de.prueba.extenso@plataforma-de-ejemplo.test",
               status: "ACTIVE",
               capabilities: "",
               owner: true,
@@ -163,6 +165,36 @@ async function main() {
       await expect(
         dialog.getByText("Ana usuario", { exact: true }),
       ).toHaveCount(0);
+      await dialog.getByRole("button", { name: /^Todos/ }).click();
+      await expect(
+        dialog.getByRole("link", {
+          name: "Gestionar privilegios",
+          exact: true,
+        }),
+      ).toHaveCount(2);
+      await page.screenshot({
+        path: require("node:path").join(
+          __dirname,
+          "../../.local/platform-user-directory-" + width + ".png",
+        ),
+      });
+      assert.equal(
+        await dialog.evaluate(
+          (element) => element.scrollWidth > element.clientWidth + 1,
+        ),
+        false,
+      );
+      await dialog.getByRole("searchbox").fill("dueño");
+      await expect(
+        dialog.getByText("Ana usuario", { exact: true }),
+      ).toBeVisible();
+      await expect(
+        dialog.getByText("Luis usuario", { exact: true }),
+      ).toHaveCount(0);
+      await dialog
+        .getByRole("button", { name: "Limpiar búsqueda", exact: true })
+        .click();
+      await dialog.getByRole("button", { name: /^Organizadores/ }).click();
       await dialog.getByRole("searchbox").fill("sin coincidencias");
       await expect(
         dialog.getByText(
