@@ -103,3 +103,7 @@ El panel reutiliza las tarjetas player de Mis inscripciones: icono, cantidad y a
 ## Resúmenes con contenido
 
 Las tarjetas de categorías con valor numérico cero se omiten en todos los paneles compartidos. Los importes usan su cantidad original en unidades mínimas para decidir visibilidad, sin analizar texto monetario. Carga, error o dato desconocido siguen visibles como tales. Los grupos de partidos/pagos vacíos no presentan títulos; jugador y propietario reciben un estado vacío con acceso a la siguiente acción. Si una acción deja la categoría a cero, el popup conserva su detalle y al cerrar recupera foco en un control disponible.
+
+## Tercer tiempo — directorio fotográfico
+
+Banner de cancha con título bicolor, tres accesos informativos y tarjetas fotográficas con nombre y zona. Ver detalles abre el FormSheet compartido con descripción, contacto y Maps; Ver todos muestra la lista completa y permite volver desde el detalle. Las fotos se toman del local publicado, con referencia identificada cuando no hay foto. No se presentan establecimientos, promociones ni cantidades ficticias. El carrusel desplaza dentro de su contenedor, con foco visible y soporte desde 320 px.

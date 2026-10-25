@@ -463,6 +463,7 @@ typescript	home	function	HomeModeSwitch	frontend/features/home/HomeModeSwitch.ts
 typescript	home	function	HomeVenuePreview	frontend/features/home/HomeVenuePreview.tsx
 typescript	home	function	MatchDiscoveryPanel	frontend/features/home/MatchDiscoveryPanel.tsx
 typescript	home	function	NextMatchCard	frontend/features/home/NextMatchCard.tsx
+typescript	home	function	ThirdTimeHero	frontend/features/home/ThirdTimeHero.tsx
 typescript	home	function	ThirdTimeSection	frontend/features/home/ThirdTimeSection.tsx
 typescript	home	function	VenueAgendaPanel	frontend/features/home/VenueAgendaPanel.tsx
 typescript	matches	function	DemoMatchBuilder	frontend/features/matches/DemoMatchBuilder.tsx

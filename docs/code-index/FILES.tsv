@@ -382,7 +382,7 @@ infrastructure	example	762	deploy/vps/.env.example
 infrastructure	-	49	deploy/vps/Caddyfile
 infrastructure	yaml	2662	deploy/vps/compose.auth0.yaml
 infrastructure	yaml	2059	deploy/vps/compose.external-db.yaml
-root-or-support	md	9295	DESIGN.md
+root-or-support	md	9844	DESIGN.md
 root-or-support	md	2498	design-qa.md
 architecture-decision	md	334	docs/adr/ADR-001-monolito-modular.md
 architecture-decision	md	437	docs/adr/ADR-002-identidad-y-autorizacion.md
@@ -518,7 +518,7 @@ frontend-route	tsx	203	frontend/app/plataforma/solicitudes/page.tsx
 frontend-route	tsx	288	frontend/app/reservas-cancha/page.tsx
 frontend-route	css	7900	frontend/app/responsive.css
 frontend-route	css	238532	frontend/app/styles.css
-frontend-route	tsx	1066	frontend/app/tercer-tiempo/page.tsx
+frontend-route	tsx	300	frontend/app/tercer-tiempo/page.tsx
 root-or-support	md	11	frontend/CLAUDE.md
 root-or-support	tsx	3715	frontend/components/AccessibleDialogs.tsx
 root-or-support	tsx	1800	frontend/components/BusinessImage.tsx
@@ -550,7 +550,10 @@ frontend-feature	tsx	6849	frontend/features/home/HomeVenuePreview.tsx
 frontend-feature	tsx	4879	frontend/features/home/MatchDiscoveryPanel.tsx
 frontend-feature	css	1531	frontend/features/home/NextMatchCard.module.css
 frontend-feature	tsx	2401	frontend/features/home/NextMatchCard.tsx
-frontend-feature	tsx	5318	frontend/features/home/ThirdTimeSection.tsx
+frontend-feature	css	2420	frontend/features/home/ThirdTimeHero.module.css
+frontend-feature	tsx	2717	frontend/features/home/ThirdTimeHero.tsx
+frontend-feature	css	4236	frontend/features/home/ThirdTimeSection.module.css
+frontend-feature	tsx	10038	frontend/features/home/ThirdTimeSection.tsx
 frontend-feature	tsx	7598	frontend/features/home/VenueAgendaPanel.tsx
 frontend-feature	tsx	3161	frontend/features/matches/DemoMatchBuilder.tsx
 frontend-feature	tsx	4257	frontend/features/matches/DemoMatchDetail.tsx
@@ -627,13 +630,14 @@ frontend-lib	ts	605	frontend/lib/venue-presentation.ts
 frontend-lib	ts	995	frontend/lib/venue-rating.ts
 frontend-lib	ts	207	frontend/lib/venue-selection.ts
 root-or-support	ts	1683	frontend/next.config.ts
-root-or-support	ts	296	frontend/next-env.d.ts
+root-or-support	ts	288	frontend/next-env.d.ts
 root-or-support	json	840	frontend/package.json
 root-or-support	json	218758	frontend/package-lock.json
 root-or-support	svg	274	frontend/public/images/avatar-reference.svg
 root-or-support	svg	926	frontend/public/images/court-reference.svg
-root-or-support	md	432	frontend/public/images/DEMO_ASSETS.md
+root-or-support	md	696	frontend/public/images/DEMO_ASSETS.md
 root-or-support	png	2930623	frontend/public/images/demo-court-night.png
+root-or-support	png	2425209	frontend/public/images/demo-third-time-terrace.png
 root-or-support	png	2381676	frontend/public/images/demo-volleyball.png
 root-or-support	svg	403	frontend/public/images/map-reference.svg
 root-or-support	svg	579	frontend/public/images/third-time-reference.svg
@@ -653,6 +657,7 @@ frontend-test	cjs	5812	frontend/tests/platform-visual-assets.browser.cjs
 frontend-test	cjs	6802	frontend/tests/player-overview.browser.cjs
 frontend-test	cjs	12457	frontend/tests/product-improvements.test.cjs
 frontend-test	cjs	9860	frontend/tests/reservation-dashboard.browser.cjs
+frontend-test	cjs	5720	frontend/tests/third-time.browser.cjs
 frontend-test	cjs	1745	frontend/tests/venue-contact.test.cjs
 root-or-support	json	661	frontend/tsconfig.json
 root-or-support	json	82	frontend/vercel.json

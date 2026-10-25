@@ -1,0 +1,240 @@
+.section {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  margin: 28px 0;
+}
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  min-width: 0;
+}
+.heading h2 {
+  margin: 5px 0 3px;
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  line-height: 1.18;
+}
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+.headingActions {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.headingActions button,
+.cardContent button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 15px;
+  border: 1px solid var(--cyan);
+  border-radius: 999px;
+  background: rgb(3 20 33 / 88%);
+  color: var(--cyan);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+.headingActions small {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(270px, calc(100% - 24px));
+  gap: 16px;
+  overflow-x: auto;
+  min-width: 0;
+  padding: 3px 2px 12px;
+  scroll-snap-type: x proximity;
+}
+.card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: end;
+  min-width: 0;
+  min-height: 225px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cyan) 45%, var(--line));
+  border-radius: var(--radius-lg);
+  background: var(--navy-soft);
+  scroll-snap-align: start;
+}
+.photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.card::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  background: linear-gradient(0deg, rgb(3 20 33 / 97%), rgb(3 20 33 / 15%) 90%);
+}
+.cardContent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 20px;
+}
+.cardContent h3 {
+  margin: 3px 0 5px;
+  font-size: 1.3rem;
+  overflow-wrap: anywhere;
+}
+.cardContent p,
+.zone {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.cardContent p svg {
+  flex-shrink: 0;
+  color: var(--cyan);
+}
+.category {
+  color: var(--cyan);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.notice {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.detail {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.detail > p {
+  margin: 0;
+}
+.detailPhoto {
+  width: 100%;
+  max-height: 260px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+.detailActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.detailActions a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  text-align: center;
+  text-decoration: none;
+}
+.detailActions svg {
+  flex-shrink: 0;
+}
+.list {
+  display: grid;
+  gap: 12px;
+}
+.list button {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--navy);
+  color: var(--white);
+  text-align: left;
+}
+.list button > svg {
+  color: var(--cyan);
+}
+.list button > span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.list small {
+  color: var(--muted);
+}
+@media (min-width: 760px) {
+  .rail {
+    grid-auto-columns: calc(50% - 9px);
+  }
+}
+@media (min-width: 1280px) {
+  .rail {
+    grid-auto-columns: calc(33.333% - 12px);
+  }
+}
+@media (max-width: 440px) {
+  .heading {
+    gap: 10px;
+  }
+  .headingActions button {
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    gap: 4px;
+  }
+  .heading .eyebrow {
+    font-size: 0.68rem;
+  }
+}
+@media (max-width: 360px) {
+  .cardContent {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 18px;
+    gap: 14px;
+  }
+  .cardContent button {
+    justify-self: end;
+  }
+
+  .rail {
+    grid-auto-columns: calc(100% - 12px);
+  }
+  .detailActions {
+    grid-template-columns: 1fr;
+  }
+  .heading h2 {
+    font-size: 1.35rem;
+  }
+}
+
+.reference {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgb(3 20 33 / 90%);
+  color: var(--muted);
+  font-size: 0.65rem;
+}
