@@ -115,3 +115,7 @@ El popup de categorías utiliza tarjetas con portada real de la cancha cuando es
 ## Detalle e historial de reservas
 
 Ficha de cancha fotográfica con estado y filas de sede, fecha y horario. Secciones de cliente (solo donde la API lo expone), verificación, montos y comprobantes, manteniendo las acciones autorizadas. El acceso de verificación abre Historial de estados en FormSheet: línea de tiempo con fechas Lima, estados reales, motivo y comprobante privado disponible. El backend autoriza lectura de reserva antes del historial y limita eventos de pago a comprobantes visibles para el actor. Sin botones ficticios para modificar reservas ni cambios de reglas financieras.
+
+## Tu perfil deportivo — referencia móvil
+
+Cabecera con avatar real o inicial, identidad y cerrar sesión; accesos en tarjetas según permisos reales. Formulario en panel con iconos, presentación con contador y visibilidad; aceptación legal sin selección automática, con control visual de interruptor y etiqueta completa. Capacidades en tarjetas con iconos, estados reales, contador y acciones existentes. Una columna por debajo de 600 px para legibilidad, dos columnas cuando el ancho lo permite. No se añade botón ficticio de cambiar foto ni menú sin función; conserva límites y autorización del sistema.

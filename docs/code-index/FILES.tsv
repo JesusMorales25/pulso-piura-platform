@@ -387,7 +387,7 @@ infrastructure	example	762	deploy/vps/.env.example
 infrastructure	-	49	deploy/vps/Caddyfile
 infrastructure	yaml	2662	deploy/vps/compose.auth0.yaml
 infrastructure	yaml	2059	deploy/vps/compose.external-db.yaml
-root-or-support	md	10893	DESIGN.md
+root-or-support	md	11515	DESIGN.md
 root-or-support	md	2498	design-qa.md
 architecture-decision	md	334	docs/adr/ADR-001-monolito-modular.md
 architecture-decision	md	437	docs/adr/ADR-002-identidad-y-autorizacion.md
@@ -512,7 +512,8 @@ frontend-route	tsx	153	frontend/app/partidos/demo-futbol-7/page.tsx
 frontend-route	tsx	174	frontend/app/partidos/demo-voley/page.tsx
 frontend-route	tsx	597	frontend/app/partidos/invitaciones/[invitationId]/page.tsx
 frontend-route	tsx	133	frontend/app/partidos/page.tsx
-frontend-route	tsx	15454	frontend/app/perfil/page.tsx
+frontend-route	tsx	19111	frontend/app/perfil/page.tsx
+frontend-route	css	7400	frontend/app/perfil/ProfilePage.module.css
 frontend-route	tsx	9480	frontend/app/plataforma/imagenes/page.tsx
 frontend-route	css	893	frontend/app/plataforma/imagenes/VisualAssets.module.css
 frontend-route	tsx	17602	frontend/app/plataforma/negocios/page.tsx
@@ -642,7 +643,7 @@ frontend-lib	ts	605	frontend/lib/venue-presentation.ts
 frontend-lib	ts	995	frontend/lib/venue-rating.ts
 frontend-lib	ts	207	frontend/lib/venue-selection.ts
 root-or-support	ts	1683	frontend/next.config.ts
-root-or-support	ts	296	frontend/next-env.d.ts
+root-or-support	ts	288	frontend/next-env.d.ts
 root-or-support	json	840	frontend/package.json
 root-or-support	json	218758	frontend/package-lock.json
 root-or-support	svg	274	frontend/public/images/avatar-reference.svg
@@ -668,6 +669,7 @@ frontend-test	cjs	2670	frontend/tests/organizer-summary.test.cjs
 frontend-test	cjs	5812	frontend/tests/platform-visual-assets.browser.cjs
 frontend-test	cjs	6802	frontend/tests/player-overview.browser.cjs
 frontend-test	cjs	12457	frontend/tests/product-improvements.test.cjs
+frontend-test	cjs	7906	frontend/tests/profile.browser.cjs
 frontend-test	cjs	11061	frontend/tests/reservation-dashboard.browser.cjs
 frontend-test	cjs	12105	frontend/tests/reservation-detail.browser.cjs
 frontend-test	cjs	5720	frontend/tests/third-time.browser.cjs
