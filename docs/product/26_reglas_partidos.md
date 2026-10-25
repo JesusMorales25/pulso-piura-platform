@@ -142,3 +142,7 @@ Asistencia reciente: alta/media/baja, con muestra mínima
 - privado: no indexado en Explorar; una persona autenticada con el enlace puede acceder (decisión del producto y MatchAccessPolicyTest). No ofrece confidencialidad basada en invitación exclusiva;
 - ubicación exacta puede mostrarse solo a confirmados cuando la seguridad lo justifique;
 - lista de participantes respeta configuración y minimización.
+
+## Compatibilidad del pase de ingreso
+
+La emisión, regeneración y consumo del QR conservan instantes UTC. Los parámetros JDBC de issued_at, valid_until y consumed_at se enlazan como Timestamp, igual que en los pases de reservas; no se envía Instant directamente al controlador PostgreSQL. El pase continúa vinculado al participante confirmado y solo el organizador del partido registra el ingreso.

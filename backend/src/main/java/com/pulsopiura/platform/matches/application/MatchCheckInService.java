@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Base64;
@@ -67,8 +68,8 @@ public class MatchCheckInService {
                 """,
                 context.participantId(),
                 hash(token),
-                now,
-                validUntil);
+                Timestamp.from(now),
+                Timestamp.from(validUntil));
         return new MatchPass(
                 context.matchId(),
                 context.participantId(),
@@ -97,10 +98,10 @@ public class MatchCheckInService {
                 set consumed_at = ?, consumed_by = ?
                 where participant_id = ? and consumed_at is null and valid_until > ?
                 """,
-                        now,
+                        Timestamp.from(now),
                         actor,
                         value.participantId(),
-                        now);
+                        Timestamp.from(now));
         if (updated != 1)
             throw new ReservationConflictException("Este QR ya fue utilizado o venció");
         return new CheckInPlayer(

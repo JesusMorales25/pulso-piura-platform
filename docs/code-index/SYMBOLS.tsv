@@ -338,6 +338,8 @@ java	JwtValidationTest.java	class	JwtValidationTest	backend/src/test/java/com/pu
 java	matches	class	ExternalMatchPaymentServiceTest	backend/src/test/java/com/pulsopiura/platform/matches/application/ExternalMatchPaymentServiceTest.java
 java	matches	class	ManualMatchParticipantServiceTest	backend/src/test/java/com/pulsopiura/platform/matches/application/ManualMatchParticipantServiceTest.java
 java	matches	class	MatchAccessPolicyTest	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchAccessPolicyTest.java
+java	matches	class	MatchCheckInPostgresTest	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchCheckInPostgresTest.java
+java	matches	class	MatchCheckInServiceTest	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchCheckInServiceTest.java
 java	matches	class	MatchJoinPaymentServiceTest	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchJoinPaymentServiceTest.java
 java	matches	class	MatchOrganizerAuthorizationTest	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchOrganizerAuthorizationTest.java
 java	matches	class	MatchOrganizerManagementServiceTest	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchOrganizerManagementServiceTest.java

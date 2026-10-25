@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: 478092b381c7cd9a
-- Archivos indexados: 714
+- Huella del inventario: 69b71d6e4a417d48
+- Archivos indexados: 716
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -104,7 +104,7 @@
 - audit: 7 clases, 0 pruebas.
 - foundation: 8 clases, 4 pruebas.
 - identity: 13 clases, 5 pruebas.
-- matches: 43 clases, 12 pruebas.
+- matches: 43 clases, 14 pruebas.
 - media: 5 clases, 1 pruebas.
 - organizations: 22 clases, 7 pruebas.
 - partners: 2 clases, 2 pruebas.
