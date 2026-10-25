@@ -4,11 +4,14 @@ import com.pulsopiura.platform.identity.application.CurrentUserService;
 import com.pulsopiura.platform.reservations.application.CreateReservationService;
 import com.pulsopiura.platform.reservations.application.ReservationConflictException;
 import com.pulsopiura.platform.reservations.application.ReservationQueryService;
+import com.pulsopiura.platform.reservations.application.ReservationTimelineService;
 import com.pulsopiura.platform.reservations.application.ReservationTransitionService;
 import com.pulsopiura.platform.reservations.application.ReservationView;
+import com.pulsopiura.platform.reservations.application.port.ReservationTimelineQuery;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,20 +21,29 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/reservations")
 public class ReservationController {
+    private final ReservationTimelineService timeline;
     private final CurrentUserService users;
     private final CreateReservationService reservations;
     private final ReservationQueryService queries;
     private final ReservationTransitionService transitions;
 
     public ReservationController(
+            ReservationTimelineService timeline,
             CurrentUserService users,
             CreateReservationService reservations,
             ReservationQueryService queries,
             ReservationTransitionService transitions) {
+        this.timeline = timeline;
         this.users = users;
         this.reservations = reservations;
         this.queries = queries;
         this.transitions = transitions;
+    }
+
+    @GetMapping("/{reservationId}/history")
+    List<ReservationTimelineQuery.Event> history(
+            @AuthenticationPrincipal Jwt jwt, @PathVariable UUID reservationId) {
+        return timeline.list(users.provision(jwt).id(), reservationId);
     }
 
     @GetMapping("/{reservationId}")

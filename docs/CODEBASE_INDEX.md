@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: c11bdb1101fa3f2f
-- Archivos indexados: 728
+- Huella del inventario: 58e7f927a0fb4b39
+- Archivos indexados: 739
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -86,7 +86,7 @@
 - navigation (3): AppNavigation.tsx, LocationProvider.tsx, LocationSelector.tsx
 - organizations (7): EnabledCourts.tsx, InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx, PlatformRequestsDashboard.tsx, PlatformUserDirectory.tsx, user-directory.ts
 - payments (3): ExternalPaymentPanel.module.css, ExternalPaymentPanel.tsx, proof-validation.ts
-- reservations (17): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, PlayerReservationOverview.module.css, PlayerReservationOverview.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationDrilldown.module.css, ReservationListCard.module.css, ReservationListCard.tsx, ReservationQrPass.tsx, types.ts, useReservationDashboard.ts, VenueOwnerReservationsDashboard.tsx
+- reservations (22): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, PlayerReservationOverview.module.css, PlayerReservationOverview.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationCourtPhoto.tsx, ReservationDetail.module.css, ReservationDetailParts.tsx, ReservationDrilldown.module.css, ReservationHistory.module.css, ReservationHistory.tsx, ReservationListCard.module.css, ReservationListCard.tsx, ReservationQrPass.tsx, types.ts, useReservationDashboard.ts, VenueOwnerReservationsDashboard.tsx
 - venues (9): AvailabilityAdmin.tsx, CourtPhotos.module.css, CourtPhotos.tsx, PublicVenueCatalog.tsx, VenueAdmin.tsx, VenueBookingCard.module.css, VenueBookingCard.tsx, VenueScheduleDialog.module.css, VenueScheduleDialog.tsx
 
 ### Compartido
@@ -108,9 +108,9 @@
 - media: 5 clases, 1 pruebas.
 - organizations: 22 clases, 7 pruebas.
 - partners: 2 clases, 2 pruebas.
-- payments: 24 clases, 9 pruebas.
+- payments: 24 clases, 10 pruebas.
 - profiles: 7 clases, 1 pruebas.
-- reservations: 46 clases, 13 pruebas.
+- reservations: 49 clases, 14 pruebas.
 - shared: 7 clases, 3 pruebas.
 - venues: 47 clases, 12 pruebas.
 
@@ -125,14 +125,14 @@
 - /api/v1/organizations/{organizationId} | backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationOperationsController.java | GET /overview; GET /staff; GET /schedule
 - /api/v1/platform/organizations | backend/src/main/java/com/pulsopiura/platform/organizations/api/PlatformOrganizationAdminController.java | GET; POST /{organizationId}/owners; DELETE /{organizationId}/owners/{userId}
 - sin prefijo | backend/src/main/java/com/pulsopiura/platform/partners/api/PartnerBusinessController.java | GET /api/v1/businesses; GET /api/v1/businesses/{businessId}/image; GET /api/v1/platform/businesses; GET /api/v1/platform/businesses/{businessId}/image; POST /api/v1/platform/businesses; PUT /api/v1/platform/businesses/{businessId}; PUT
-- /api/v1/external-payments | backend/src/main/java/com/pulsopiura/platform/payments/api/ExternalPaymentController.java | GET /capabilities; GET /destination; GET /preparation; POST /prepare; PUT /destination; GET; POST; POST /{proofId}/decision; GET
+- /api/v1/external-payments | backend/src/main/java/com/pulsopiura/platform/payments/api/ExternalPaymentController.java | GET /capabilities; GET /destination; GET /preparation; POST /prepare; PUT /destination; GET /history; GET; POST; POST /{proofId}/decision; GET
 - /api/v1/organizations/{organizationId}/external-payment-destination | backend/src/main/java/com/pulsopiura/platform/payments/api/OrganizationExternalPaymentController.java | GET; PUT
 - /api/v1/payment-orders | backend/src/main/java/com/pulsopiura/platform/payments/api/PaymentOrderController.java | GET /capabilities; GET; GET /{orderId}; POST; POST /{orderId}/simulate
 - /api/v1/spaces/{spaceId}/bookable-slots | backend/src/main/java/com/pulsopiura/platform/reservations/api/BookableAvailabilityController.java | GET
 - /api/v1/me/reservations | backend/src/main/java/com/pulsopiura/platform/reservations/api/MyReservationController.java | GET
 - /api/v1/organizations/{organizationId}/reservations | backend/src/main/java/com/pulsopiura/platform/reservations/api/OrganizationReservationController.java | POST /{reservationId}/cancel; GET /summary; GET
 - /api/v1 | backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationCheckInController.java | POST /reservations/{reservationId}/check-in-pass; POST /organizations/{organizationId}/reservations/check-in/preview; POST /organizations/{organizationId}/reservations/check-in
-- /api/v1/reservations | backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationController.java | GET /{reservationId}; POST /{reservationId}/confirm; POST /{reservationId}/cancel; POST
+- /api/v1/reservations | backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationController.java | GET /{reservationId}/history; GET /{reservationId}; POST /{reservationId}/confirm; POST /{reservationId}/cancel; POST
 - sin prefijo | backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationDashboardController.java | GET /api/v1/me/reservations/dashboard; GET /api/v1/organizations/{organizationId}/reservations/dashboard
 - /api/v1/organizations/{organizationId}/spaces/{spaceId} | backend/src/main/java/com/pulsopiura/platform/venues/api/AvailabilityController.java | POST /availability-rules; PUT /availability-rules/{ruleId}; GET /availability-rules; POST /availability-rules/{ruleId}/activate; DELETE /availability-rules/{ruleId}; POST /exceptions; GET /exceptions; DELETE /exceptions/{exceptionId}
 - /api/v1 | backend/src/main/java/com/pulsopiura/platform/venues/api/PublicVenueController.java | GET /venues/districts; GET /venues; GET /venues/{publicSlug}; GET /venues/{publicSlug}/spaces; GET /spaces/{spaceId}/availability

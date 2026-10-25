@@ -80,6 +80,14 @@ public class ExternalPaymentController {
                 request.plinEnabled());
     }
 
+    @GetMapping("/history")
+    public java.util.List<HistoryEvent> history(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam TargetType targetType,
+            @RequestParam UUID targetId) {
+        return payments.history(users.provision(jwt).id(), targetType, targetId);
+    }
+
     @GetMapping
     public List<ProofView> list(
             @AuthenticationPrincipal Jwt jwt,

@@ -9,6 +9,20 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class ExternalPaymentStore {
+    public List<HistoryEvent> history(TargetType type, UUID target) {
+        return jdbc.query(
+                "select id,proof_id,action,note,occurred_at from app.external_payment_events where target_type=? and target_id=? and proof_id is not null order by occurred_at desc,id desc",
+                (row, index) ->
+                        new HistoryEvent(
+                                row.getObject("id", UUID.class),
+                                row.getObject("proof_id", UUID.class),
+                                row.getString("action"),
+                                row.getString("note"),
+                                row.getTimestamp("occurred_at").toInstant()),
+                type.name(),
+                target);
+    }
+
     private final JdbcTemplate jdbc;
 
     public List<Proof> retentionCandidates(int days) {

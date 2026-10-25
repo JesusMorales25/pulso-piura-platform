@@ -1,0 +1,165 @@
+.court {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(0, 196, 213, 0.045), transparent);
+}
+.photo {
+  position: relative;
+  display: block;
+  width: 90px;
+  min-height: 130px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--navy);
+}
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.courtInfo {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.title h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 5px 8px;
+  font-size: 0.72rem;
+  color: var(--cyan);
+}
+.status[data-confirmed="true"] {
+  color: #00dcb5;
+  background: rgba(0, 220, 181, 0.08);
+  border-color: rgba(0, 220, 181, 0.3);
+}
+.status svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+.courtInfo p {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.courtInfo p svg {
+  flex-shrink: 0;
+  width: 19px;
+  height: 19px;
+}
+.section {
+  border-top: 1px solid var(--line);
+  margin-top: 8px;
+  padding-top: 20px;
+}
+.section h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+.section h4 svg {
+  color: var(--muted);
+  width: 23px;
+  height: 23px;
+}
+.customer {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+}
+.customer dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.amounts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+.amounts > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(0, 196, 213, 0.025);
+  min-width: 0;
+}
+.amounts > div:last-child {
+  grid-column: 1/-1;
+}
+.amounts > div > svg {
+  flex-shrink: 0;
+  width: 35px;
+  height: 40px;
+  padding: 6px;
+  color: var(--cyan);
+  border-radius: 12px;
+  background: rgba(0, 196, 213, 0.08);
+}
+.amounts dt {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.amounts dd {
+  margin: 8px 0 0;
+  font-weight: 800;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 400px) {
+  .court {
+    grid-template-columns: 65px minmax(0, 1fr);
+    padding: 12px;
+    gap: 12px;
+  }
+  .photo {
+    width: 65px;
+  }
+  .courtInfo p {
+    font-size: 0.76rem;
+    gap: 6px;
+  }
+  .amounts > div {
+    padding: 10px;
+    gap: 7px;
+  }
+  .amounts > div > svg {
+    width: 26px;
+    height: 32px;
+    padding: 4px;
+  }
+  .amounts dd {
+    font-size: 0.9rem;
+  }
+}

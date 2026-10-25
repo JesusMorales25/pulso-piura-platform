@@ -1,6 +1,10 @@
 "use client";
 import Link from "next/link";
 import {
+  ReservationDetailHeading,
+  ReservationAmounts,
+} from "./ReservationDetailParts";
+import {
   ExternalPaymentPanel,
   useExternalPayments,
 } from "@/features/payments/ExternalPaymentPanel";
@@ -11,8 +15,8 @@ import type { Reservation } from "./types";
 import {
   canPlayerCancel,
   money,
-  reservationDate,
   reservationStatus,
+  reservationDate,
   reservationTime,
 } from "./presentation";
 import { ReservationQrPass } from "./ReservationQrPass";
@@ -259,52 +263,20 @@ export function ReservationCheckout({
           </span>
         )}
       </div>
-      <dl className="reservationSummary">
-        <div>
-          <dt>Complejo</dt>
-          <dd>{venueName}</dd>
-        </div>
-        <div>
-          <dt>Cancha</dt>
-          <dd>{spaceName}</dd>
-        </div>
-        <div>
-          <dt>Fecha</dt>
-          <dd>{reservationDate(reservation.startsAt)}</dd>
-        </div>
-        <div>
-          <dt>Horario</dt>
-          <dd>
-            {reservationTime(reservation.startsAt)} –{" "}
-            {reservationTime(reservation.endsAt)}
-          </dd>
-        </div>
-        <div>
-          <dt>Total</dt>
-          <dd>{money(reservation.totalMinor)}</dd>
-        </div>
-        <div>
-          <dt>Pagos registrados</dt>
-          <dd>{money(paid)}</dd>
-        </div>
-        <div>
-          <dt>
-            {reservation.status === "CANCELLED"
-              ? "Importe retenido, sin devolución"
-              : "Saldo pendiente"}
-          </dt>
-          <dd>
-            {money(
-              reservation.status === "CANCELLED"
-                ? paid
-                : Math.max(0, reservation.totalMinor - paid),
-            )}
-          </dd>
-        </div>
-      </dl>
+      <ReservationDetailHeading
+        reservation={reservation}
+        venueName={venueName}
+        spaceName={spaceName}
+      />
+      {(!externalPayments || !paymentActive) && (
+        <ReservationAmounts reservation={reservation} paid={paid} />
+      )}
       {externalPayments && paymentActive && (
         <ExternalPaymentPanel
           accessToken={accessToken}
+          reservationAmounts={
+            <ReservationAmounts reservation={reservation} paid={paid} />
+          }
           targetType="RESERVATION"
           targetId={reservation.id}
           allowUpload={(temporary && !expired) || balancePayment}

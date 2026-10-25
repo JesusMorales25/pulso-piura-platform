@@ -308,6 +308,17 @@ public class ExternalPaymentService {
     }
 
     @Transactional
+    public List<HistoryEvent> history(UUID actor, TargetType type, UUID id) {
+        var visible =
+                list(actor, type, id).stream()
+                        .map(ProofView::id)
+                        .collect(java.util.stream.Collectors.toSet());
+        return store.history(type, id).stream()
+                .filter(event -> visible.contains(event.proofId()))
+                .toList();
+    }
+
+    @Transactional
     public List<ProofView> list(UUID actor, TargetType type, UUID id) {
         var proofs = store.list(type, id);
         var own = proofs.stream().filter(p -> p.payerUserId().equals(actor)).findFirst();

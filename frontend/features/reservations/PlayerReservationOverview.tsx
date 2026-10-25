@@ -121,7 +121,7 @@ export function PlayerReservationOverview({
         open={dashboard.filter !== null}
         title={
           selected
-            ? "Tu reserva"
+            ? "Detalle de reserva"
             : reservationFilterLabels[dashboard.filter ?? "ALL"]
         }
         onClose={() => dashboard.select(null)}

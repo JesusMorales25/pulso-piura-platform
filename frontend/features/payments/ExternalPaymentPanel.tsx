@@ -1,11 +1,19 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { ApiError, apiRequest } from "@/lib/api";
 import styles from "./ExternalPaymentPanel.module.css";
 import Image from "next/image";
 import Link from "next/link";
+import { ReservationHistory } from "@/features/reservations/ReservationHistory";
+import {
+  CheckCircle,
+  ClockCounterClockwise,
+  FileText,
+  ArrowSquareOut,
+  CreditCard,
+} from "@phosphor-icons/react";
 import { FormSheet } from "@/components/forms/FormSheet";
 import { proofImageError, paymentPreparationActive } from "./proof-validation";
 
@@ -98,6 +106,7 @@ function ExternalPaymentPanelInner({
   organizationSettings = false,
   plans = [{ plan: "FULL", label: "Pago completo" }],
   onChange,
+  reservationAmounts,
 }: {
   accessToken: string;
   targetType: "MATCH" | "RESERVATION";
@@ -107,6 +116,7 @@ function ExternalPaymentPanelInner({
   organizationSettings?: boolean;
   plans?: { plan: "FULL" | "DEPOSIT" | "BALANCE"; label: string }[];
   onChange?: () => void;
+  reservationAmounts?: ReactNode;
 }) {
   const enabled = useExternalPayments();
   const [destination, setDestination] = useState<Destination | null>(null);
@@ -121,6 +131,7 @@ function ExternalPaymentPanelInner({
   const [destinationSaved, setDestinationSaved] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [prepared, setPrepared] = useState<PreparedPayment | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const preparationKey = useRef(crypto.randomUUID());
@@ -135,6 +146,17 @@ function ExternalPaymentPanelInner({
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
+  const viewProof = (proof: ExternalProof) =>
+    void mutate(async () => {
+      const blob = await apiRequest<Blob>(
+        `/external-payments/${proof.id}/image`,
+        accessToken,
+        { cache: "no-store", redirect: "error" },
+      );
+      if (blob.type !== "image/png")
+        throw new Error("El comprobante no tiene un formato válido.");
+      setImage(URL.createObjectURL(blob));
+    });
   const query = `targetType=${targetType}&targetId=${encodeURIComponent(targetId)}`;
   const destinationPath = organizationSettings
     ? `/organizations/${encodeURIComponent(targetId)}/external-payment-destination`
@@ -321,7 +343,10 @@ function ExternalPaymentPanelInner({
       setPrepared(null);
     });
   }
-  if (!enabled) return null;
+  if (!enabled) return reservationAmounts ?? null;
+  const latestProof = [...proofs].sort(
+    (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
+  )[0];
   const pending = proofs.some(
     (proof) =>
       (proof.ownPayment ?? !proof.canReview) &&
@@ -500,21 +525,24 @@ function ExternalPaymentPanelInner({
   );
   return (
     <section
-      className={`${styles.panel} ${organizationSettings ? styles.accountPanel : ""} card`}
+      className={`${styles.panel} ${organizationSettings ? styles.accountPanel : targetType === "RESERVATION" ? styles.reservationPanel : ""} card`}
       aria-label={
         reviewer ? "Revisión de pagos externos" : "Pago por Yape o Plin"
       }
     >
       <h3>
+        {!organizationSettings && targetType === "RESERVATION" && (
+          <CreditCard aria-hidden="true" size={22} />
+        )}
         {organizationSettings
           ? "Cuenta receptora del complejo"
           : reviewer
             ? matchPayment
               ? "Cobros del partido"
-              : "Pagos por validar"
+              : "Verificación de pago"
             : allowUpload
               ? "Paga con Yape o Plin"
-              : "Historial de pago"}
+              : "Verificación de pago"}
       </h3>
       {!organizationSettings && (
         <p>
@@ -551,22 +579,24 @@ function ExternalPaymentPanelInner({
           {error}
         </p>
       )}
-      {!organizationSettings && proofs.length > 0 && (
-        <dl className="reservationSummary">
-          <div>
-            <dt>
-              {matchPayment
-                ? "Confirmado por el organizador"
-                : "Confirmado por el receptor"}
-            </dt>
-            <dd>{externalTotal("CONFIRMED")}</dd>
-          </div>
-          <div>
-            <dt>En revisión</dt>
-            <dd>{externalTotal("PENDING_REVIEW")}</dd>
-          </div>
-        </dl>
-      )}
+      {!organizationSettings &&
+        targetType !== "RESERVATION" &&
+        proofs.length > 0 && (
+          <dl className="reservationSummary">
+            <div>
+              <dt>
+                {matchPayment
+                  ? "Confirmado por el organizador"
+                  : "Confirmado por el receptor"}
+              </dt>
+              <dd>{externalTotal("CONFIRMED")}</dd>
+            </div>
+            <div>
+              <dt>En revisión</dt>
+              <dd>{externalTotal("PENDING_REVIEW")}</dd>
+            </div>
+          </dl>
+        )}
       {canEditDestination && destination && (
         <>
           {matchPayment && (
@@ -728,26 +758,102 @@ function ExternalPaymentPanelInner({
       ) : (
         paymentControls
       )}
-      <div aria-live="polite">
+      {!organizationSettings && targetType === "RESERVATION" && (
+        <>
+          <button
+            type="button"
+            className={styles.historyButton}
+            aria-label="Historial de estados"
+            data-status={latestProof?.status}
+            onClick={() => setHistoryOpen(true)}
+          >
+            {latestProof?.status === "CONFIRMED" ? (
+              <CheckCircle weight="fill" aria-hidden="true" />
+            ) : (
+              <ClockCounterClockwise aria-hidden="true" />
+            )}
+            <span className={styles.historyText}>
+              {latestProof
+                ? labels[latestProof.status]
+                : "Historial de estados"}
+              {latestProof && (
+                <small>
+                  {new Intl.NumberFormat("es-PE", {
+                    style: "currency",
+                    currency: latestProof.currency,
+                  }).format(latestProof.amountMinor / 100)}{" "}
+                  · {latestProof.method}
+                </small>
+              )}
+            </span>
+            <span aria-hidden="true">›</span>
+          </button>
+          <ReservationHistory
+            open={historyOpen}
+            onClose={() => setHistoryOpen(false)}
+            reservationId={targetId}
+            accessToken={accessToken}
+            proofs={proofs}
+            onViewProof={viewProof}
+            busy={busy}
+          />
+        </>
+      )}
+      {reservationAmounts}
+      {targetType === "RESERVATION" && proofs.length > 0 && (
+        <h3>
+          <FileText aria-hidden="true" size={22} />
+          Comprobante
+        </h3>
+      )}
+      <div
+        aria-live="polite"
+        className={targetType === "RESERVATION" ? styles.proofList : undefined}
+      >
         {proofs.map((proof) => (
           <article key={proof.id} className="externalProof">
-            <h4>{labels[proof.status]}</h4>
-            <p>
-              {proof.payerName} ·{" "}
-              {new Intl.NumberFormat("es-PE", {
-                style: "currency",
-                currency: proof.currency,
-              }).format(proof.amountMinor / 100)}{" "}
-              · {proof.method}
-            </p>
-            <p>
-              Enviado:{" "}
-              {new Date(proof.createdAt).toLocaleString("es-PE", {
-                timeZone: "America/Lima",
-              })}
-            </p>
+            <h4 data-status={proof.status}>
+              {proof.status === "CONFIRMED" && (
+                <CheckCircle weight="fill" aria-hidden="true" />
+              )}
+              {labels[proof.status]}
+            </h4>
+            <dl className={styles.proofDetails}>
+              <dt>Importe</dt>
+              <dd>
+                {new Intl.NumberFormat("es-PE", {
+                  style: "currency",
+                  currency: proof.currency,
+                }).format(proof.amountMinor / 100)}{" "}
+                · {proof.method}
+              </dd>
+              <dt>Cliente</dt>
+              <dd>{proof.payerName}</dd>
+              <dt>Enviado</dt>
+              <dd>
+                {new Date(proof.createdAt).toLocaleString("es-PE", {
+                  timeZone: "America/Lima",
+                })}
+              </dd>
+              <dt>Receptor</dt>
+              <dd>
+                {proof.holderName} · {proof.phone}
+              </dd>
+              {proof.reference && (
+                <>
+                  <dt>Operación</dt>
+                  <dd>{proof.reference}</dd>
+                </>
+              )}
+              {proof.reviewNote && (
+                <>
+                  <dt>Motivo</dt>
+                  <dd>{proof.reviewNote}</dd>
+                </>
+              )}
+            </dl>
             {proof.status === "PENDING_REVIEW" && (
-              <p>
+              <p className={styles.help}>
                 Revisión hasta{" "}
                 {new Date(proof.reviewExpiresAt).toLocaleString("es-PE", {
                   timeZone: "America/Lima",
@@ -755,11 +861,6 @@ function ExternalPaymentPanelInner({
                 . Si vence el horario retenido, el pago requiere resolución.
               </p>
             )}
-            {proof.reference && <p>Operación: {proof.reference}</p>}
-            <p>
-              Receptor informado: {proof.holderName} · {proof.phone}
-            </p>
-            {proof.reviewNote && <p>Motivo: {proof.reviewNote}</p>}
             {!proof.hasImage && (
               <p className="muted">
                 La captura ya no está disponible por la política de
@@ -771,22 +872,11 @@ function ExternalPaymentPanelInner({
                 className="secondary"
                 disabled={busy}
                 type="button"
-                onClick={() =>
-                  void mutate(async () => {
-                    const blob = await apiRequest<Blob>(
-                      `/external-payments/${proof.id}/image`,
-                      accessToken,
-                      { cache: "no-store", redirect: "error" },
-                    );
-                    if (blob.type !== "image/png")
-                      throw new Error(
-                        "El comprobante no tiene un formato válido.",
-                      );
-                    setImage(URL.createObjectURL(blob));
-                  })
-                }
+                onClick={() => viewProof(proof)}
               >
+                <FileText aria-hidden="true" />
                 Ver comprobante
+                <ArrowSquareOut aria-hidden="true" />
               </button>
             )}
             {proof.canReview &&

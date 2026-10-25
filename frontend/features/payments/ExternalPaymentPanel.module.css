@@ -154,3 +154,138 @@
   color: var(--text, #fff);
   font-variant-numeric: tabular-nums;
 }
+.panel > h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.panel > h3 svg {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.historyButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--cyan);
+  border-radius: 12px;
+  color: var(--cyan);
+  background: rgba(0, 196, 213, 0.04);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.historyButton span {
+  margin-left: auto;
+}
+.historyButton svg {
+  width: 22px;
+  height: 22px;
+}
+.historyButton:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+.proofList {
+  display: grid;
+  gap: 14px;
+}
+.proofList article {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: grid;
+  gap: 14px;
+  background: rgba(0, 196, 213, 0.025);
+}
+.proofList h4 {
+  margin: 0;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  line-height: 1.5;
+  font-size: 1rem;
+}
+.proofList h4[data-status="CONFIRMED"] {
+  color: #00dcb5;
+}
+.proofList h4[data-status="CORRECTION_REQUIRED"] {
+  color: #f8c437;
+}
+.proofList h4 svg {
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+}
+.proofDetails {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 10px 12px;
+  margin: 0;
+  font-size: 0.83rem;
+  line-height: 1.6;
+}
+.proofDetails dt {
+  color: var(--muted);
+}
+.proofDetails dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.proofList article > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-color: var(--cyan);
+  color: var(--text);
+  background: rgba(0, 196, 213, 0.04);
+  min-height: 48px;
+}
+.proofList article > button svg {
+  color: var(--cyan);
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+}
+@media (max-width: 360px) {
+  .proofDetails {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .proofDetails dd + dt {
+    margin-top: 6px;
+  }
+  .proofList article {
+    padding: 12px;
+  }
+}
+.panel.reservationPanel {
+  padding: 20px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.historyButton .historyText {
+  display: grid;
+  gap: 6px;
+  margin-left: 0;
+  text-align: left;
+}
+.historyText small {
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.historyButton[data-status="CONFIRMED"] {
+  color: #00dcb5;
+  border-color: rgba(0, 220, 181, 0.35);
+  background: rgba(0, 220, 181, 0.045);
+}

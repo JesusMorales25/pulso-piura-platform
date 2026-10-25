@@ -1,4 +1,9 @@
 "use client";
+import {
+  ReservationDetailHeading,
+  ReservationCustomer,
+  ReservationAmounts,
+} from "./ReservationDetailParts";
 import { useState } from "react";
 import { apiRequest } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -307,41 +312,15 @@ function Dashboard({
                 >
                   ← Volver a la lista
                 </button>
-                <header>
-                  <h3>{selected.spaceName}</h3>
-                  <span className="pill">
-                    {reservationStatus[selected.status]}
-                  </span>
-                </header>
-                <p>{selected.venueName}</p>
-                <p>
-                  {reservationDate(selected.startsAt)} ·{" "}
-                  {reservationTime(selected.startsAt)} –{" "}
-                  {reservationTime(selected.endsAt)}
-                </p>
-                <p>Cliente: {selected.customerEmail ?? "Cliente registrado"}</p>
-                <dl className="reservationSummary">
-                  <div>
-                    <dt>Total</dt>
-                    <dd>{money(selected.totalMinor)}</dd>
-                  </div>
-                  <div>
-                    <dt>Pagos registrados</dt>
-                    <dd>{money(selected.paidMinor)}</dd>
-                  </div>
-                  <div>
-                    <dt>Saldo pendiente</dt>
-                    <dd>
-                      {money(
-                        Math.max(0, selected.totalMinor - selected.paidMinor),
-                      )}
-                    </dd>
-                  </div>
-                </dl>
+                <ReservationDetailHeading reservation={selected} />
+                <ReservationCustomer email={selected.customerEmail} />
                 <ExternalPaymentPanel
                   accessToken={accessToken}
                   targetType="RESERVATION"
                   targetId={selected.id}
+                  reservationAmounts={
+                    <ReservationAmounts reservation={selected} />
+                  }
                   reviewer
                   allowUpload={false}
                   onChange={() => void refreshSelected()}

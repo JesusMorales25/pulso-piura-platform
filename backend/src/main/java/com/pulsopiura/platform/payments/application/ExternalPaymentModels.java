@@ -6,6 +6,9 @@ import java.util.UUID;
 public final class ExternalPaymentModels {
     private ExternalPaymentModels() {}
 
+    public record HistoryEvent(
+            UUID id, UUID proofId, String action, String note, Instant occurredAt) {}
+
     public enum TargetType {
         MATCH,
         RESERVATION

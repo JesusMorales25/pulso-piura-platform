@@ -133,7 +133,7 @@ function FocusedReservation({
       </div>
       <FormSheet
         open={detailOpen}
-        title="Tu reserva"
+        title="Detalle de reserva"
         onClose={() => setDetailOpen(false)}
       >
         <ReservationItem

@@ -111,3 +111,7 @@ Banner de cancha con título bicolor, tres accesos informativos y tarjetas fotog
 ## Lista de reservas del jugador
 
 El popup de categorías utiliza tarjetas con portada real de la cancha cuando está disponible, nombre, sede, fecha y horario en filas con iconos. La referencia deportiva de respaldo es decorativa. El estado y Ver reserva comparten una franja de acción; cada tarjeta es un único botón accesible. Se conserva filtro, paginación del servidor y lista/detalle adaptativo, con controles legibles desde 320 px.
+
+## Detalle e historial de reservas
+
+Ficha de cancha fotográfica con estado y filas de sede, fecha y horario. Secciones de cliente (solo donde la API lo expone), verificación, montos y comprobantes, manteniendo las acciones autorizadas. El acceso de verificación abre Historial de estados en FormSheet: línea de tiempo con fechas Lima, estados reales, motivo y comprobante privado disponible. El backend autoriza lectura de reserva antes del historial y limita eventos de pago a comprobantes visibles para el actor. Sin botones ficticios para modificar reservas ni cambios de reglas financieras.

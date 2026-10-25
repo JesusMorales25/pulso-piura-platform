@@ -61,3 +61,7 @@ mvn -f backend/pom.xml '-DrunDatabaseTests=true' '-Dtest=ReservationPaymentConcu
 La suite prueba conflictos superpuestos, franjas adyacentes, doble confirmación simultánea, pago contra cancelación del dueño y vencimiento seguido de reasignación. Crea reservas de prueba con UUID nuevos y elimina solo esos registros al terminar. No ejecutar contra producción. Sin RUN_DATABASE_TESTS=true estas cinco pruebas quedan omitidas de forma explícita.
 
 Limitación de validación de esta sesión: el frontend compila y las pruebas unitarias pasan; la ejecución contra PostgreSQL quedó bloqueada por conexión rechazada en 127.0.0.1:5433 y acceso denegado a docker.exe. No se considera validada aún la ejecución end-to-end ni la migración V20 sobre el entorno local.
+
+## Historial de estados de reserva
+
+`GET /api/v1/reservations/{id}/history` devuelve transiciones persistidas (id, estado anterior/nuevo y fecha UTC), después de aplicar el mismo control de lectura que el detalle de reserva. `GET /api/v1/external-payments/history?targetType=RESERVATION&targetId={id}` devuelve eventos auditados con comprobante, acción, motivo y fecha; filtra por los comprobantes que el actor puede consultar. No expone eventos de configuración de cuenta ni de otros pagadores. Las capturas continúan por el endpoint privado autorizado, sin enlaces permanentes. La UI ordena ambos historiales por fecha descendente y conserva estados de carga, vacío, error y reintento. No cambia estados ni permite editar las transiciones.

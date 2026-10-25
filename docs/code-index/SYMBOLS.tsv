@@ -150,6 +150,7 @@ java	payments	record	Request	backend/src/main/java/com/pulsopiura/platform/payme
 java	payments	class	PaymentOrderController	backend/src/main/java/com/pulsopiura/platform/payments/api/PaymentOrderController.java
 java	payments	record	CreatePaymentRequest	backend/src/main/java/com/pulsopiura/platform/payments/api/PaymentOrderController.java
 java	payments	class	ExternalPaymentModels	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
+java	payments	record	HistoryEvent	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
 java	payments	enum	TargetType	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
 java	payments	enum	Decision	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
 java	payments	record	Preparation	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
@@ -213,6 +214,8 @@ java	reservations	interface	ReservationHistoryStore	backend/src/main/java/com/pu
 java	reservations	interface	ReservationPaymentQuery	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationPaymentQuery.java
 java	reservations	interface	ReservationStore	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationStore.java
 java	reservations	record	OrganizationReservationRow	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationStore.java
+java	reservations	interface	ReservationTimelineQuery	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationTimelineQuery.java
+java	reservations	record	Event	backend/src/main/java/com/pulsopiura/platform/reservations/application/port/ReservationTimelineQuery.java
 java	reservations	class	ReservationAccess	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationAccess.java
 java	reservations	class	ReservationCheckInService	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationCheckInService.java
 java	reservations	record	CheckInPass	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationCheckInService.java
@@ -229,6 +232,7 @@ java	reservations	record	OrganizationReservationPage	backend/src/main/java/com/p
 java	reservations	record	OrganizationReservationView	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationQueryService.java
 java	reservations	class	ReservationRateLimitException	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationRateLimitException.java
 java	reservations	class	ReservationRequestFingerprint	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationRequestFingerprint.java
+java	reservations	class	ReservationTimelineService	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationTimelineService.java
 java	reservations	class	ReservationTransitionService	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationTransitionService.java
 java	reservations	record	ReservationView	backend/src/main/java/com/pulsopiura/platform/reservations/application/ReservationView.java
 java	reservations	class	Reservation	backend/src/main/java/com/pulsopiura/platform/reservations/domain/Reservation.java
@@ -244,6 +248,7 @@ java	reservations	class	JdbcReservationCheckInDetailsQuery	backend/src/main/java
 java	reservations	class	JdbcReservationCheckInPassStore	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationCheckInPassStore.java
 java	reservations	class	JdbcReservationDashboardQuery	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationDashboardQuery.java
 java	reservations	class	JdbcReservationDetailsQuery	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationDetailsQuery.java
+java	reservations	class	JdbcReservationTimelineQuery	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationTimelineQuery.java
 java	reservations	class	JpaReservationHistoryStore	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JpaReservationHistoryStore.java
 java	reservations	class	JpaReservationStore	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JpaReservationStore.java
 java	reservations	class	ReservationJpaEntity	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/ReservationJpaEntity.java
@@ -361,6 +366,7 @@ java	partners	class	PartnerBusinessControllerAuthorizationTest	backend/src/test/
 java	partners	class	PartnerBusinessServiceTest	backend/src/test/java/com/pulsopiura/platform/partners/application/PartnerBusinessServiceTest.java
 java	payments	class	ExternalPaymentPrivacyAdviceTest	backend/src/test/java/com/pulsopiura/platform/payments/api/ExternalPaymentPrivacyAdviceTest.java
 java	payments	class	ExternalPaymentDatabaseTest	backend/src/test/java/com/pulsopiura/platform/payments/application/ExternalPaymentDatabaseTest.java
+java	payments	class	ExternalPaymentHistoryTest	backend/src/test/java/com/pulsopiura/platform/payments/application/ExternalPaymentHistoryTest.java
 java	payments	class	ExternalPaymentServiceTest	backend/src/test/java/com/pulsopiura/platform/payments/application/ExternalPaymentServiceTest.java
 java	payments	class	ExternalPaymentTargetsTest	backend/src/test/java/com/pulsopiura/platform/payments/application/ExternalPaymentTargetsTest.java
 java	payments	class	PaymentOrderServiceTest	backend/src/test/java/com/pulsopiura/platform/payments/application/PaymentOrderServiceTest.java
@@ -379,6 +385,7 @@ java	reservations	class	ReservationCheckInServiceTest	backend/src/test/java/com/
 java	reservations	class	ReservationCreationTransactionTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationCreationTransactionTest.java
 java	reservations	class	ReservationDashboardServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationDashboardServiceTest.java
 java	reservations	class	ReservationPaymentConcurrencyTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationPaymentConcurrencyTest.java
+java	reservations	class	ReservationTimelineServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationTimelineServiceTest.java
 java	reservations	class	ReservationTransitionServiceTest	backend/src/test/java/com/pulsopiura/platform/reservations/application/ReservationTransitionServiceTest.java
 java	reservations	class	ReservationTest	backend/src/test/java/com/pulsopiura/platform/reservations/domain/ReservationTest.java
 java	reservations	class	JdbcReservationCheckInPassStoreTest	backend/src/test/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationCheckInPassStoreTest.java
@@ -525,6 +532,11 @@ typescript	reservations	const	canPlayerCancel	frontend/features/reservations/pre
 typescript	reservations	const	reservationCount	frontend/features/reservations/presentation.ts
 typescript	reservations	function	ReservationCheckInScanner	frontend/features/reservations/ReservationCheckInScanner.tsx
 typescript	reservations	function	ReservationCheckout	frontend/features/reservations/ReservationCheckout.tsx
+typescript	reservations	function	ReservationCourtPhoto	frontend/features/reservations/ReservationCourtPhoto.tsx
+typescript	reservations	function	ReservationDetailHeading	frontend/features/reservations/ReservationDetailParts.tsx
+typescript	reservations	function	ReservationCustomer	frontend/features/reservations/ReservationDetailParts.tsx
+typescript	reservations	function	ReservationAmounts	frontend/features/reservations/ReservationDetailParts.tsx
+typescript	reservations	function	ReservationHistory	frontend/features/reservations/ReservationHistory.tsx
 typescript	reservations	function	ReservationListCard	frontend/features/reservations/ReservationListCard.tsx
 typescript	reservations	function	ReservationQrPass	frontend/features/reservations/ReservationQrPass.tsx
 typescript	reservations	type	Reservation	frontend/features/reservations/types.ts
