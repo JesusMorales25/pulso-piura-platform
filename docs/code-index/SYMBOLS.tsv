@@ -565,6 +565,8 @@ typescript	lib	function	whatsappUrl	frontend/lib/public-links.ts
 typescript	lib	function	googleMapsUrl	frontend/lib/public-links.ts
 typescript	lib	function	trustedGoogleMapsUrl	frontend/lib/public-links.ts
 typescript	lib	function	createQrMatrix	frontend/lib/qr-code.ts
+typescript	lib	type	SummaryValue	frontend/lib/summary-visibility.ts
+typescript	lib	function	hasSummaryValue	frontend/lib/summary-visibility.ts
 typescript	lib	function	reconcileSelectedSlots	frontend/lib/venue-availability.ts
 typescript	lib	function	addressWithGps	frontend/lib/venue-contact.ts
 typescript	lib	function	peruPhoneDigits	frontend/lib/venue-contact.ts

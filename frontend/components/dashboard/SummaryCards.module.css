@@ -193,3 +193,7 @@
 .player .card:has(.description) .action {
   grid-row: 4;
 }
+
+.grid:has(> .card:only-child) {
+  grid-template-columns: minmax(0, 1fr);
+}

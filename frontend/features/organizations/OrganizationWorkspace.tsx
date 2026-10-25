@@ -283,6 +283,12 @@ export function OrganizationWorkspace() {
                 {
                   id: "revenue",
                   label: "Recaudación estimada hoy",
+                  numericValue: overviewComplete
+                    ? summaries.reduce(
+                        (sum, item) => sum + item.expectedMinor,
+                        0,
+                      )
+                    : undefined,
                   value: overviewComplete
                     ? new Intl.NumberFormat("es-PE", {
                         style: "currency",
@@ -318,10 +324,13 @@ export function OrganizationWorkspace() {
               </button>
             </div>
           )}
-          <p className="muted">
-            Estimación basada en las reservas confirmadas de hoy; no equivale a
-            dinero cobrado.
-          </p>
+          {(!overviewComplete ||
+            summaries.some((item) => item.expectedMinor !== 0)) && (
+            <p className="muted">
+              Estimación basada en las reservas confirmadas de hoy; no equivale
+              a dinero cobrado.
+            </p>
+          )}
 
           <FormSheet
             variant="workspace"

@@ -170,6 +170,9 @@ async function main() {
       await expect(detail).not.toBeVisible();
       await expect(
         page.getByRole("button", { name: /^Confirmados/ }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole("tab", { name: "Mis inscripciones", exact: true }),
       ).toBeFocused();
       assert.equal(
         await page.evaluate(

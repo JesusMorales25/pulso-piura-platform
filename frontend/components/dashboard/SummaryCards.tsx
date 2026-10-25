@@ -1,5 +1,6 @@
 "use client";
 import type { ReactNode } from "react";
+import { hasSummaryValue } from "@/lib/summary-visibility";
 import { CaretRight } from "@phosphor-icons/react";
 import styles from "./SummaryCards.module.css";
 
@@ -7,6 +8,7 @@ export type SummaryCard = {
   id: string;
   label: string;
   value: string | number;
+  numericValue?: number;
   description?: string;
   icon?: ReactNode;
   tone?: "primary" | "confirmed" | "muted";
@@ -23,12 +25,14 @@ export function SummaryCards({
   selectedId?: string | null;
   onSelect: (id: string) => void;
 }) {
+  const visibleItems = items.filter(hasSummaryValue);
+  if (visibleItems.length === 0) return null;
   return (
     <div
       className={`${styles.grid} ${variant === "player" ? styles.player : ""}`}
       aria-label="Resumen por categoría"
     >
-      {items.map((item) => (
+      {visibleItems.map((item) => (
         <button
           type="button"
           key={item.id}

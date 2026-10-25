@@ -20,6 +20,7 @@ import {
   WhatsappLogo,
 } from "@phosphor-icons/react";
 import { FormSheet } from "@/components/forms/FormSheet";
+import { hasSummaryValue } from "@/lib/summary-visibility";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import styles from "./MatchOrganizerDashboard.module.css";
 import {
@@ -240,6 +241,39 @@ export function MatchOrganizerDashboard({
       statuses: ["PAID", "PAID_DIRECT"],
     },
     { id: "debt", label: "Deuda pendiente", statuses: ["PENDING", "UNPAID"] },
+  ];
+  const paymentSummaryCards = [
+    ...(externalPayments
+      ? [
+          {
+            id: "review",
+            label: "Por confirmar pago",
+            value: proofError
+              ? "No disponible"
+              : proofs === null
+                ? "Cargando…"
+                : Object.values(proofs).reduce(
+                    (count, items) =>
+                      count + organizerPendingProofs(items).length,
+                    0,
+                  ),
+            description: "Comprobantes pendientes de revisión",
+          },
+        ]
+      : []),
+    ...paymentCategories.map(({ id, label, statuses }) => ({
+      id,
+      label,
+      value: Object.values(people).reduce(
+        (count, roster) =>
+          count + organizerPaymentParticipants(roster, statuses).length,
+        0,
+      ),
+      description:
+        id === "debt"
+          ? `${formatAmount(pendingMinor)} por cobrar · cupos confirmados`
+          : `${formatAmount(collectedMinor)} recaudados · incluye pagos directos`,
+    })),
   ];
   const paymentFilter = paymentCategories.find((item) => item.id === category);
   function filteredRoster(matchId: string) {
@@ -591,62 +625,33 @@ export function MatchOrganizerDashboard({
         <p className="notice">Preparando tu panel…</p>
       ) : (
         <>
-          <section aria-label="Resumen de partidos">
-            <h3>Tus partidos</h3>
-            <SummaryCards
-              items={matchCategories.map(
-                ({ id, label, description, test }) => ({
-                  id,
-                  label,
-                  description,
-                  value: matches.filter(test).length,
-                }),
-              )}
-              selectedId={category}
-              onSelect={selectCategory}
-            />
-          </section>
-          <section aria-label="Resumen de pagos">
-            <h3>Pagos y comprobantes</h3>
-            <SummaryCards
-              items={[
-                ...(externalPayments
-                  ? [
-                      {
-                        id: "review",
-                        label: "Por confirmar pago",
-                        value: proofError
-                          ? "No disponible"
-                          : proofs === null
-                            ? "Cargando…"
-                            : Object.values(proofs).reduce(
-                                (count, items) =>
-                                  count + organizerPendingProofs(items).length,
-                                0,
-                              ),
-                        description: "Comprobantes pendientes de revisión",
-                      },
-                    ]
-                  : []),
-                ...paymentCategories.map(({ id, label, statuses }) => ({
-                  id,
-                  label,
-                  value: Object.values(people).reduce(
-                    (count, roster) =>
-                      count +
-                      organizerPaymentParticipants(roster, statuses).length,
-                    0,
-                  ),
-                  description:
-                    id === "debt"
-                      ? `${formatAmount(pendingMinor)} por cobrar · cupos confirmados`
-                      : `${formatAmount(collectedMinor)} recaudados · incluye pagos directos`,
-                })),
-              ]}
-              selectedId={category}
-              onSelect={selectCategory}
-            />
-          </section>
+          {matches.length > 0 && (
+            <section aria-label="Resumen de partidos">
+              <h3>Tus partidos</h3>
+              <SummaryCards
+                items={matchCategories.map(
+                  ({ id, label, description, test }) => ({
+                    id,
+                    label,
+                    description,
+                    value: matches.filter(test).length,
+                  }),
+                )}
+                selectedId={category}
+                onSelect={selectCategory}
+              />
+            </section>
+          )}
+          {paymentSummaryCards.some(hasSummaryValue) && (
+            <section aria-label="Resumen de pagos">
+              <h3>Pagos y comprobantes</h3>
+              <SummaryCards
+                items={paymentSummaryCards}
+                selectedId={category}
+                onSelect={selectCategory}
+              />
+            </section>
+          )}
 
           {externalPayments && proofError && (
             <p className="inlineAlert errorNotice">

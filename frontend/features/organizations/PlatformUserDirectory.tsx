@@ -40,6 +40,9 @@ export function PlatformUserDirectory({ users }: { users: PlatformUser[] }) {
         selectedId={profile}
         onSelect={(id) => setProfile(id as UserProfile)}
       />
+      {uniqueUsers.length === 0 && (
+        <p className="empty">No hay usuarios en esta categoría.</p>
+      )}
       <FormSheet
         variant="workspace"
         open={profile !== null}

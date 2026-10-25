@@ -154,7 +154,7 @@ async function main() {
         dialog.getByText("No hay solicitudes en este estado."),
       ).toBeVisible();
       await dialog.getByRole("button", { name: "Cerrar formulario" }).click();
-      await expect(pending).toContainText("0");
+      await expect(pending).toHaveCount(0);
       await page.getByRole("button", { name: /Usuarios activos/ }).click();
       await page.getByRole("button", { name: /^Organizadores/ }).click();
       await expect(

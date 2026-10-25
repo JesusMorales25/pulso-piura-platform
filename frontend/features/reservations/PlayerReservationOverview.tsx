@@ -115,6 +115,12 @@ export function PlayerReservationOverview({
           ]}
         />
       )}
+      {data?.counts.all === 0 && (
+        <div className="empty compactEmpty">
+          <h3>Aún no tienes reservas</h3>
+          <p>Busca una cancha para organizar tu próxima jugada.</p>
+        </div>
+      )}
       <FormSheet
         variant="workspace"
         open={dashboard.filter !== null}

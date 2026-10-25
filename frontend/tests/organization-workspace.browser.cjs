@@ -347,10 +347,8 @@ async function main() {
         assert.ok(overviewCalls >= 2);
       }
       await expect(
-        metrics
-          .getByRole("button", { name: /^Canchas habilitadas/ })
-          .locator("strong"),
-      ).toHaveText("0");
+        metrics.getByRole("button", { name: /^Canchas habilitadas/ }),
+      ).toHaveCount(0);
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth > innerWidth,

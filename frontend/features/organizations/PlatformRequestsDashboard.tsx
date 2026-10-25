@@ -289,6 +289,9 @@ export function PlatformRequestsDashboard({
           onSelect={setSelectedStatus}
         />
       )}
+      {!requestsLoading && !message && scopedRequests.length === 0 && (
+        <p className="empty">No hay solicitudes de perfil registradas.</p>
+      )}
       {requestSheet}
     </main>
   );

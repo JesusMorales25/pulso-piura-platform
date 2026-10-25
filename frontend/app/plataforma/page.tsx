@@ -112,77 +112,87 @@ export default function PlatformPage() {
         </p>
       )}
 
-      <section
-        className={styles.summaryPanel}
-        aria-labelledby="platform-summary-title"
-      >
-        <div className={styles.sectionHeading}>
-          <ChartBar size={27} aria-hidden="true" />
-          <h2 id="platform-summary-title">Resumen general</h2>
-          <span>Estado actual</span>
-        </div>
+      {(!summary || Object.values(summary).some((value) => value !== 0)) && (
         <section
-          className={`platformKpis ${styles.kpis}`}
-          aria-label="Resumen de plataforma"
+          className={styles.summaryPanel}
+          aria-labelledby="platform-summary-title"
         >
-          <article>
-            <button
-              className="secondary"
-              type="button"
-              onClick={() => setShowUsers(true)}
-            >
-              <UsersThree size={26} />
-              <span>Usuarios activos</span>
-              <strong>{summary?.activeUsers ?? "—"}</strong>
-              <CaretRight
-                className={styles.chevron}
-                size={20}
-                aria-hidden="true"
-              />
-            </button>
-          </article>
-          <article>
-            <button
-              className="secondary"
-              type="button"
-              onClick={() => setShowPending(true)}
-            >
-              <CheckSquareOffset size={26} />
-              <span>Solicitudes pendientes</span>
-              <strong>{summary?.pendingRequests ?? "—"}</strong>
-              <CaretRight
-                className={styles.chevron}
-                size={20}
-                aria-hidden="true"
-              />
-            </button>
-          </article>
-          <article>
-            <Link href="/plataforma/organizaciones">
-              <Buildings size={26} />
-              <span>Organizaciones</span>
-              <strong>{summary?.organizations ?? "—"}</strong>
-              <CaretRight
-                className={styles.chevron}
-                size={20}
-                aria-hidden="true"
-              />
-            </Link>
-          </article>
-          <article>
-            <Link href="/plataforma/organizaciones">
-              <Storefront size={26} />
-              <span>Sedes publicadas</span>
-              <strong>{summary?.venues ?? "—"}</strong>
-              <CaretRight
-                className={styles.chevron}
-                size={20}
-                aria-hidden="true"
-              />
-            </Link>
-          </article>
+          <div className={styles.sectionHeading}>
+            <ChartBar size={27} aria-hidden="true" />
+            <h2 id="platform-summary-title">Resumen general</h2>
+            <span>Estado actual</span>
+          </div>
+          <section
+            className={`platformKpis ${styles.kpis}`}
+            aria-label="Resumen de plataforma"
+          >
+            {summary?.activeUsers !== 0 && (
+              <article>
+                <button
+                  className="secondary"
+                  type="button"
+                  onClick={() => setShowUsers(true)}
+                >
+                  <UsersThree size={26} />
+                  <span>Usuarios activos</span>
+                  <strong>{summary?.activeUsers ?? "—"}</strong>
+                  <CaretRight
+                    className={styles.chevron}
+                    size={20}
+                    aria-hidden="true"
+                  />
+                </button>
+              </article>
+            )}
+            {summary?.pendingRequests !== 0 && (
+              <article>
+                <button
+                  className="secondary"
+                  type="button"
+                  onClick={() => setShowPending(true)}
+                >
+                  <CheckSquareOffset size={26} />
+                  <span>Solicitudes pendientes</span>
+                  <strong>{summary?.pendingRequests ?? "—"}</strong>
+                  <CaretRight
+                    className={styles.chevron}
+                    size={20}
+                    aria-hidden="true"
+                  />
+                </button>
+              </article>
+            )}
+            {summary?.organizations !== 0 && (
+              <article>
+                <Link href="/plataforma/organizaciones">
+                  <Buildings size={26} />
+                  <span>Organizaciones</span>
+                  <strong>{summary?.organizations ?? "—"}</strong>
+                  <CaretRight
+                    className={styles.chevron}
+                    size={20}
+                    aria-hidden="true"
+                  />
+                </Link>
+              </article>
+            )}
+            {summary?.venues !== 0 && (
+              <article>
+                <Link href="/plataforma/organizaciones">
+                  <Storefront size={26} />
+                  <span>Sedes publicadas</span>
+                  <strong>{summary?.venues ?? "—"}</strong>
+                  <CaretRight
+                    className={styles.chevron}
+                    size={20}
+                    aria-hidden="true"
+                  />
+                </Link>
+              </article>
+            )}
+          </section>
         </section>
-      </section>
+      )}
       <section className={styles.tools} aria-labelledby="platform-tools-title">
         <div className={styles.sectionHeading}>
           <Wrench size={28} aria-hidden="true" />

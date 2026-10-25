@@ -156,12 +156,14 @@ function Dashboard({
               id: "PAID",
               label: "Pagos registrados",
               value: money(data.paidMinor),
+              numericValue: data.paidMinor,
               description: `${data.counts.paid} reservas`,
             },
             {
               id: "BALANCE",
               label: "Saldo por cobrar",
               value: money(data.balanceMinor),
+              numericValue: data.balanceMinor,
               description: `${data.counts.balance} reservas`,
             },
             {
@@ -172,6 +174,9 @@ function Dashboard({
             },
           ]}
         />
+      )}
+      {data?.counts.all === 0 && (
+        <p className="empty">Aún no hay reservas registradas en tus canchas.</p>
       )}
       <button
         className="secondary"

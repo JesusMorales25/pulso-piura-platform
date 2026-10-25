@@ -19,18 +19,34 @@ export function FormSheet({
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const returnFocus = useRef<HTMLElement | null>(null);
+  const returnScope = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (open && !dialog.current?.open) {
       returnFocus.current =
         document.activeElement instanceof HTMLElement
           ? document.activeElement
           : null;
+      returnScope.current = returnFocus.current?.closest("main") ?? null;
       dialog.current?.showModal();
       if (dialog.current) dialog.current.scrollTop = 0;
     }
     if (!open && dialog.current?.open) {
       dialog.current.close();
-      returnFocus.current?.focus({ preventScroll: true });
+      if (returnFocus.current?.isConnected)
+        returnFocus.current.focus({ preventScroll: true });
+      else {
+        const fallback = Array.from(
+          returnScope.current?.querySelectorAll<HTMLElement>(
+            "button:not([disabled]), a[href], input:not([disabled]), select:not([disabled])",
+          ) ?? [],
+        ).find(
+          (element) =>
+            element.isConnected &&
+            element.getClientRects().length > 0 &&
+            !element.closest("dialog:not([open])"),
+        );
+        fallback?.focus({ preventScroll: true });
+      }
     }
   }, [open]);
   return (

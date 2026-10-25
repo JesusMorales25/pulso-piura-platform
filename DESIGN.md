@@ -99,3 +99,7 @@ La variante player de SummaryCards presenta seis categorías con icono, etiqueta
 ## Mis reservas — resumen del jugador
 
 El panel reutiliza las tarjetas player de Mis inscripciones: icono, cantidad y acceso a detalle en dos columnas móviles. La cabecera ofrece Buscar canchas. Saldo pendiente presenta cantidad de reservas e importe secundario; las categorías, paginación y popups conservan datos y funcionamiento. Confirmadas usa lima; pagos y navegación turquesa; finalizadas tono neutro.
+
+## Resúmenes con contenido
+
+Las tarjetas de categorías con valor numérico cero se omiten en todos los paneles compartidos. Los importes usan su cantidad original en unidades mínimas para decidir visibilidad, sin analizar texto monetario. Carga, error o dato desconocido siguen visibles como tales. Los grupos de partidos/pagos vacíos no presentan títulos; jugador y propietario reciben un estado vacío con acceso a la siguiente acción. Si una acción deja la categoría a cero, el popup conserva su detalle y al cerrar recupera foco en un control disponible.

@@ -356,3 +356,17 @@ test("match QR opens at Lima midnight and expires exactly at match end", () => {
   );
   assert.equal(matchPassAvailability(end, start, Date.now()), "unavailable");
 });
+
+test("summary visibility hides known zero values and preserves unknown or negative amounts", () => {
+  const { hasSummaryValue } = load("lib/summary-visibility.ts");
+  for (const value of [0, "0", "0.00", "0,00"])
+    assert.equal(hasSummaryValue({ value }), false);
+  assert.equal(hasSummaryValue({ value: "S/ 0.00", numericValue: 0 }), false);
+  assert.equal(hasSummaryValue({ value: "S/ 0.01", numericValue: 1 }), true);
+  assert.equal(
+    hasSummaryValue({ value: "S/ -1.00", numericValue: -100 }),
+    true,
+  );
+  for (const value of [1, -1, "—", "Cargando…", "No disponible"])
+    assert.equal(hasSummaryValue({ value }), true);
+});

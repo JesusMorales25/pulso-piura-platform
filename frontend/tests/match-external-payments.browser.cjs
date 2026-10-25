@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- Local synthetic browser verification. */
-const { chromium } = require("@playwright/test");
+const { chromium, expect } = require("@playwright/test");
 const assert = require("node:assert/strict");
 async function main() {
   const browser = await chromium.launch({ headless: true, channel: "chrome" });
   try {
-    for (const width of [320, 393, 768]) {
+    for (const width of [320, 393, 768, 1280]) {
       const context = await browser.newContext({
         viewport: { width, height: 900 },
       });
@@ -34,6 +34,7 @@ async function main() {
           profile,
         },
       );
+      let emptyDashboard = false;
       let saved = false,
         approved = false,
         rosterReads = 0;
@@ -92,7 +93,9 @@ async function main() {
         else if (path === "/external-payments/capabilities")
           data = { enabled: true, reviewMinutes: 30 };
         else if (path === "/matches/mine")
-          data = [{ ...match, occupiedPlayers: approved ? 1 : 0 }];
+          data = emptyDashboard
+            ? []
+            : [{ ...match, occupiedPlayers: approved ? 1 : 0 }];
         else if (path === `/matches/${id}/participants`) {
           rosterReads++;
           data = approved
@@ -151,7 +154,9 @@ async function main() {
           body: JSON.stringify(data),
         });
       });
-      await page.goto("http://localhost:3002/organizador");
+      await page.goto(
+        (process.env.A11Y_BASE_URL || "http://localhost:3004") + "/organizador",
+      );
       const reviewSummary = page.getByRole("button", {
         name: /Por confirmar pago/,
       });
@@ -214,12 +219,7 @@ async function main() {
       );
       // A pre-join proof was counted even though the initial roster was empty.
       // After approval, the selected detail remains open while the proof leaves the list.
-      await page.waitForFunction(() => {
-        const button = [...document.querySelectorAll("button")].find((item) =>
-          item.textContent.includes("Por confirmar pago"),
-        );
-        return button?.querySelector("strong")?.textContent === "0";
-      });
+      await expect(reviewSummary).toHaveCount(0);
       await reviewSheet
         .getByRole("button", { name: "← Volver a la lista", exact: true })
         .click();
@@ -239,7 +239,29 @@ async function main() {
         ),
         false,
       );
-      console.log(`match organizer ${width}px passed`);
+      emptyDashboard = true;
+      await page.reload();
+      await expect(
+        page.getByRole("heading", {
+          name: "Aún no publicaste partidos",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Tus partidos", exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole("heading", {
+          name: "Pagos y comprobantes",
+          exact: true,
+        }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole("button", { name: /Ver detalle/ }),
+      ).toHaveCount(0);
+      console.log(
+        "match organizer " + width + "px positive and empty summaries passed",
+      );
       await context.close();
     }
   } finally {
