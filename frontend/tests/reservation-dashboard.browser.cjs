@@ -5,7 +5,7 @@ const path = require("node:path");
 async function main() {
   const browser = await chromium.launch({ headless: true, channel: "chrome" });
   try {
-    for (const width of [320, 393, 768])
+    for (const width of [320, 393, 768, 1280])
       for (const role of ["payer", "owner"]) {
         const context = await browser.newContext({
           viewport: { width, height: 900 },
@@ -153,7 +153,7 @@ async function main() {
           });
         });
         await page.goto(
-          "http://localhost:3002" +
+          (process.env.A11Y_BASE_URL || "http://localhost:3004") +
             (role === "owner" ? "/reservas-cancha" : "/actividad"),
         );
         if (role === "owner")
@@ -180,6 +180,16 @@ async function main() {
           requests.every((r) => r.filter === null),
           "Initial dashboard must request summary only.",
         );
+        if (role === "payer") {
+          await expect(
+            page.getByRole("link", { name: "Buscar canchas", exact: true }),
+          ).toBeVisible();
+          await expect(
+            page.getByRole("button", {
+              name: /^Saldo pendiente 8 Ver detalle/,
+            }),
+          ).toContainText("544");
+        }
         if (width === 393)
           await page.screenshot({
             path: path.join(

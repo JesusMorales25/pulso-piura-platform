@@ -184,3 +184,12 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+.player .description {
+  grid-column: 2;
+  grid-row: 3;
+  margin: 3px 0;
+}
+.player .card:has(.description) .action {
+  grid-row: 4;
+}

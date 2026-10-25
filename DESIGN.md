@@ -95,3 +95,7 @@ Plataforma conserva métricas reales, accesos y popups autorizados, con cabecera
 ## Resumen del jugador — Mis inscripciones
 
 La variante player de SummaryCards presenta seis categorías con icono, etiqueta, cantidad y acceso a detalle. Dos columnas en móvil, tres en escritorio; turquesa para acciones y pagos, lima para confirmados y tonos neutros para espera/historial. Se conserva el banner fotográfico de actividad y los popups existentes; no cambian las categorías ni el cálculo financiero.
+
+## Mis reservas — resumen del jugador
+
+El panel reutiliza las tarjetas player de Mis inscripciones: icono, cantidad y acceso a detalle en dos columnas móviles. La cabecera ofrece Buscar canchas. Saldo pendiente presenta cantidad de reservas e importe secundario; las categorías, paginación y popups conservan datos y funcionamiento. Confirmadas usa lima; pagos y navegación turquesa; finalizadas tono neutro.

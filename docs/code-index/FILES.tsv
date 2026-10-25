@@ -382,7 +382,7 @@ infrastructure	example	762	deploy/vps/.env.example
 infrastructure	-	49	deploy/vps/Caddyfile
 infrastructure	yaml	2662	deploy/vps/compose.auth0.yaml
 infrastructure	yaml	2059	deploy/vps/compose.external-db.yaml
-root-or-support	md	8311	DESIGN.md
+root-or-support	md	8727	DESIGN.md
 root-or-support	md	2498	design-qa.md
 architecture-decision	md	334	docs/adr/ADR-001-monolito-modular.md
 architecture-decision	md	437	docs/adr/ADR-002-identidad-y-autorizacion.md
@@ -524,7 +524,7 @@ root-or-support	tsx	3715	frontend/components/AccessibleDialogs.tsx
 root-or-support	tsx	1800	frontend/components/BusinessImage.tsx
 root-or-support	css	1361	frontend/components/dashboard/DesktopDrilldown.module.css
 root-or-support	tsx	2609	frontend/components/dashboard/DesktopDrilldown.tsx
-root-or-support	css	3930	frontend/components/dashboard/SummaryCards.module.css
+root-or-support	css	4065	frontend/components/dashboard/SummaryCards.module.css
 root-or-support	tsx	1692	frontend/components/dashboard/SummaryCards.tsx
 root-or-support	tsx	1240	frontend/components/feedback/FloatingNotice.tsx
 root-or-support	tsx	1717	frontend/components/forms/DistrictSelect.tsx
@@ -589,7 +589,8 @@ frontend-feature	css	252	frontend/features/reservations/OrganizationReservations
 frontend-feature	tsx	13747	frontend/features/reservations/OrganizationReservations.tsx
 frontend-feature	tsx	8479	frontend/features/reservations/OrganizationSchedule.tsx
 frontend-feature	ts	527	frontend/features/reservations/payment-options.ts
-frontend-feature	tsx	7013	frontend/features/reservations/PlayerReservationOverview.tsx
+frontend-feature	css	605	frontend/features/reservations/PlayerReservationOverview.module.css
+frontend-feature	tsx	7852	frontend/features/reservations/PlayerReservationOverview.tsx
 frontend-feature	ts	1288	frontend/features/reservations/presentation.ts
 frontend-feature	tsx	10256	frontend/features/reservations/ReservationCheckInScanner.tsx
 frontend-feature	tsx	17257	frontend/features/reservations/ReservationCheckout.tsx
@@ -650,7 +651,7 @@ frontend-test	cjs	2670	frontend/tests/organizer-summary.test.cjs
 frontend-test	cjs	5812	frontend/tests/platform-visual-assets.browser.cjs
 frontend-test	cjs	6683	frontend/tests/player-overview.browser.cjs
 frontend-test	cjs	11811	frontend/tests/product-improvements.test.cjs
-frontend-test	cjs	9486	frontend/tests/reservation-dashboard.browser.cjs
+frontend-test	cjs	9860	frontend/tests/reservation-dashboard.browser.cjs
 frontend-test	cjs	1745	frontend/tests/venue-contact.test.cjs
 root-or-support	json	661	frontend/tsconfig.json
 root-or-support	json	82	frontend/vercel.json

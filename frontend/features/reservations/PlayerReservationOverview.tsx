@@ -1,5 +1,15 @@
 "use client";
 import Link from "next/link";
+import {
+  CalendarCheck,
+  CalendarDots,
+  ClipboardText,
+  CreditCard,
+  CurrencyCircleDollar,
+  MagnifyingGlass,
+  Wallet,
+} from "@phosphor-icons/react";
+import overviewStyles from "./PlayerReservationOverview.module.css";
 import { useState, type ReactNode } from "react";
 import { FormSheet } from "@/components/forms/FormSheet";
 import { DesktopDrilldown } from "@/components/dashboard/DesktopDrilldown";
@@ -37,10 +47,16 @@ export function PlayerReservationOverview({
   const data = dashboard.data;
   return (
     <section className={styles.overview} aria-label="Resumen de mis reservas">
-      <h2>Mis reservas</h2>
-      <p className="muted">
-        Elige un estado para ver tus reservas y sus pagos.
-      </p>
+      <div className={`activitySectionTitle ${overviewStyles.heading}`}>
+        <div>
+          <p className="eyebrow">MIS RESERVAS</p>
+          <h2>Reservas</h2>
+        </div>
+        <Link className={overviewStyles.search} href="/?mode=venues">
+          <MagnifyingGlass size={19} aria-hidden="true" />
+          Buscar canchas
+        </Link>
+      </div>
       {dashboard.error && (
         <p role="alert" className="errorNotice">
           {dashboard.error}
@@ -53,42 +69,52 @@ export function PlayerReservationOverview({
         <p role="status">Cargando resumen…</p>
       ) : (
         <SummaryCards
+          variant="player"
           selectedId={dashboard.filter}
           onSelect={choose}
           items={[
             {
               id: "PENDING_PAYMENT_CONFIRMATION",
               label: "Por confirmar pago",
+              icon: <CreditCard weight="duotone" />,
               value: data.counts.pendingConfirmation,
             },
             {
               id: "PENDING_PAYMENT",
               label: "Pendientes de pago",
+              icon: <Wallet weight="duotone" />,
               value: data.counts.pendingPayment,
             },
             {
               id: "CONFIRMED",
               label: "Confirmadas",
+              icon: <CalendarCheck weight="duotone" />,
+              tone: "confirmed",
               value: data.counts.confirmed,
             },
             {
               id: "BALANCE",
               label: "Saldo pendiente",
-              value: money(data.balanceMinor),
-              description: reservationCount(data.counts.balance),
+              icon: <CurrencyCircleDollar weight="duotone" />,
+              value: data.counts.balance,
+              description: `${money(data.balanceMinor)} por pagar`,
             },
             {
               id: "COMPLETED",
               label: "Finalizadas",
+              icon: <ClipboardText weight="duotone" />,
+              tone: "muted",
               value: data.counts.completed,
             },
-            { id: "ALL", label: "Todas e historial", value: data.counts.all },
+            {
+              id: "ALL",
+              label: "Todas mis reservas",
+              value: data.counts.all,
+              icon: <CalendarDots weight="duotone" />,
+            },
           ]}
         />
       )}
-      <Link className="secondary" href="/?mode=venues">
-        Reservar otra cancha
-      </Link>
       <FormSheet
         variant="workspace"
         open={dashboard.filter !== null}
