@@ -265,7 +265,7 @@ test("booking card renders only supplied available slots as accessible buttons",
     "utf8",
   );
 
-  assert.match(source, /slots\.slice\(0, 5\)/);
+  assert.match(source, /slots\.slice\(0, 4\)/);
   assert.match(source, /<button[\s\S]*?aria-pressed=/);
   assert.match(source, /selected \? "Elegido" : "Disponible"/);
   assert.match(source, /onReserve\("DEPOSIT"\)/);

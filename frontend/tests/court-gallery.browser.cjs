@@ -10,7 +10,7 @@ async function main() {
     "base64",
   );
   try {
-    for (const width of [320, 1280]) {
+    for (const width of [320, 393, 768, 1280]) {
       const context = await browser.newContext({
         viewport: { width, height: 900 },
         reducedMotion: "reduce",
@@ -176,14 +176,14 @@ async function main() {
             sportSpaceId: space,
             timezone: "America/Lima",
             date: "2099-10-24",
-            slots: [
-              {
-                startsAt: "2099-10-24T20:00:00Z",
-                endsAt: "2099-10-24T21:00:00Z",
-                priceMinor: 6000,
-                currency: "PEN",
-              },
-            ],
+            slots: Array.from({ length: 5 }, (_, index) => ({
+              startsAt: new Date(
+                Date.UTC(2099, 9, 24, 20 + index),
+              ).toISOString(),
+              endsAt: new Date(Date.UTC(2099, 9, 24, 21 + index)).toISOString(),
+              priceMinor: index === 0 ? 6000 : 8500,
+              currency: "PEN",
+            })),
           };
         else if (p === "/public/spaces/" + space + "/photos") {
           assert.equal(route.request().headers().authorization, undefined);
@@ -207,13 +207,11 @@ async function main() {
         name: "Fotos de Cancha galería",
         exact: true,
       });
-      await dialog
-        .getByLabel("Foto", { exact: true })
-        .setInputFiles({
-          name: "court.png",
-          mimeType: "image/png",
-          buffer: png,
-        });
+      await dialog.getByLabel("Foto", { exact: true }).setInputFiles({
+        name: "court.png",
+        mimeType: "image/png",
+        buffer: png,
+      });
       await dialog
         .getByRole("button", { name: "Subir foto", exact: true })
         .click();
@@ -227,13 +225,11 @@ async function main() {
       );
       for (let i = 1; i <= 3; i++) {
         if (i > 1)
-          await dialog
-            .getByLabel("Foto", { exact: true })
-            .setInputFiles({
-              name: "court.png",
-              mimeType: "image/png",
-              buffer: png,
-            });
+          await dialog.getByLabel("Foto", { exact: true }).setInputFiles({
+            name: "court.png",
+            mimeType: "image/png",
+            buffer: png,
+          });
         await dialog
           .getByRole("button", { name: "Subir foto", exact: true })
           .click();
@@ -265,7 +261,10 @@ async function main() {
         .getByRole("button", { name: "Eliminar foto", exact: true })
         .click();
       await dialog
-        .getByRole("button", { name: "Eliminar foto definitivamente", exact: true })
+        .getByRole("button", {
+          name: "Eliminar foto definitivamente",
+          exact: true,
+        })
         .click();
       await expect.poll(() => photos.length).toBe(2);
       assert.equal(photos.filter((photo) => photo.cover).length, 1);
@@ -273,6 +272,47 @@ async function main() {
         .getByRole("button", { name: "Cerrar formulario", exact: true })
         .click();
       await page.goto(base + "/canchas");
+      const bookingCard = page.getByRole("article", {
+        name: "Disponibilidad de Complejo galería",
+        exact: true,
+      });
+      const turnButtons = bookingCard
+        .getByRole("group", { name: "Elige un turno disponible" })
+        .getByRole("button");
+      await expect(turnButtons).toHaveCount(4);
+      await expect(
+        bookingCard.getByText("Desde S/ 60", { exact: true }),
+      ).toBeVisible();
+      await turnButtons.nth(1).click();
+      await expect(turnButtons.nth(1)).toHaveAttribute("aria-pressed", "true");
+      await expect(turnButtons.nth(0)).toHaveAttribute("aria-pressed", "false");
+      await expect(
+        bookingCard.getByText("Desde S/ 60", { exact: true }),
+      ).toBeVisible();
+      await expect(
+        bookingCard.getByRole("button", {
+          name: "Reservar con 20 %",
+          exact: true,
+        }),
+      ).toBeEnabled();
+      await expect(
+        bookingCard.getByRole("button", {
+          name: "Pagar completo",
+          exact: true,
+        }),
+      ).toBeEnabled();
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth,
+        ),
+        false,
+      );
+      await bookingCard.screenshot({
+        path: require("node:path").join(
+          __dirname,
+          "../../.local/booking-card-" + width + ".png",
+        ),
+      });
       await page
         .getByRole("button", { name: "Ver fotos", exact: true })
         .first()

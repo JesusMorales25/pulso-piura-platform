@@ -10,6 +10,14 @@ import {
 } from "./CourtPhotos";
 import {
   CalendarBlank,
+  Car,
+  CaretRight,
+  CreditCard,
+  Images,
+  Lightbulb,
+  Volleyball,
+  Basketball,
+  TennisBall,
   MapPin,
   SoccerBall,
   Star,
@@ -104,15 +112,32 @@ export function VenueBookingCard({
       .catch(() => {});
     return () => controller.abort();
   }, [offer.space.id]);
-  const visibleSlots = slots.slice(0, 5);
+  const visibleSlots = slots.slice(0, 4);
+  const lowestSlot = slots.reduce<BookingSlot | undefined>(
+    (lowest, slot) =>
+      !lowest || slot.priceMinor < lowest.priceMinor ? slot : lowest,
+    undefined,
+  );
   const selectedSlot =
-    visibleSlots.find((slot) => slot.startsAt === selectedStartsAt) ??
-    visibleSlots[0];
+    slots.find((slot) => slot.startsAt === selectedStartsAt) ?? visibleSlots[0];
   const { venue, space } = offer;
+  const SportIcon =
+    space.sportCode === "VOLLEYBALL"
+      ? Volleyball
+      : space.sportCode === "BASKETBALL"
+        ? Basketball
+        : /TENNIS|PADEL/.test(space.sportCode)
+          ? TennisBall
+          : SoccerBall;
+  const formatLabel = space.formatCode
+    .replace("FOOTBALL", "Fútbol")
+    .replace("VOLLEYBALL", "Vóley")
+    .replace("BASKETBALL", "Básquet")
+    .replaceAll("_", " ");
   const ratingLabel =
     venue.adminRating === null || venue.adminRating === undefined
       ? "Sin calificación"
-      : `${venue.adminRating.toFixed(1)} · Informada por el complejo`;
+      : venue.adminRating.toFixed(1);
   const mapsHref = googleMapsUrl({
     latitude: venue.latitude,
     longitude: venue.longitude,
@@ -130,149 +155,184 @@ export function VenueBookingCard({
       className={styles.card}
       aria-label={`Disponibilidad de ${venue.name}`}
     >
-      <header className={styles.header}>
-        {coverId ? (
-          <CourtPhotoImage
-            path={`/public/spaces/${space.id}/photos/${coverId}/image`}
-            alt={`Portada de ${space.name}`}
-            className={styles.image}
-          />
-        ) : (
-          <Image
-            alt="Imagen de referencia de una cancha"
-            className={styles.image}
-            height={64}
-            loading="eager"
-            src={imageSrc}
-            width={64}
-          />
-        )}
-        <div className={styles.identity}>
-          <h2>{venue.name}</h2>
-          <p>
-            <MapPin aria-hidden="true" size={13} weight="fill" />{" "}
-            {venue.address} · {venue.districtCode}
-          </p>
-          <div className={styles.chips}>
+      <div className={styles.overview}>
+        <header className={styles.header}>
+          {coverId ? (
+            <CourtPhotoImage
+              path={`/public/spaces/${space.id}/photos/${coverId}/image`}
+              alt={`Portada de ${space.name}`}
+              className={styles.image}
+            />
+          ) : (
+            <Image
+              alt="Imagen de referencia de una cancha"
+              className={styles.image}
+              height={144}
+              loading="eager"
+              src={imageSrc}
+              width={144}
+            />
+          )}
+          <div className={styles.identity}>
+            <h2>{venue.name}</h2>
+            <p>
+              <MapPin aria-hidden="true" size={13} weight="fill" />{" "}
+              {venue.address} · {venue.districtCode}
+            </p>
+            <div className={styles.chips}>
+              <span>
+                <SportIcon aria-hidden="true" size={16} /> {formatLabel}
+              </span>
+              {space.indoor && <span>Techada</span>}
+              {priorityAmenities.slice(0, 3).map((name) => (
+                <span key={name}>
+                  {/estacionamiento/i.test(name) ? (
+                    <Car aria-hidden="true" size={16} />
+                  ) : /led|iluminaci[oó]n/i.test(name) ? (
+                    <Lightbulb aria-hidden="true" size={16} />
+                  ) : null}
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className={styles.rating}>
             <span>
-              <SoccerBall aria-hidden="true" size={13} />{" "}
-              {space.formatCode.replaceAll("_", " ")}
+              <Star aria-hidden="true" size={16} weight="fill" /> {ratingLabel}
             </span>
-            {space.indoor && <span>Techada</span>}
-            {priorityAmenities.slice(0, 3).map((name) => (
-              <span key={name}>{name}</span>
-            ))}
+            {venue.adminRating != null && (
+              <small>Informada por el complejo</small>
+            )}
+          </div>
+        </header>
+
+        <CourtPhotoGallery
+          open={galleryOpen}
+          onClose={() => setGalleryOpen(false)}
+          spaceId={space.id}
+          name={space.name}
+          fallback={imageSrc}
+        />
+        <div className={styles.detailsRow}>
+          <div className={styles.price}>
+            <strong>Desde {lowestSlot ? money(lowestSlot) : "—"}</strong>
+            <small>
+              {lowestSlot &&
+              new Date(lowestSlot.endsAt).getTime() -
+                new Date(lowestSlot.startsAt).getTime() ===
+                3600000
+                ? "por hora"
+                : "por turno"}
+            </small>
+          </div>
+          <div className={styles.links}>
+            <button
+              className="secondary"
+              type="button"
+              onClick={() => setGalleryOpen(true)}
+            >
+              <Images aria-hidden="true" size={20} /> Ver fotos
+            </button>
+            {whatsappHref && (
+              <a href={whatsappHref} rel="noreferrer" target="_blank">
+                <WhatsappLogo aria-hidden="true" size={15} /> Contactar
+              </a>
+            )}
+            <a href={mapsHref} rel="noreferrer" target="_blank">
+              <MapPin aria-hidden="true" size={15} /> Cómo llegar
+            </a>
           </div>
         </div>
-        <div className={styles.price}>
-          <small>Tarifa por hora</small>
-          <strong>Desde {selectedSlot ? money(selectedSlot) : "—"}</strong>
-          <span
-            title={
-              venue.adminRating === null || venue.adminRating === undefined
-                ? undefined
-                : "Calificación informada por el complejo"
-            }
-          >
-            <Star aria-hidden="true" size={14} weight="fill" /> {ratingLabel}
-          </span>
-        </div>
-      </header>
-
-      <CourtPhotoGallery
-        open={galleryOpen}
-        onClose={() => setGalleryOpen(false)}
-        spaceId={space.id}
-        name={space.name}
-        fallback={imageSrc}
-      />
-      <div className={styles.links}>
-        <button
-          className="secondary"
-          type="button"
-          onClick={() => setGalleryOpen(true)}
-        >
-          Ver fotos
-        </button>
-        {whatsappHref && (
-          <a href={whatsappHref} rel="noreferrer" target="_blank">
-            <WhatsappLogo aria-hidden="true" size={15} /> Contactar
-          </a>
-        )}
-        <a href={mapsHref} rel="noreferrer" target="_blank">
-          <MapPin aria-hidden="true" size={15} /> Cómo llegar
-        </a>
       </div>
 
-      <section
-        className={styles.availability}
-        aria-label={`Turnos disponibles en ${space.name}`}
-      >
-        <div className={styles.availabilityHeading}>
-          <strong>Turnos disponibles</strong>
-          <small>{space.name}</small>
-        </div>
-        <div
-          className={styles.slots}
-          role="group"
-          aria-label="Elige un turno disponible"
+      <div className={styles.booking}>
+        <section
+          className={styles.availability}
+          aria-label={`Turnos disponibles en ${space.name}`}
         >
-          {visibleSlots.map((slot) => {
-            const selected = slot.startsAt === selectedSlot?.startsAt;
-            return (
-              <button
-                aria-pressed={selected}
-                className={selected ? styles.selected : undefined}
-                disabled={busy}
-                key={`${slot.startsAt}-${slot.endsAt}`}
-                onClick={() => onSelectSlot(slot)}
-                type="button"
-              >
-                <strong>{time(slot.startsAt)}</strong>
-                <small>{selected ? "Elegido" : "Disponible"}</small>
-                <span>{money(slot)}</span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+          <div className={styles.availabilityHeading}>
+            <strong>Turnos disponibles</strong>
+            <button
+              className={styles.spaceButton}
+              onClick={onOpenSchedules}
+              type="button"
+              aria-label={`Ver canchas y horarios de ${venue.name}`}
+            >
+              {space.name}
+              <CaretRight aria-hidden="true" size={16} />
+            </button>
+          </div>
+          <div
+            className={styles.slots}
+            role="group"
+            aria-label="Elige un turno disponible"
+          >
+            {visibleSlots.map((slot) => {
+              const selected = slot.startsAt === selectedSlot?.startsAt;
+              return (
+                <button
+                  aria-pressed={selected}
+                  className={selected ? styles.selected : undefined}
+                  disabled={busy}
+                  key={`${slot.startsAt}-${slot.endsAt}`}
+                  onClick={() => onSelectSlot(slot)}
+                  type="button"
+                >
+                  <strong>{time(slot.startsAt)}</strong>
+                  <small>{selected ? "Elegido" : "Disponible"}</small>
+                  <span>{money(slot)}</span>
+                </button>
+              );
+            })}
+          </div>
+          {visibleSlots.length === 0 && (
+            <p className={styles.empty}>
+              No quedan turnos disponibles. Consulta otros horarios.
+            </p>
+          )}
+        </section>
 
-      <footer className={styles.footer}>
-        <div className={styles.selection}>
-          <CalendarBlank aria-hidden="true" size={17} />
-          <span>
-            <small>Turno seleccionado</small>
-            <strong>
-              {selectedSlot
-                ? `${time(selectedSlot.startsAt)} – ${time(selectedSlot.endsAt)}`
-                : "Elige un horario"}
-            </strong>
-          </span>
-        </div>
-        <div className={styles.actions}>
-          <button
-            disabled={busy || !selectedSlot}
-            onClick={() => onReserve("DEPOSIT")}
-            type="button"
-          >
-            Reservar con 20 %
-          </button>
-          <button
-            disabled={busy || !selectedSlot}
-            onClick={() => onReserve("FULL")}
-            type="button"
-          >
-            Pagar completo
-          </button>
-          <button
-            className={styles.secondary}
-            onClick={onOpenSchedules}
-            type="button"
-          >
-            Otros horarios
-          </button>
-        </div>
-      </footer>
+        <footer className={styles.footer}>
+          <div className={styles.selection}>
+            <CalendarBlank aria-hidden="true" size={17} />
+            <span>
+              <small>Turno seleccionado</small>
+              <strong>
+                {selectedSlot
+                  ? `${time(selectedSlot.startsAt)} – ${time(selectedSlot.endsAt)}`
+                  : "Elige un horario"}
+              </strong>
+            </span>
+          </div>
+          <div className={styles.actions}>
+            <button
+              disabled={busy || !selectedSlot}
+              onClick={() => onReserve("DEPOSIT")}
+              type="button"
+            >
+              <CalendarBlank aria-hidden="true" size={22} weight="bold" />{" "}
+              <span>
+                Reservar con <span className={styles.noWrap}>20 %</span>
+              </span>
+            </button>
+            <button
+              disabled={busy || !selectedSlot}
+              onClick={() => onReserve("FULL")}
+              type="button"
+            >
+              <CreditCard aria-hidden="true" size={22} weight="fill" /> Pagar
+              completo
+            </button>
+            <button
+              className={styles.secondary}
+              onClick={onOpenSchedules}
+              type="button"
+            >
+              Otros horarios <CaretRight aria-hidden="true" size={20} />
+            </button>
+          </div>
+        </footer>
+      </div>
     </article>
   );
 }

@@ -758,7 +758,7 @@ export function PublicVenueCatalog({
 
   const reservationDates = useMemo(() => {
     const start = new Date(`${localDate()}T12:00:00`);
-    return Array.from({ length: 6 }, (_, index) => {
+    return Array.from({ length: 7 }, (_, index) => {
       const current = new Date(start);
       current.setDate(start.getDate() + index);
       const value = new Intl.DateTimeFormat("en-CA", {
@@ -961,8 +961,16 @@ export function PublicVenueCatalog({
                 onClick={() => selectDate(option.value)}
                 type="button"
               >
-                <small>{option.weekday}</small>
+                <small>{option.weekday === "Hoy" ? "Hoy" : "\u00a0"}</small>
                 <strong>{option.day}</strong>
+                <span>
+                  {new Intl.DateTimeFormat("es-PE", {
+                    weekday: "short",
+                    timeZone: "America/Lima",
+                  })
+                    .format(new Date(`${option.value}T12:00:00-05:00`))
+                    .replace(".", "")}
+                </span>
               </button>
             ))}
           </div>

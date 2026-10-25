@@ -380,7 +380,7 @@ infrastructure	example	762	deploy/vps/.env.example
 infrastructure	-	49	deploy/vps/Caddyfile
 infrastructure	yaml	2662	deploy/vps/compose.auth0.yaml
 infrastructure	yaml	2059	deploy/vps/compose.external-db.yaml
-root-or-support	md	6613	DESIGN.md
+root-or-support	md	7157	DESIGN.md
 root-or-support	md	2498	design-qa.md
 architecture-decision	md	334	docs/adr/ADR-001-monolito-modular.md
 architecture-decision	md	437	docs/adr/ADR-002-identidad-y-autorizacion.md
@@ -515,7 +515,7 @@ frontend-route	css	457	frontend/app/plataforma/PlatformDashboard.module.css
 frontend-route	tsx	203	frontend/app/plataforma/solicitudes/page.tsx
 frontend-route	tsx	288	frontend/app/reservas-cancha/page.tsx
 frontend-route	css	7900	frontend/app/responsive.css
-frontend-route	css	238088	frontend/app/styles.css
+frontend-route	css	238230	frontend/app/styles.css
 frontend-route	tsx	1066	frontend/app/tercer-tiempo/page.tsx
 root-or-support	md	11	frontend/CLAUDE.md
 root-or-support	tsx	3715	frontend/components/AccessibleDialogs.tsx
@@ -598,10 +598,10 @@ frontend-feature	tsx	4866	frontend/features/reservations/VenueOwnerReservationsD
 frontend-feature	tsx	21563	frontend/features/venues/AvailabilityAdmin.tsx
 frontend-feature	css	1172	frontend/features/venues/CourtPhotos.module.css
 frontend-feature	tsx	12197	frontend/features/venues/CourtPhotos.tsx
-frontend-feature	tsx	38051	frontend/features/venues/PublicVenueCatalog.tsx
+frontend-feature	tsx	38397	frontend/features/venues/PublicVenueCatalog.tsx
 frontend-feature	tsx	39883	frontend/features/venues/VenueAdmin.tsx
-frontend-feature	css	3853	frontend/features/venues/VenueBookingCard.module.css
-frontend-feature	tsx	8007	frontend/features/venues/VenueBookingCard.tsx
+frontend-feature	css	6811	frontend/features/venues/VenueBookingCard.module.css
+frontend-feature	tsx	10331	frontend/features/venues/VenueBookingCard.tsx
 frontend-feature	css	7651	frontend/features/venues/VenueScheduleDialog.module.css
 frontend-feature	tsx	10316	frontend/features/venues/VenueScheduleDialog.tsx
 frontend-lib	ts	3840	frontend/lib/api.ts
@@ -635,7 +635,7 @@ root-or-support	svg	693	frontend/public/images/volleyball-reference.svg
 frontend-test	cjs	9912	frontend/tests/accessibility.browser.cjs
 frontend-test	cjs	6511	frontend/tests/admin-dashboard.browser.cjs
 frontend-test	cjs	10419	frontend/tests/auth-security.test.cjs
-frontend-test	cjs	11066	frontend/tests/court-gallery.browser.cjs
+frontend-test	cjs	12544	frontend/tests/court-gallery.browser.cjs
 frontend-test	cjs	21934	frontend/tests/desktop-responsive.browser.cjs
 frontend-test	cjs	29164	frontend/tests/external-payments.browser.cjs
 frontend-test	cjs	2010	frontend/tests/external-payments.test.cjs

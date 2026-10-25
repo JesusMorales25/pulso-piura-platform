@@ -81,3 +81,7 @@ Plan de implementación: (1) navegación y geometría compartida; (2) espacios d
 ## Fotografías y publicación
 
 Las fotos reales pertenecen a cada cancha, con galería bajo demanda en FormSheet, hasta ocho imágenes y una portada. Se recomienda tres, pero se permite publicar y completarlas después. Portada y galería sustituyen la referencia generada sin atribuir imágenes ficticias a un negocio. Administración configura cinco portadas globales (Explorar partidos/canchas, actividad, crear y complejos) desde una pantalla específica; las variables de entorno configuran almacenamiento, no contenido editorial.
+
+## Tarjetas de reserva — referencia del 24 de octubre
+
+El catálogo comparte VenueBookingCard: ficha fotográfica con nombre, ubicación, servicios reales, calificación declarada y tarifa mínima; segundo bloque con cuatro turnos, selección y acciones de adelanto/completo. Otros horarios abre el diálogo existente. En móvil estrecho los turnos pasan a dos columnas y las acciones se apilan desde 360 px. La franja de siete días desplaza dentro de su contenedor. No se inventan reseñas ni se modifica la confirmación manual de pagos.
