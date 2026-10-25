@@ -120,3 +120,64 @@ export function ReservationAmounts({
     </section>
   );
 }
+
+export function ReservationBookingHeading({
+  reservation,
+  venueName,
+  spaceName,
+}: {
+  reservation: Reservation;
+  venueName: string;
+  spaceName: string;
+}) {
+  return (
+    <section className={styles.booking}>
+      <div className={styles.bookingIdentity}>
+        <div>
+          <div className={styles.bookingStatus}>
+            <span>TU RESERVA</span>
+            <span
+              className={styles.status}
+              data-confirmed={reservation.status === "CONFIRMED"}
+            >
+              {reservation.status === "CONFIRMED" && (
+                <CheckCircle weight="fill" aria-hidden="true" />
+              )}
+              {reservationStatus[reservation.status]}
+            </span>
+          </div>
+          <h3>{spaceName}</h3>
+          <p>
+            <MapPin aria-hidden="true" />
+            {venueName}
+          </p>
+        </div>
+        <span className={styles.bookingPhoto} aria-hidden="true">
+          <ReservationCourtPhoto
+            spaceId={reservation.sportSpaceId}
+            className={styles.image}
+          />
+        </span>
+      </div>
+      <dl className={styles.bookingSchedule}>
+        <div>
+          <CalendarBlank aria-hidden="true" />
+          <div>
+            <dt>Fecha</dt>
+            <dd>{reservationDate(reservation.startsAt)}</dd>
+          </div>
+        </div>
+        <div>
+          <Clock aria-hidden="true" />
+          <div>
+            <dt>Horario</dt>
+            <dd>
+              {reservationTime(reservation.startsAt)} –{" "}
+              {reservationTime(reservation.endsAt)}
+            </dd>
+          </div>
+        </div>
+      </dl>
+    </section>
+  );
+}

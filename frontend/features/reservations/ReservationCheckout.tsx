@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
+import styles from "./ReservationCheckout.module.css";
 import {
-  ReservationDetailHeading,
+  ReservationBookingHeading,
   ReservationAmounts,
 } from "./ReservationDetailParts";
 import {
@@ -247,36 +248,38 @@ export function ReservationCheckout({
     }
   }
   return (
-    <section className="reservationCheckout">
-      <div className="checkoutHead">
-        <div>
-          <p className="eyebrow">TU RESERVA</p>
-          <h3>
-            {expired ? "Tiempo vencido" : reservationStatus[reservation.status]}
-          </h3>
+    <section className={`reservationCheckout ${styles.checkout}`}>
+      {temporary && (
+        <div className="checkoutHead">
+          <div>
+            <p className="eyebrow">TU RESERVA</p>
+            <h3>
+              {expired
+                ? "Tiempo vencido"
+                : reservationStatus[reservation.status]}
+            </h3>
+          </div>
+          {temporary && !expired && (
+            <span className="holdTimer" aria-label="Tiempo restante">
+              <Clock aria-hidden="true" size={18} />
+              {String(Math.floor(remaining / 60)).padStart(2, "0")}:
+              {String(remaining % 60).padStart(2, "0")}
+            </span>
+          )}
         </div>
-        {temporary && !expired && (
-          <span className="holdTimer" aria-label="Tiempo restante">
-            <Clock aria-hidden="true" size={18} />
-            {String(Math.floor(remaining / 60)).padStart(2, "0")}:
-            {String(remaining % 60).padStart(2, "0")}
-          </span>
-        )}
-      </div>
-      <ReservationDetailHeading
+      )}
+      <ReservationBookingHeading
         reservation={reservation}
         venueName={venueName}
         spaceName={spaceName}
       />
-      {(!externalPayments || !paymentActive) && (
+      <div className={styles.amounts}>
         <ReservationAmounts reservation={reservation} paid={paid} />
-      )}
+      </div>
       {externalPayments && paymentActive && (
         <ExternalPaymentPanel
           accessToken={accessToken}
-          reservationAmounts={
-            <ReservationAmounts reservation={reservation} paid={paid} />
-          }
+          compactReservation
           targetType="RESERVATION"
           targetId={reservation.id}
           allowUpload={(temporary && !expired) || balancePayment}
@@ -454,20 +457,23 @@ export function ReservationCheckout({
           completed={reservation.status === "COMPLETED"}
         />
       )}
-      <p className="muted">
-        Cancelación hasta{" "}
-        {reservationDate(
-          new Date(
-            new Date(reservation.startsAt).getTime() - 7200000,
-          ).toISOString(),
-        )}
-        ,{" "}
-        {reservationTime(
-          new Date(
-            new Date(reservation.startsAt).getTime() - 7200000,
-          ).toISOString(),
-        )}
-        . No hay devoluciones.
+      <p className={styles.cancellation}>
+        <Clock aria-hidden="true" size={20} />
+        <span>
+          Cancelación hasta{" "}
+          {reservationDate(
+            new Date(
+              new Date(reservation.startsAt).getTime() - 7200000,
+            ).toISOString(),
+          )}
+          ,{" "}
+          {reservationTime(
+            new Date(
+              new Date(reservation.startsAt).getTime() - 7200000,
+            ).toISOString(),
+          )}
+          . No hay devoluciones.
+        </span>
       </p>
       {!expired && canPlayerCancel(reservation, now) && (
         <div className="checkoutActions">

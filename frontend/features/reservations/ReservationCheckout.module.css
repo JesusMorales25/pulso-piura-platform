@@ -1,0 +1,144 @@
+.checkout {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+.checkout :is(p, span, small, strong, h3, h4, dt, dd) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.amounts > section {
+  border: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+.amounts h4 {
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+.amounts dl {
+  gap: 10px;
+}
+.amounts dl > div {
+  padding: 12px;
+  gap: 7px;
+}
+.amounts dl > div > svg {
+  width: 28px;
+  height: 32px;
+  padding: 3px;
+}
+.amounts dd {
+  font-size: 0.95rem;
+  margin-top: 5px;
+}
+.checkout :global(.reservationPass) {
+  margin: 0;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(0, 196, 213, 0.025);
+}
+.checkout :global(.reservationPass) h4 {
+  font-size: 1.1rem;
+}
+.checkout :global(.reservationPass) p {
+  line-height: 1.6;
+  font-size: 0.82rem;
+}
+.checkout :global(.qrPassBody) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 14px;
+  align-items: start;
+}
+.checkout :global(.qrPassBody) > div {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+.checkout :global(.qrImage) {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 12px;
+}
+.checkout :global(.qrPassBody) :is(strong, small, button) {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  white-space: normal;
+}
+.checkout :global(.qrPassBody) button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 9px;
+  min-height: 44px;
+}
+.checkout :global(.qrVerifiedLabel) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  flex-wrap: wrap;
+}
+.cancellation {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(0, 196, 213, 0.035);
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  margin: 0;
+}
+.cancellation svg {
+  flex-shrink: 0;
+  color: var(--cyan);
+  margin-top: 3px;
+}
+.checkout :global(.checkoutActions) {
+  display: grid;
+}
+.checkout :global(.checkoutActions) > button {
+  width: 100%;
+  min-height: 46px;
+  border-color: rgba(242, 93, 102, 0.5);
+  background: rgba(138, 28, 41, 0.25);
+  color: #ffd6d9;
+}
+.checkout :global(.checkoutActions) > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.checkout :global(.notice),
+.checkout :global(.successNotice) {
+  font-size: 0.8rem;
+  line-height: 1.65;
+  padding: 13px;
+  margin: 0;
+}
+@media (min-width: 500px) {
+  .amounts dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .amounts dl > div:last-child {
+    grid-column: auto;
+  }
+}
+@media (max-width: 440px) {
+  .checkout :global(.qrPassBody) {
+    grid-template-columns: 1fr;
+  }
+  .checkout :global(.qrImage) {
+    justify-self: center;
+  }
+}

@@ -111,7 +111,8 @@ async function main() {
           else if (endpoint === "/external-payments/destination")
             data = {
               configured: true,
-              holderName: "Receptor prueba",
+              holderName:
+                "Receptor de prueba con nombres y apellidos muy extensos",
               phone: "999888777",
               yapeEnabled: true,
               plinEnabled: true,
@@ -135,7 +136,8 @@ async function main() {
                 reviewExpiresAt: "2026-10-24T18:30:00Z",
                 reviewedAt: "2026-10-24T18:10:00Z",
                 reviewNote: "Verificado",
-                holderName: "Receptor prueba",
+                holderName:
+                  "Receptor de prueba con nombres y apellidos muy extensos",
                 phone: "999888777",
                 canReview: false,
                 hasImage: true,
@@ -218,7 +220,14 @@ async function main() {
             row.expiresAt = null;
             row.version++;
             data = row;
-          } else if (endpoint.startsWith("/reservations/"))
+          } else if (endpoint.endsWith("/check-in-pass"))
+            data = {
+              reservationId: endpoint.split("/").at(-2),
+              payload: "PULSO_RESERVATION_TEST_QR",
+              issuedAt: new Date().toISOString(),
+              validUntil: new Date(Date.now() + 172800000).toISOString(),
+            };
+          else if (endpoint.startsWith("/reservations/"))
             data = rows.find((r) => r.id === endpoint.split("/").at(-1));
           return route.fulfill({
             contentType: "application/json",
@@ -258,6 +267,19 @@ async function main() {
         await expect(
           detail.getByRole("heading", { name: "Pago confirmado", exact: true }),
         ).toBeVisible();
+        if (role === "payer") {
+          await expect(
+            detail.getByRole("img", {
+              name: "Código QR único de esta reserva",
+            }),
+          ).toBeVisible();
+          assert.equal(
+            await detail.evaluate(
+              (element) => element.scrollWidth > element.clientWidth + 1,
+            ),
+            false,
+          );
+        }
         await page.screenshot({
           path: path.join(
             __dirname,

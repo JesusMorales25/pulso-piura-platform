@@ -289,3 +289,30 @@
   border-color: rgba(0, 220, 181, 0.35);
   background: rgba(0, 220, 181, 0.045);
 }
+.panel.compactReservation {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  background: rgba(0, 196, 213, 0.025);
+}
+.compactReservation .proofList article {
+  padding: 12px;
+  gap: 12px;
+}
+.compactReservation .proofList h4 {
+  font-size: 0.95rem;
+}
+.compactReservation .proofDetails {
+  grid-template-columns: 80px minmax(0, 1fr);
+  font-size: 0.8rem;
+  gap: 8px 10px;
+}
+.compactReservation .historyButton {
+  font-size: 0.86rem;
+}
+@media (max-width: 360px) {
+  .compactReservation .proofDetails {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}

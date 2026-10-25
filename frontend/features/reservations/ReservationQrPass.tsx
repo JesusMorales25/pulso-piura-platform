@@ -103,7 +103,7 @@ export function ReservationQrPass({
     >
       <div>
         <p className="eyebrow">PASE DE LLEGADA</p>
-        <h4 id={`pass-${reservationId}`}>Tu QR de reserva</h4>
+        <h4 id={`pass-${reservationId}`}>Pase de llegada</h4>
         <p className="muted">
           Muéstralo en portería para validar tu llegada y cerrar el servicio.
         </p>
@@ -145,7 +145,10 @@ export function ReservationQrPass({
             </span>
             <strong>Reserva #{reservationId.slice(0, 8).toUpperCase()}</strong>
             <small>
-              Válido hasta {new Date(pass.validUntil).toLocaleString("es-PE")}
+              Válido hasta{" "}
+              {new Date(pass.validUntil).toLocaleString("es-PE", {
+                timeZone: "America/Lima",
+              })}
             </small>
             <button
               className="secondary"

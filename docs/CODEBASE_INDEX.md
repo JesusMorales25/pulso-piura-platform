@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: 579138945bbb5ff3
-- Archivos indexados: 741
+- Huella del inventario: ef053cf56f74f151
+- Archivos indexados: 742
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -86,7 +86,7 @@
 - navigation (3): AppNavigation.tsx, LocationProvider.tsx, LocationSelector.tsx
 - organizations (7): EnabledCourts.tsx, InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx, PlatformRequestsDashboard.tsx, PlatformUserDirectory.tsx, user-directory.ts
 - payments (3): ExternalPaymentPanel.module.css, ExternalPaymentPanel.tsx, proof-validation.ts
-- reservations (22): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, PlayerReservationOverview.module.css, PlayerReservationOverview.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationCourtPhoto.tsx, ReservationDetail.module.css, ReservationDetailParts.tsx, ReservationDrilldown.module.css, ReservationHistory.module.css, ReservationHistory.tsx, ReservationListCard.module.css, ReservationListCard.tsx, ReservationQrPass.tsx, types.ts, useReservationDashboard.ts, VenueOwnerReservationsDashboard.tsx
+- reservations (23): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, PlayerReservationOverview.module.css, PlayerReservationOverview.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.module.css, ReservationCheckout.tsx, ReservationCourtPhoto.tsx, ReservationDetail.module.css, ReservationDetailParts.tsx, ReservationDrilldown.module.css, ReservationHistory.module.css, ReservationHistory.tsx, ReservationListCard.module.css, ReservationListCard.tsx, ReservationQrPass.tsx, types.ts, useReservationDashboard.ts, VenueOwnerReservationsDashboard.tsx
 - venues (9): AvailabilityAdmin.tsx, CourtPhotos.module.css, CourtPhotos.tsx, PublicVenueCatalog.tsx, VenueAdmin.tsx, VenueBookingCard.module.css, VenueBookingCard.tsx, VenueScheduleDialog.module.css, VenueScheduleDialog.tsx
 
 ### Compartido

@@ -536,6 +536,7 @@ typescript	reservations	function	ReservationCourtPhoto	frontend/features/reserva
 typescript	reservations	function	ReservationDetailHeading	frontend/features/reservations/ReservationDetailParts.tsx
 typescript	reservations	function	ReservationCustomer	frontend/features/reservations/ReservationDetailParts.tsx
 typescript	reservations	function	ReservationAmounts	frontend/features/reservations/ReservationDetailParts.tsx
+typescript	reservations	function	ReservationBookingHeading	frontend/features/reservations/ReservationDetailParts.tsx
 typescript	reservations	function	ReservationHistory	frontend/features/reservations/ReservationHistory.tsx
 typescript	reservations	function	ReservationListCard	frontend/features/reservations/ReservationListCard.tsx
 typescript	reservations	function	ReservationQrPass	frontend/features/reservations/ReservationQrPass.tsx

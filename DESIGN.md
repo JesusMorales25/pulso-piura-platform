@@ -119,3 +119,7 @@ Ficha de cancha fotográfica con estado y filas de sede, fecha y horario. Seccio
 ## Tu perfil deportivo — referencia móvil
 
 Cabecera con avatar real o inicial, identidad y cerrar sesión; accesos en tarjetas según permisos reales. Formulario en panel con iconos, presentación con contador y visibilidad; aceptación legal sin selección automática, con control visual de interruptor y etiqueta completa. Capacidades en tarjetas con iconos, estados reales, contador y acciones existentes. Una columna por debajo de 600 px para legibilidad, dos columnas cuando el ancho lo permite. No se añade botón ficticio de cambiar foto ni menú sin función; conserva límites y autorización del sistema.
+
+## Tu reserva — ficha compacta
+
+Cabecera de reserva con foto a la derecha, estado junto a la etiqueta y filas independientes de fecha y horario. Montos antes del historial de pago, pase de llegada con código y acciones agrupadas y condiciones en recuadro propio. En anchos estrechos las columnas se apilan; el QR mantiene proporción y nombres, motivos e importes permiten salto de línea. Sin cambios en reglas de pagos, cancelación ni habilitación del pase; fechas del pase en America/Lima.

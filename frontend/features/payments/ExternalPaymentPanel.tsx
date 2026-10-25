@@ -107,6 +107,7 @@ function ExternalPaymentPanelInner({
   plans = [{ plan: "FULL", label: "Pago completo" }],
   onChange,
   reservationAmounts,
+  compactReservation = false,
 }: {
   accessToken: string;
   targetType: "MATCH" | "RESERVATION";
@@ -117,6 +118,7 @@ function ExternalPaymentPanelInner({
   plans?: { plan: "FULL" | "DEPOSIT" | "BALANCE"; label: string }[];
   onChange?: () => void;
   reservationAmounts?: ReactNode;
+  compactReservation?: boolean;
 }) {
   const enabled = useExternalPayments();
   const [destination, setDestination] = useState<Destination | null>(null);
@@ -525,7 +527,7 @@ function ExternalPaymentPanelInner({
   );
   return (
     <section
-      className={`${styles.panel} ${organizationSettings ? styles.accountPanel : targetType === "RESERVATION" ? styles.reservationPanel : ""} card`}
+      className={`${styles.panel} ${compactReservation ? styles.compactReservation : ""} ${organizationSettings ? styles.accountPanel : targetType === "RESERVATION" ? styles.reservationPanel : ""} card`}
       aria-label={
         reviewer ? "Revisión de pagos externos" : "Pago por Yape o Plin"
       }
@@ -536,25 +538,29 @@ function ExternalPaymentPanelInner({
         )}
         {organizationSettings
           ? "Cuenta receptora del complejo"
-          : reviewer
-            ? matchPayment
-              ? "Cobros del partido"
-              : "Verificación de pago"
-            : allowUpload
-              ? "Paga con Yape o Plin"
-              : "Verificación de pago"}
+          : compactReservation
+            ? "Historial de pago"
+            : reviewer
+              ? matchPayment
+                ? "Cobros del partido"
+                : "Verificación de pago"
+              : allowUpload
+                ? "Paga con Yape o Plin"
+                : "Verificación de pago"}
       </h3>
       {!organizationSettings && (
         <p>
           {organizationSettings
             ? "Configura los datos que verán los jugadores antes de su primera reserva. Verifica el titular y celular antes de guardarlos."
-            : !allowUpload
-              ? matchPayment
-                ? "El organizador valida los comprobantes de este partido."
-                : "Revisa los comprobantes y su estado."
-              : matchPayment
-                ? "Paga tu cuota al organizador por Yape o Plin y envía el comprobante. Tu cupo se confirma cuando él apruebe el pago."
-                : "Primero prepara el pago para verificar disponibilidad; después transfiere desde tu aplicación. Enviar una captura no confirma el pago: el responsable debe verificarlo."}
+            : compactReservation
+              ? "Revisa los comprobantes y su estado."
+              : !allowUpload
+                ? matchPayment
+                  ? "El organizador valida los comprobantes de este partido."
+                  : "Revisa los comprobantes y su estado."
+                : matchPayment
+                  ? "Paga tu cuota al organizador por Yape o Plin y envía el comprobante. Tu cupo se confirma cuando él apruebe el pago."
+                  : "Primero prepara el pago para verificar disponibilidad; después transfiere desde tu aplicación. Enviar una captura no confirma el pago: el responsable debe verificarlo."}
         </p>
       )}
       {loadError && (
