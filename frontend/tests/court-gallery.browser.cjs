@@ -291,7 +291,21 @@ async function main() {
           return Math.abs(row.width - box.width) < 2;
         });
       assert.equal(districtFits, true);
-      const turnButtons = bookingCard
+      await expect(
+        page.locator(".reservationDateList").getByRole("button"),
+      ).toHaveCount(5);
+      await expect(
+        bookingCard.getByRole("group", { name: "Elige un turno disponible" }),
+      ).not.toBeVisible();
+      await bookingCard
+        .getByRole("button", { name: "Turnos disponibles", exact: true })
+        .click();
+      const turnsDialog = page.getByRole("dialog", {
+        name: "Turnos disponibles · Complejo galería",
+        exact: true,
+      });
+      await expect(turnsDialog).toBeVisible();
+      const turnButtons = turnsDialog
         .getByRole("group", { name: "Elige un turno disponible" })
         .getByRole("button");
       await expect(turnButtons).toHaveCount(4);
@@ -309,13 +323,13 @@ async function main() {
           .getByText("S/ 60", { exact: true }),
       ).toBeVisible();
       await expect(
-        bookingCard.getByRole("button", {
+        turnsDialog.getByRole("button", {
           name: "Reservar con 20 %",
           exact: true,
         }),
       ).toBeEnabled();
       await expect(
-        bookingCard.getByRole("button", {
+        turnsDialog.getByRole("button", {
           name: "Pagar completo",
           exact: true,
         }),
@@ -326,6 +340,10 @@ async function main() {
         ),
         false,
       );
+      await turnsDialog
+        .getByRole("button", { name: "Cerrar formulario", exact: true })
+        .click();
+      await expect(turnsDialog).not.toBeVisible();
       await bookingCard.screenshot({
         path: require("node:path").join(
           __dirname,

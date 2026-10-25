@@ -87,3 +87,7 @@ Las fotos reales pertenecen a cada cancha, con galería bajo demanda en FormShee
 El catálogo comparte VenueBookingCard: ficha fotográfica con nombre, ubicación, servicios reales, calificación declarada y tarifa mínima; segundo bloque con cuatro turnos, selección y acciones de adelanto/completo. Otros horarios abre el diálogo existente. En móvil estrecho los turnos pasan a dos columnas y las acciones se apilan desde 360 px. La franja de siete días desplaza dentro de su contenedor. No se inventan reseñas ni se modifica la confirmación manual de pagos.
 
 Ajuste solicitado: filtros de fecha/deporte/distrito, distrito a ancho completo; tarifa sin «Desde» y valoración en una fila compartida. Los servicios siguen siendo información de la cancha, sin filtros de techada/LED.
+
+## Consola de plataforma y turnos bajo demanda
+
+Plataforma conserva métricas reales, accesos y popups autorizados, con cabecera ilustrada mediante iconos, resumen en tarjetas y herramientas visibles. No se añade filtro temporal ficticio. Reserva tu cancha presenta cinco fechas sin desplazamiento horizontal; cada ficha abre sus turnos en FormSheet desde un botón de ancho completo. Selección, adelanto, pago completo y otros horarios mantienen el flujo existente y cierran la ficha antes de continuar.

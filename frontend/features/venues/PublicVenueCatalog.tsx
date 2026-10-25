@@ -758,7 +758,7 @@ export function PublicVenueCatalog({
 
   const reservationDates = useMemo(() => {
     const start = new Date(`${localDate()}T12:00:00`);
-    return Array.from({ length: 7 }, (_, index) => {
+    return Array.from({ length: 5 }, (_, index) => {
       const current = new Date(start);
       current.setDate(start.getDate() + index);
       const value = new Intl.DateTimeFormat("en-CA", {

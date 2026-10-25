@@ -7,6 +7,10 @@ import { PlatformRequestsDashboard } from "@/features/organizations/PlatformRequ
 import { useEffect, useState } from "react";
 import {
   Buildings,
+  CaretRight,
+  ChartBar,
+  Wrench,
+  Images,
   CheckSquareOffset,
   Storefront,
   UsersThree,
@@ -87,12 +91,21 @@ export default function PlatformPage() {
     );
 
   return (
-    <main className="section platformDashboard">
-      <p className="eyebrow">PULSO PIURA · CONTROL GLOBAL</p>
-      <h1>Administración de plataforma</h1>
-      <p className="pageLead">
-        Revisa accesos, usuarios, complejos y el contenido comercial publicado.
-      </p>
+    <main className={`section platformDashboard ${styles.dashboard}`}>
+      <header className={styles.hero}>
+        <div>
+          <p className="eyebrow">PULSO PIURA · CONTROL GLOBAL</p>
+          <h1>Administración de plataforma</h1>
+          <p className="pageLead">
+            Revisa accesos, usuarios, complejos y el contenido comercial
+            publicado.
+          </p>
+        </div>
+        <div className={styles.heroArt} aria-hidden="true">
+          <CheckSquareOffset weight="duotone" />
+          <Buildings weight="duotone" />
+        </div>
+      </header>
       {error && (
         <p className="inlineAlert errorNotice" role="alert">
           {error}
@@ -100,47 +113,83 @@ export default function PlatformPage() {
       )}
 
       <section
-        className={`platformKpis ${styles.kpis}`}
-        aria-label="Resumen de plataforma"
+        className={styles.summaryPanel}
+        aria-labelledby="platform-summary-title"
       >
-        <article>
-          <button
-            className="secondary"
-            type="button"
-            onClick={() => setShowUsers(true)}
-          >
-            <UsersThree size={26} />
-            <span>Usuarios activos</span>
-            <strong>{summary?.activeUsers ?? "—"}</strong>
-          </button>
-        </article>
-        <article>
-          <button
-            className="secondary"
-            type="button"
-            onClick={() => setShowPending(true)}
-          >
-            <CheckSquareOffset size={26} />
-            <span>Solicitudes pendientes</span>
-            <strong>{summary?.pendingRequests ?? "—"}</strong>
-          </button>
-        </article>
-        <article>
-          <Buildings size={26} />
-          <span>Organizaciones</span>
-          <strong>{summary?.organizations ?? "—"}</strong>
-        </article>
-        <article>
-          <Storefront size={26} />
-          <span>Sedes publicadas</span>
-          <strong>{summary?.venues ?? "—"}</strong>
-        </article>
-      </section>
-
-      <details>
-        <summary>Herramientas de administración</summary>
+        <div className={styles.sectionHeading}>
+          <ChartBar size={27} aria-hidden="true" />
+          <h2 id="platform-summary-title">Resumen general</h2>
+          <span>Estado actual</span>
+        </div>
         <section
-          className="platformModules"
+          className={`platformKpis ${styles.kpis}`}
+          aria-label="Resumen de plataforma"
+        >
+          <article>
+            <button
+              className="secondary"
+              type="button"
+              onClick={() => setShowUsers(true)}
+            >
+              <UsersThree size={26} />
+              <span>Usuarios activos</span>
+              <strong>{summary?.activeUsers ?? "—"}</strong>
+              <CaretRight
+                className={styles.chevron}
+                size={20}
+                aria-hidden="true"
+              />
+            </button>
+          </article>
+          <article>
+            <button
+              className="secondary"
+              type="button"
+              onClick={() => setShowPending(true)}
+            >
+              <CheckSquareOffset size={26} />
+              <span>Solicitudes pendientes</span>
+              <strong>{summary?.pendingRequests ?? "—"}</strong>
+              <CaretRight
+                className={styles.chevron}
+                size={20}
+                aria-hidden="true"
+              />
+            </button>
+          </article>
+          <article>
+            <Link href="/plataforma/organizaciones">
+              <Buildings size={26} />
+              <span>Organizaciones</span>
+              <strong>{summary?.organizations ?? "—"}</strong>
+              <CaretRight
+                className={styles.chevron}
+                size={20}
+                aria-hidden="true"
+              />
+            </Link>
+          </article>
+          <article>
+            <Link href="/plataforma/organizaciones">
+              <Storefront size={26} />
+              <span>Sedes publicadas</span>
+              <strong>{summary?.venues ?? "—"}</strong>
+              <CaretRight
+                className={styles.chevron}
+                size={20}
+                aria-hidden="true"
+              />
+            </Link>
+          </article>
+        </section>
+      </section>
+      <section className={styles.tools} aria-labelledby="platform-tools-title">
+        <div className={styles.sectionHeading}>
+          <Wrench size={28} aria-hidden="true" />
+          <h2 id="platform-tools-title">Herramientas de administración</h2>
+        </div>
+        <section
+          className={`platformModules ${styles.modules}`}
           aria-label="Módulos de administración"
         >
           <Link href="/plataforma/solicitudes">
@@ -151,6 +200,11 @@ export default function PlatformPage() {
                 Aprobar o retirar acceso de organizadores y dueños de cancha.
               </small>
             </span>
+            <CaretRight
+              className={styles.toolChevron}
+              size={23}
+              aria-hidden="true"
+            />
           </Link>
           <Link href="/plataforma/organizaciones">
             <Buildings size={30} />
@@ -162,7 +216,7 @@ export default function PlatformPage() {
             </span>
           </Link>
           <Link href="/plataforma/imagenes">
-            <Buildings size={30} />
+            <Images size={30} />
             <span>
               <strong>Imágenes de plataforma</strong>
               <small>
@@ -180,7 +234,7 @@ export default function PlatformPage() {
             </span>
           </Link>
         </section>
-      </details>
+      </section>
       <FormSheet
         variant="workspace"
         open={showUsers}

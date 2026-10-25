@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { FormSheet } from "@/components/forms/FormSheet";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api";
 import {
@@ -92,6 +93,7 @@ export function VenueBookingCard({
   onOpenSchedules,
 }: Props) {
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [slotsOpen, setSlotsOpen] = useState(false);
   const [coverId, setCoverId] = useState<string | null>(null);
   useEffect(() => {
     const controller = new AbortController();
@@ -249,96 +251,122 @@ export function VenueBookingCard({
             </a>
           </div>
         </div>
-      </div>
-
-      <div className={styles.booking}>
-        <section
-          className={styles.availability}
-          aria-label={`Turnos disponibles en ${space.name}`}
+        <button
+          className={styles.openSlots}
+          type="button"
+          onClick={() => setSlotsOpen(true)}
         >
-          <div className={styles.availabilityHeading}>
-            <strong>Turnos disponibles</strong>
-            <button
-              className={styles.spaceButton}
-              onClick={onOpenSchedules}
-              type="button"
-              aria-label={`Ver canchas y horarios de ${venue.name}`}
-            >
-              {space.name}
-              <CaretRight aria-hidden="true" size={16} />
-            </button>
-          </div>
-          <div
-            className={styles.slots}
-            role="group"
-            aria-label="Elige un turno disponible"
-          >
-            {visibleSlots.map((slot) => {
-              const selected = slot.startsAt === selectedSlot?.startsAt;
-              return (
-                <button
-                  aria-pressed={selected}
-                  className={selected ? styles.selected : undefined}
-                  disabled={busy}
-                  key={`${slot.startsAt}-${slot.endsAt}`}
-                  onClick={() => onSelectSlot(slot)}
-                  type="button"
-                >
-                  <strong>{time(slot.startsAt)}</strong>
-                  <small>{selected ? "Elegido" : "Disponible"}</small>
-                  <span>{money(slot)}</span>
-                </button>
-              );
-            })}
-          </div>
-          {visibleSlots.length === 0 && (
-            <p className={styles.empty}>
-              No quedan turnos disponibles. Consulta otros horarios.
-            </p>
-          )}
-        </section>
-
-        <footer className={styles.footer}>
-          <div className={styles.selection}>
-            <CalendarBlank aria-hidden="true" size={17} />
-            <span>
-              <small>Turno seleccionado</small>
-              <strong>
-                {selectedSlot
-                  ? `${time(selectedSlot.startsAt)} – ${time(selectedSlot.endsAt)}`
-                  : "Elige un horario"}
-              </strong>
-            </span>
-          </div>
-          <div className={styles.actions}>
-            <button
-              disabled={busy || !selectedSlot}
-              onClick={() => onReserve("DEPOSIT")}
-              type="button"
-            >
-              <CalendarBlank aria-hidden="true" size={22} weight="bold" />{" "}
-              <span>
-                Reservar con <span className={styles.noWrap}>20 %</span>
-              </span>
-            </button>
-            <button
-              disabled={busy || !selectedSlot}
-              onClick={() => onReserve("FULL")}
-              type="button"
-            >
-              <CreditCard aria-hidden="true" size={22} weight="fill" /> Pagar
-              completo
-            </button>
-            <button
-              className={styles.secondary}
-              onClick={onOpenSchedules}
-              type="button"
-            >
-              Otros horarios <CaretRight aria-hidden="true" size={20} />
-            </button>
-          </div>
-        </footer>
+          <CalendarBlank aria-hidden="true" size={21} /> Turnos disponibles{" "}
+          <CaretRight aria-hidden="true" size={20} />
+        </button>
       </div>
+
+      <FormSheet
+        open={slotsOpen}
+        title={`Turnos disponibles · ${venue.name}`}
+        onClose={() => setSlotsOpen(false)}
+      >
+        <div className={styles.booking}>
+          <section
+            className={styles.availability}
+            aria-label={`Turnos disponibles en ${space.name}`}
+          >
+            <div className={styles.availabilityHeading}>
+              <strong>Turnos disponibles</strong>
+              <button
+                className={styles.spaceButton}
+                onClick={() => {
+                  setSlotsOpen(false);
+                  onOpenSchedules();
+                }}
+                type="button"
+                aria-label={`Ver canchas y horarios de ${venue.name}`}
+              >
+                {space.name}
+                <CaretRight aria-hidden="true" size={16} />
+              </button>
+            </div>
+            <div
+              className={styles.slots}
+              role="group"
+              aria-label="Elige un turno disponible"
+            >
+              {visibleSlots.map((slot) => {
+                const selected = slot.startsAt === selectedSlot?.startsAt;
+                return (
+                  <button
+                    aria-pressed={selected}
+                    className={selected ? styles.selected : undefined}
+                    disabled={busy}
+                    key={`${slot.startsAt}-${slot.endsAt}`}
+                    onClick={() => onSelectSlot(slot)}
+                    type="button"
+                  >
+                    <strong>{time(slot.startsAt)}</strong>
+                    <small>{selected ? "Elegido" : "Disponible"}</small>
+                    <span>{money(slot)}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {visibleSlots.length === 0 && (
+              <p className={styles.empty}>
+                No quedan turnos disponibles. Consulta otros horarios.
+              </p>
+            )}
+          </section>
+
+          <footer className={styles.footer}>
+            <div className={styles.selection}>
+              <CalendarBlank aria-hidden="true" size={17} />
+              <span>
+                <small>Turno seleccionado</small>
+                <strong>
+                  {selectedSlot
+                    ? `${time(selectedSlot.startsAt)} – ${time(selectedSlot.endsAt)}`
+                    : "Elige un horario"}
+                </strong>
+              </span>
+            </div>
+            <div className={styles.actions}>
+              <button
+                disabled={busy || !selectedSlot}
+                onClick={() => {
+                  setSlotsOpen(false);
+                  onReserve("DEPOSIT");
+                }}
+                type="button"
+              >
+                <CalendarBlank aria-hidden="true" size={22} weight="bold" />{" "}
+                <span>
+                  Reservar con <span className={styles.noWrap}>20 %</span>
+                </span>
+              </button>
+              <button
+                disabled={busy || !selectedSlot}
+                onClick={() => {
+                  setSlotsOpen(false);
+                  onReserve("FULL");
+                }}
+                type="button"
+              >
+                <CreditCard aria-hidden="true" size={22} weight="fill" /> Pagar
+                completo
+              </button>
+              <button
+                className={styles.secondary}
+                onClick={() => {
+                  setSlotsOpen(false);
+                  onOpenSchedules();
+                }}
+                type="button"
+              >
+                Otros horarios <CaretRight aria-hidden="true" size={20} />
+              </button>
+            </div>
+          </footer>
+        </div>
+      </FormSheet>
     </article>
   );
 }

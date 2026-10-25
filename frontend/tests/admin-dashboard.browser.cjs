@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 async function main() {
   const browser = await chromium.launch({ headless: true, channel: "chrome" });
   try {
-    for (const width of [320, 393, 768]) {
+    for (const width of [320, 393, 768, 1280]) {
       const context = await browser.newContext({
         viewport: { width, height: 900 },
         reducedMotion: "reduce",
@@ -109,7 +109,19 @@ async function main() {
           body: JSON.stringify(data),
         });
       });
-      await page.goto("http://localhost:3002/plataforma");
+      await page.goto(
+        `${process.env.A11Y_BASE_URL || "http://localhost:3004"}/plataforma`,
+      );
+      await expect(
+        page.getByRole("heading", { name: "Resumen general", exact: true }),
+      ).toBeVisible();
+      await page.screenshot({
+        path: require("node:path").join(
+          __dirname,
+          "../../.local/platform-redesign-" + width + ".png",
+        ),
+        fullPage: true,
+      });
       const pending = page.getByRole("button", {
         name: /Solicitudes pendientes/,
       });
