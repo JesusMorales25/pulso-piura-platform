@@ -328,3 +328,31 @@ test("venue attributes remain readable when the catalog has no label", () => {
   assert.equal(venueAttributeLabel("LOCKER_ROOMS", names), "Vestuarios");
   assert.equal(venueAttributeLabel("CUSTOM_AMENITY", names), "Custom amenity");
 });
+
+test("match QR opens at Lima midnight and expires exactly at match end", () => {
+  const { matchPassAvailability } = load("lib/match-pass-window.ts");
+  const start = "2026-10-27T23:00:00Z",
+    end = "2026-10-28T00:00:00Z";
+  assert.equal(
+    matchPassAvailability(start, end, Date.parse("2026-10-27T04:59:59.999Z")),
+    "scheduled",
+  );
+  assert.equal(
+    matchPassAvailability(start, end, Date.parse("2026-10-27T05:00:00Z")),
+    "available",
+  );
+  assert.equal(
+    matchPassAvailability(start, end, Date.parse("2026-10-27T23:59:59.999Z")),
+    "available",
+  );
+  assert.equal(matchPassAvailability(start, end, Date.parse(end)), "expired");
+  assert.equal(
+    matchPassAvailability(start, end, Date.parse("2026-10-28T01:00:00Z")),
+    "expired",
+  );
+  assert.equal(
+    matchPassAvailability("invalid", end, Date.now()),
+    "unavailable",
+  );
+  assert.equal(matchPassAvailability(end, start, Date.now()), "unavailable");
+});

@@ -146,3 +146,7 @@ Asistencia reciente: alta/media/baja, con muestra mínima
 ## Compatibilidad del pase de ingreso
 
 La emisión, regeneración y consumo del QR conservan instantes UTC. Los parámetros JDBC de issued_at, valid_until y consumed_at se enlazan como Timestamp, igual que en los pases de reservas; no se envía Instant directamente al controlador PostgreSQL. El pase continúa vinculado al participante confirmado y solo el organizador del partido registra el ingreso.
+
+## Ventana del QR de ingreso
+
+El pase se habilita a las 00:00 de la fecha de inicio del partido en America/Lima y vence exactamente en ends_at, sin las cuatro horas de tolerancia anteriores. Antes de esa fecha la interfaz informa cuándo estará disponible; al terminar retira el QR y sus acciones aunque el popup siga abierto. Backend valida la ventana al emitir, regenerar, previsualizar y registrar el ingreso, también para pases anteriores. Partidos cancelados no admiten validación. Se conservan propiedad del pase, cupo confirmado y alcance exclusivo del organizador.

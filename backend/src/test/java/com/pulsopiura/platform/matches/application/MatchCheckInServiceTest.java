@@ -35,8 +35,9 @@ class MatchCheckInServiceTest {
         when(row.getObject("match_id", UUID.class)).thenReturn(match);
         when(row.getString("participation_status")).thenReturn("JOINED");
         when(row.getString("match_status")).thenReturn("PUBLISHED");
+        when(row.getTimestamp("starts_at")).thenReturn(Timestamp.from(now.minusSeconds(3600)));
         when(row.getTimestamp("ends_at")).thenReturn(Timestamp.from(now.plusSeconds(3600)));
-        when(row.getTimestamp("valid_until")).thenReturn(Timestamp.from(now.plusSeconds(18000)));
+        when(row.getTimestamp("valid_until")).thenReturn(Timestamp.from(now.plusSeconds(3600)));
         doAnswer(call -> List.of(((RowMapper) call.getArgument(1)).mapRow(row, 0)))
                 .when(jdbc)
                 .query(anyString(), any(RowMapper.class), any(Object[].class));
@@ -59,14 +60,14 @@ class MatchCheckInServiceTest {
         assertThat(first.participantId()).isEqualTo(participant);
         assertThat(first.payload()).startsWith("PULSO-MATCH:").isNotEqualTo(second.payload());
         assertThat(first.issuedAt()).isEqualTo(now);
-        assertThat(first.validUntil()).isEqualTo(now.plusSeconds(18000));
+        assertThat(first.validUntil()).isEqualTo(now.plusSeconds(3600));
         verify(jdbc, times(2))
                 .update(
                         anyString(),
                         eq(participant),
                         anyString(),
                         eq(Timestamp.from(now)),
-                        eq(Timestamp.from(now.plusSeconds(18000))));
+                        eq(Timestamp.from(now.plusSeconds(3600))));
     }
 
     @Test
@@ -106,6 +107,56 @@ class MatchCheckInServiceTest {
                 .query(anyString(), any(RowMapper.class), any(Object[].class));
         assertThatThrownBy(() -> service.issue(actor, "test-match"))
                 .isInstanceOf(NoSuchElementException.class);
+        verify(jdbc, never()).update(anyString(), any(Object[].class));
+    }
+
+    @Test
+    void dayBeforeAt235959InPiuraCannotIssueOrValidateAnOldPass() throws Exception {
+        when(row.getTimestamp("starts_at"))
+                .thenReturn(Timestamp.from(Instant.parse("2026-10-25T18:00:00Z")));
+        when(row.getTimestamp("ends_at"))
+                .thenReturn(Timestamp.from(Instant.parse("2026-10-25T19:00:00Z")));
+        var before =
+                new MatchCheckInService(
+                        jdbc, Clock.fixed(Instant.parse("2026-10-25T04:59:59Z"), ZoneOffset.UTC));
+        assertThatThrownBy(() -> before.issue(actor, "test-match"))
+                .isInstanceOf(ReservationConflictException.class);
+        assertThatThrownBy(() -> before.preview(actor, match, "a".repeat(43)))
+                .isInstanceOf(ReservationConflictException.class);
+        verify(jdbc, never()).update(anyString(), any(Object[].class));
+    }
+
+    @Test
+    void exactlyMidnightInPiuraCanIssueAPass() throws Exception {
+        when(row.getTimestamp("starts_at"))
+                .thenReturn(Timestamp.from(Instant.parse("2026-10-25T18:00:00Z")));
+        when(row.getTimestamp("ends_at"))
+                .thenReturn(Timestamp.from(Instant.parse("2026-10-25T19:00:00Z")));
+        var midnight =
+                new MatchCheckInService(
+                        jdbc, Clock.fixed(Instant.parse("2026-10-25T05:00:00Z"), ZoneOffset.UTC));
+        assertThat(midnight.issue(actor, "test-match").validUntil())
+                .isEqualTo(Instant.parse("2026-10-25T19:00:00Z"));
+    }
+
+    @Test
+    void exactMatchEndRejectsIssuingAndScanningIncludingLegacyPasses() throws Exception {
+        when(row.getTimestamp("ends_at")).thenReturn(Timestamp.from(now));
+        when(row.getTimestamp("valid_until")).thenReturn(Timestamp.from(now.plusSeconds(14400)));
+        assertThatThrownBy(() -> service.issue(actor, "test-match"))
+                .isInstanceOf(ReservationConflictException.class);
+        assertThatThrownBy(() -> service.preview(actor, match, "a".repeat(43)))
+                .isInstanceOf(ReservationConflictException.class);
+        assertThatThrownBy(() -> service.checkIn(actor, match, "a".repeat(43)))
+                .isInstanceOf(ReservationConflictException.class);
+        verify(jdbc, never()).update(anyString(), any(Object[].class));
+    }
+
+    @Test
+    void cancelledMatchCannotValidateAPass() throws Exception {
+        when(row.getString("match_status")).thenReturn("CANCELLED");
+        assertThatThrownBy(() -> service.preview(actor, match, "a".repeat(43)))
+                .isInstanceOf(ReservationConflictException.class);
         verify(jdbc, never()).update(anyString(), any(Object[].class));
     }
 }

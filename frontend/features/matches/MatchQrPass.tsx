@@ -6,10 +6,11 @@ import {
   QrCode,
   ShieldCheck,
 } from "@phosphor-icons/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FloatingNotice } from "@/components/feedback/FloatingNotice";
 import { apiRequest } from "@/lib/api";
 import { createQrMatrix } from "@/lib/qr-code";
+import { matchPassAvailability } from "@/lib/match-pass-window";
 
 type Pass = {
   matchId: string;
@@ -23,19 +24,34 @@ export function MatchQrPass({
   accessToken,
   publicSlug,
   checkedInAt,
+  startsAt,
+  endsAt,
 }: {
   accessToken: string;
   publicSlug: string;
   checkedInAt: string | null;
+  startsAt: string;
+  endsAt: string;
 }) {
   const [pass, setPass] = useState<Pass | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const inFlight = useRef(false);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const availability = matchPassAvailability(startsAt, endsAt, now);
 
   async function issue() {
-    if (inFlight.current || checkedInAt) return;
+    if (
+      inFlight.current ||
+      checkedInAt ||
+      matchPassAvailability(startsAt, endsAt, Date.now()) !== "available"
+    )
+      return;
     inFlight.current = true;
     setBusy(true);
     setError("");
@@ -70,7 +86,26 @@ export function MatchQrPass({
       </div>
     );
 
-  const matrix = pass ? createQrMatrix(pass.payload) : null;
+  if (availability === "scheduled")
+    return (
+      <p className="notice" role="status">
+        El QR se habilitará el{" "}
+        {new Date(startsAt).toLocaleDateString("es-PE", {
+          timeZone: "America/Lima",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}
+        , desde las 00:00 (hora de Piura), y estará disponible hasta que termine
+        el partido.
+      </p>
+    );
+  if (availability !== "available") return null;
+
+  const matrix =
+    pass && now < Date.parse(pass.validUntil)
+      ? createQrMatrix(pass.payload)
+      : null;
   return (
     <section
       className="reservationPass matchPass"

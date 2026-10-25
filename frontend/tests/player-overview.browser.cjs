@@ -28,7 +28,7 @@ async function main() {
               id_token: "test",
               token_type: "Bearer",
               scope: "openid",
-              expires_at: Math.floor(Date.now() / 1000) + 1800,
+              expires_at: Date.parse("2026-10-29T00:00:00Z") / 1000,
             }),
           ),
         {
@@ -40,8 +40,8 @@ async function main() {
           profile,
         },
       );
-      const future = new Date(Date.now() + 172800000).toISOString(),
-        end = new Date(Date.now() + 176400000).toISOString();
+      const future = "2026-10-27T18:00:00Z",
+        end = "2026-10-27T19:00:00Z";
       const rows = [
         ["Pago en revisión", "PENDING_REVIEW", "PENDING_REVIEW"],
         ["Pago por corregir", "PENDING_REVIEW", "CORRECTION_REQUIRED"],
@@ -58,13 +58,16 @@ async function main() {
         venueName: "Complejo prueba",
         venueAddress: "Piura",
         formatCode: "FOOTBALL_7",
-        startsAt: future,
-        endsAt: i === 4 ? new Date(Date.now() - 3600000).toISOString() : end,
+        startsAt: i === 4 ? "2026-10-26T18:00:00Z" : future,
+        endsAt: i === 4 ? "2026-10-26T19:00:00Z" : end,
         paidMinor: paymentStatus === "PAID" ? 1500 : 0,
         currency: "PEN",
         checkedInAt: null,
       }));
       const page = await context.newPage();
+      await page.clock.install({ time: new Date("2026-10-27T04:59:59Z") });
+      await page.clock.pauseAt(new Date("2026-10-27T04:59:59Z"));
+      let qrRequests = 0;
       await page.route("**/*", async (route) => {
         const url = new URL(route.request().url());
         if (!url.pathname.startsWith("/api/v1/"))
@@ -85,7 +88,8 @@ async function main() {
         else if (endpoint === "/me/profile")
           data = { onboardingStatus: "COMPLETE" };
         else if (endpoint === "/matches/participations/me") data = rows;
-        else if (endpoint === "/matches/match-2/check-in-pass")
+        else if (endpoint === "/matches/match-2/check-in-pass") {
+          qrRequests++;
           data = {
             matchId: "match-2",
             participantId: "participant",
@@ -93,6 +97,7 @@ async function main() {
             issuedAt: new Date().toISOString(),
             validUntil: end,
           };
+        }
         return route.fulfill({
           contentType: "application/json",
           body: JSON.stringify(data),
@@ -135,6 +140,12 @@ async function main() {
         name: "Tu inscripción",
         exact: true,
       });
+      await expect(detail.getByText(/El QR se habilitará/)).toBeVisible();
+      await expect(
+        detail.getByRole("button", { name: "Mostrar mi QR", exact: true }),
+      ).toHaveCount(0);
+      assert.equal(qrRequests, 0);
+      await page.clock.fastForward(1000);
       await detail
         .getByRole("button", { name: "Mostrar mi QR", exact: true })
         .click();
@@ -144,9 +155,22 @@ async function main() {
           exact: true,
         }),
       ).toBeVisible();
+      assert.equal(qrRequests, 1);
+      await page.clock.fastForward(14 * 60 * 60 * 1000);
+      await expect(
+        detail.getByRole("img", {
+          name: "Código QR único del jugador",
+          exact: true,
+        }),
+      ).toHaveCount(0);
+      await expect(
+        detail.getByRole("button", { name: "Mostrar mi QR", exact: true }),
+      ).toHaveCount(0);
       await page.keyboard.press("Escape");
       await expect(detail).not.toBeVisible();
-      await expect(confirmed).toBeFocused();
+      await expect(
+        page.getByRole("button", { name: /^Confirmados/ }),
+      ).toBeFocused();
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth > innerWidth,
@@ -156,7 +180,7 @@ async function main() {
       console.log(
         "PASS player overview " +
           width +
-          "px counts/dialog/QR/focus/no overflow",
+          "px counts/dialog/QR midnight and end boundaries/focus/no overflow",
       );
       await context.close();
     }

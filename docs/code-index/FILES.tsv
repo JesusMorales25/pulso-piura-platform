@@ -53,7 +53,7 @@ backend-main	java	544	backend/src/main/java/com/pulsopiura/platform/matches/appl
 backend-main	java	647	backend/src/main/java/com/pulsopiura/platform/matches/application/MatchAccessPolicy.java
 backend-main	java	4725	backend/src/main/java/com/pulsopiura/platform/matches/application/MatchActivityQueryService.java
 backend-main	java	180	backend/src/main/java/com/pulsopiura/platform/matches/application/MatchAuditEvent.java
-backend-main	java	12176	backend/src/main/java/com/pulsopiura/platform/matches/application/MatchCheckInService.java
+backend-main	java	13356	backend/src/main/java/com/pulsopiura/platform/matches/application/MatchCheckInService.java
 backend-main	java	3231	backend/src/main/java/com/pulsopiura/platform/matches/application/MatchDetailMetadataService.java
 backend-main	java	6764	backend/src/main/java/com/pulsopiura/platform/matches/application/MatchInvitationService.java
 backend-main	java	10150	backend/src/main/java/com/pulsopiura/platform/matches/application/MatchJoinPaymentService.java
@@ -305,7 +305,7 @@ backend-test	java	12352	backend/src/test/java/com/pulsopiura/platform/matches/ap
 backend-test	java	8693	backend/src/test/java/com/pulsopiura/platform/matches/application/ManualMatchParticipantServiceTest.java
 backend-test	java	2854	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchAccessPolicyTest.java
 backend-test	java	1885	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchCheckInPostgresTest.java
-backend-test	java	5012	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchCheckInServiceTest.java
+backend-test	java	7813	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchCheckInServiceTest.java
 backend-test	java	12799	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchJoinPaymentServiceTest.java
 backend-test	java	2272	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchOrganizerAuthorizationTest.java
 backend-test	java	5404	backend/src/test/java/com/pulsopiura/platform/matches/application/MatchOrganizerManagementServiceTest.java
@@ -459,7 +459,7 @@ product-doc	md	4784	docs/product/22_plan_implementacion.md
 product-doc	md	3601	docs/product/23_arquitectura_informacion.md
 product-doc	md	4946	docs/product/24_flujos_ux.md
 product-doc	md	5201	docs/product/25_reglas_reservas.md
-product-doc	md	6656	docs/product/26_reglas_partidos.md
+product-doc	md	7233	docs/product/26_reglas_partidos.md
 product-doc	md	3884	docs/product/27_panel_complejos.md
 product-doc	md	2555	docs/product/28_panel_torneos.md
 product-doc	md	3898	docs/product/29_eventos_notificaciones.md
@@ -563,11 +563,11 @@ frontend-feature	tsx	51825	frontend/features/matches/MatchDetail.tsx
 frontend-feature	tsx	2565	frontend/features/matches/MatchInvitationAcceptance.tsx
 frontend-feature	css	929	frontend/features/matches/MatchOrganizerDashboard.module.css
 frontend-feature	tsx	45706	frontend/features/matches/MatchOrganizerDashboard.tsx
-frontend-feature	tsx	4500	frontend/features/matches/MatchQrPass.tsx
+frontend-feature	tsx	5540	frontend/features/matches/MatchQrPass.tsx
 frontend-feature	ts	588	frontend/features/matches/mobile-checkout.ts
 frontend-feature	tsx	3523	frontend/features/matches/MobileMatchCheckout.tsx
 frontend-feature	css	598	frontend/features/matches/MyMatchParticipations.module.css
-frontend-feature	tsx	10733	frontend/features/matches/MyMatchParticipations.tsx
+frontend-feature	tsx	10819	frontend/features/matches/MyMatchParticipations.tsx
 frontend-feature	ts	842	frontend/features/matches/organizer-summary.ts
 frontend-feature	ts	1928	frontend/features/matches/presentation.ts
 frontend-feature	ts	2050	frontend/features/matches/types.ts
@@ -613,6 +613,7 @@ frontend-lib	ts	1157	frontend/lib/auth-session.ts
 frontend-lib	ts	715	frontend/lib/business-image.ts
 frontend-lib	ts	48	frontend/lib/legal.ts
 frontend-lib	ts	379	frontend/lib/match-discovery.ts
+frontend-lib	ts	831	frontend/lib/match-pass-window.ts
 frontend-lib	ts	1837	frontend/lib/oidc.ts
 frontend-lib	ts	510	frontend/lib/organization-labels.ts
 frontend-lib	ts	1243	frontend/lib/public-links.ts
@@ -647,8 +648,8 @@ frontend-test	cjs	17437	frontend/tests/mobile-layout.browser.cjs
 frontend-test	cjs	12829	frontend/tests/organization-workspace.browser.cjs
 frontend-test	cjs	2670	frontend/tests/organizer-summary.test.cjs
 frontend-test	cjs	5812	frontend/tests/platform-visual-assets.browser.cjs
-frontend-test	cjs	5776	frontend/tests/player-overview.browser.cjs
-frontend-test	cjs	10871	frontend/tests/product-improvements.test.cjs
+frontend-test	cjs	6683	frontend/tests/player-overview.browser.cjs
+frontend-test	cjs	11811	frontend/tests/product-improvements.test.cjs
 frontend-test	cjs	9486	frontend/tests/reservation-dashboard.browser.cjs
 frontend-test	cjs	1745	frontend/tests/venue-contact.test.cjs
 root-or-support	json	661	frontend/tsconfig.json

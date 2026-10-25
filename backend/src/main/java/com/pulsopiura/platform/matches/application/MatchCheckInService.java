@@ -8,6 +8,7 @@ import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.NoSuchElementException;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class MatchCheckInService {
     private static final String PAYLOAD_PREFIX = "PULSO-MATCH:";
+    private static final ZoneId MATCH_ZONE = ZoneId.of("America/Lima");
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final JdbcTemplate jdbc;
@@ -49,10 +51,8 @@ public class MatchCheckInService {
             throw new ReservationConflictException("Tu ingreso a este partido ya fue registrado");
         }
         var now = clock.instant();
-        var validUntil = context.endsAt().plusSeconds(4 * 60 * 60);
-        if (!now.isBefore(validUntil)) {
-            throw new ReservationConflictException("La vigencia de este partido ya terminó");
-        }
+        validateWindow(context.startsAt(), context.endsAt());
+        var validUntil = context.endsAt();
         var token = newToken();
         jdbc.update(
                 """
@@ -122,7 +122,7 @@ public class MatchCheckInService {
                 jdbc.query(
                         """
                 select p.id participant_id, m.id match_id, p.status participation_status,
-                       m.status match_status, m.ends_at, pass.consumed_at checked_in_at
+                       m.status match_status, m.starts_at, m.ends_at, pass.consumed_at checked_in_at
                 from app.match_participants p
                 join app.sports_matches m on m.id = p.match_id
                 left join app.match_check_in_passes pass on pass.participant_id = p.id
@@ -131,11 +131,12 @@ public class MatchCheckInService {
                         (rs, row) ->
                                 new PlayerContext(
                                         rs.getObject("participant_id", UUID.class),
-                                                rs.getObject("match_id", UUID.class),
+                                        rs.getObject("match_id", UUID.class),
                                         rs.getString("participation_status"),
-                                                rs.getString("match_status"),
+                                        rs.getString("match_status"),
+                                        rs.getTimestamp("starts_at").toInstant(),
                                         rs.getTimestamp("ends_at").toInstant(),
-                                                instant(rs.getTimestamp("checked_in_at"))),
+                                        instant(rs.getTimestamp("checked_in_at"))),
                         actor,
                         publicSlug);
         if (values.isEmpty()) throw new NoSuchElementException("Inscripción no encontrada");
@@ -146,7 +147,7 @@ public class MatchCheckInService {
         var values =
                 jdbc.query(
                         """
-                select m.id match_id, m.ends_at, p.id participant_id, p.status participation_status,
+                select m.id match_id, m.status match_status, m.starts_at, m.ends_at, p.id participant_id, p.status participation_status,
                        u.display_name player_name, u.email player_email,
                        coalesce(profile.avatar_url, u.avatar_url) avatar_url,
                        pass.valid_until, pass.consumed_at,
@@ -173,9 +174,11 @@ public class MatchCheckInService {
                                         rs.getString("player_email"),
                                         rs.getString("avatar_url"),
                                         rs.getString("participation_status"),
+                                        rs.getString("match_status"),
                                         rs.getString("payment_status"),
                                         rs.getLong("paid_minor"),
                                         rs.getString("currency"),
+                                        rs.getTimestamp("starts_at").toInstant(),
                                         rs.getTimestamp("ends_at").toInstant(),
                                         rs.getTimestamp("valid_until").toInstant(),
                                         instant(rs.getTimestamp("consumed_at"))),
@@ -190,8 +193,26 @@ public class MatchCheckInService {
         if (!"JOINED".equals(value.participationStatus())) {
             throw new ReservationConflictException("El jugador no tiene un cupo confirmado");
         }
+        if (!"PUBLISHED".equals(value.matchStatus())) {
+            throw new ReservationConflictException("Este partido ya no admite pases de ingreso");
+        }
+        validateWindow(value.startsAt(), value.endsAt());
         if (value.checkedInAt() == null && !clock.instant().isBefore(value.validUntil())) {
             throw new ReservationConflictException("El QR del partido venció");
+        }
+    }
+
+    private void validateWindow(Instant startsAt, Instant endsAt) {
+        var opensAt =
+                startsAt.atZone(MATCH_ZONE).toLocalDate().atStartOfDay(MATCH_ZONE).toInstant();
+        var now = clock.instant();
+        if (now.isBefore(opensAt)) {
+            throw new ReservationConflictException(
+                    "El QR se habilita el día del partido, desde las 00:00 (hora de Piura)");
+        }
+        if (!now.isBefore(endsAt)) {
+            throw new ReservationConflictException(
+                    "El partido terminó; el QR ya no está disponible");
         }
     }
 
@@ -244,6 +265,7 @@ public class MatchCheckInService {
             UUID matchId,
             String participationStatus,
             String matchStatus,
+            Instant startsAt,
             Instant endsAt,
             Instant checkedInAt) {}
 
@@ -254,9 +276,11 @@ public class MatchCheckInService {
             String playerEmail,
             String avatarUrl,
             String participationStatus,
+            String matchStatus,
             String paymentStatus,
             long paidMinor,
             String currency,
+            Instant startsAt,
             Instant endsAt,
             Instant validUntil,
             Instant checkedInAt) {}

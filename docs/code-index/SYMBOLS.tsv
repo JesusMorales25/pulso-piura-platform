@@ -554,6 +554,8 @@ typescript	lib	function	postLoginDestination	frontend/lib/auth-session.ts
 typescript	lib	function	privateBusinessImageUrl	frontend/lib/business-image.ts
 typescript	lib	const	LEGAL_VERSION	frontend/lib/legal.ts
 typescript	lib	function	sortUpcomingMatches	frontend/lib/match-discovery.ts
+typescript	lib	type	MatchPassAvailability	frontend/lib/match-pass-window.ts
+typescript	lib	function	matchPassAvailability	frontend/lib/match-pass-window.ts
 typescript	lib	function	socialLoginParameters	frontend/lib/oidc.ts
 typescript	lib	function	completeSignin	frontend/lib/oidc.ts
 typescript	lib	function	getUserManager	frontend/lib/oidc.ts

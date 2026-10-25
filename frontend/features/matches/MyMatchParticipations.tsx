@@ -321,6 +321,8 @@ export function MyMatchParticipations() {
                   <MatchQrPass
                     accessToken={accessToken}
                     checkedInAt={item.checkedInAt}
+                    startsAt={item.startsAt}
+                    endsAt={item.endsAt}
                     publicSlug={item.publicSlug}
                   />
                 )}
