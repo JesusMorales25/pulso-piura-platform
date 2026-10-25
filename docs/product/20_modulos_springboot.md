@@ -154,3 +154,7 @@ reservations
 - secretos fuera de YAML versionado;
 - `ddl-auto=validate` en ambientes compartidos;
 - Actuator expone únicamente endpoints necesarios y protegidos.
+
+## Soporte de imágenes editoriales
+
+media administra las portadas globales por ubicación fija, con acceso de administrador y auditoría. shared.media contiene el puerto y adaptadores de objetos privados y normalización de imágenes. venues conserva autorización y metadatos de la galería de canchas. Los comprobantes financieros mantienen su almacenamiento y flujo propios; no se reutiliza su bucket para fotos de catálogo.

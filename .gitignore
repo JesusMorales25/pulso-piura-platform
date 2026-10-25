@@ -72,3 +72,6 @@ deploy/supabase/backups/
 .verification/mobile-layout/
 
 .verification/desktop-responsive/
+
+!docs/COURT_PHOTOS.md
+!docs/openapi-media.json

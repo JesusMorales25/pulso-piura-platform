@@ -118,3 +118,13 @@ Operaciones masivas se posponen salvo necesidad validada.
 - hardware de acceso;
 - múltiples marcas personalizadas por cliente.
 
+
+### Acceso desde el resumen
+
+La tarjeta Canchas habilitadas abre las canchas publicadas de los complejos autorizados, identificadas por sede y complejo. Gestionar una cancha abre directamente sus horarios y precios; no vuelve a listar complejos. La lista contempla carga, vacío y reintento ante errores. Los identificadores del enlace se contrastan con las listas autorizadas del backend.
+
+### Galería y publicación progresiva
+
+El propietario o administrador autorizado puede cargar hasta 8 fotos JPG/PNG por cancha, seleccionar portada y retirar fotos con confirmación. Recomendamos al menos tres; por decisión del usuario se permite publicar primero y completarlas después. Las fotos solo se exponen públicamente si complejo activo, sede publicada y cancha publicada. Se normalizan en el backend y se guardan separadas de los comprobantes, en bucket privado; la API controla publicación y acceso. Explorar abre la galería bajo demanda.
+
+Flujo: perfil propietario aprobado → crear complejo → registrar sede → crear cancha/deporte → horarios y precios → publicar sede y cancha. El catálogo de disponibilidad depende además del horario configurado para la fecha consultada. La cuenta receptora se configura en Reservas y pagos antes de recibir pagos externos. Las portadas globales se administran en Plataforma → Imágenes de plataforma.

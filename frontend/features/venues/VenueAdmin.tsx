@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { FriendlyLocationPicker } from "@/components/forms/FriendlyLocationPicker";
 import { DistrictSelect } from "@/components/forms/DistrictSelect";
 import { FormSheet } from "@/components/forms/FormSheet";
+import { CourtPhotoGallery } from "./CourtPhotos";
 import { AvailabilityAdmin } from "@/features/venues/AvailabilityAdmin";
 import { apiRequest } from "@/lib/api";
 import { normalizeAdminRatingInput } from "@/lib/venue-rating";
@@ -126,6 +127,7 @@ export function VenueAdmin({
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<SportSpace[]>([]);
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
+  const [photoSpace, setPhotoSpace] = useState<SportSpace | null>(null);
   const [editingSpace, setEditingSpace] = useState<SportSpace | null>(null);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
   const [setupStep, setSetupStep] = useState<SetupStep>("venue");
@@ -175,6 +177,14 @@ export function VenueAdmin({
       } catch {
         window.sessionStorage.removeItem(draftStorageKey);
       } finally {
+        const target = new URLSearchParams(window.location.search);
+        const venueId = target.get("venueId");
+        const spaceId = target.get("spaceId");
+        if (venueId && spaceId) {
+          setSelectedVenueId(venueId);
+          setSelectedSpaceId(spaceId);
+          setSetupStep("availability");
+        }
         setDraftReady(true);
       }
     }, 0);
@@ -202,7 +212,7 @@ export function VenueAdmin({
   ]);
 
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !draftReady) return;
     let active = true;
     Promise.all([
       apiRequest<VenueCatalog>("/venue-catalogs", accessToken),
@@ -230,7 +240,7 @@ export function VenueAdmin({
     return () => {
       active = false;
     };
-  }, [accessToken, organizationId]);
+  }, [accessToken, organizationId, draftReady]);
 
   useEffect(() => {
     if (!accessToken || !selectedVenueId) return;
@@ -523,6 +533,16 @@ export function VenueAdmin({
         </div>
       )}
 
+      {photoSpace && (
+        <CourtPhotoGallery
+          open
+          onClose={() => setPhotoSpace(null)}
+          spaceId={photoSpace.id}
+          name={photoSpace.name}
+          organizationId={organizationId}
+          token={accessToken}
+        />
+      )}
       <nav className="venueSetupTabs" aria-label="Creación del complejo">
         <ol>
           {(
@@ -768,6 +788,13 @@ export function VenueAdmin({
                           onClick={() => editSpace(space)}
                         >
                           Editar
+                        </button>
+                        <button
+                          className="secondary"
+                          type="button"
+                          onClick={() => setPhotoSpace(space)}
+                        >
+                          Fotos de cancha
                         </button>
                         {space.status === "DRAFT" && (
                           <button

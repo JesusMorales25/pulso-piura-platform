@@ -84,7 +84,26 @@ public class ExternalPaymentService {
         if (deadline.isAfter(start)) deadline = start;
         var hold = targets.prepare(context, actor, method, plan, key, now, deadline);
         store.audit(null, type, id, actor, "PAYMENT_PREPARED", method.name() + " / " + plan.name());
-        return new Preparation(hold.amountMinor(), "PEN", hold.expiresAt(), recipient);
+        var preparation =
+                new Preparation(
+                        hold.amountMinor(),
+                        "PEN",
+                        hold.expiresAt().truncatedTo(java.time.temporal.ChronoUnit.MICROS),
+                        recipient);
+        store.savePreparation(
+                actor, type, id, new PreparationState(preparation, method.name(), plan.name()));
+        return preparation;
+    }
+
+    @Transactional(readOnly = true)
+    public PreparationState preparation(UUID actor, TargetType type, UUID id) {
+        requireEnabled();
+        // Only the original payer can retrieve the account snapshot; aggregate access is checked
+        // too.
+        var saved = store.preparation(actor, type, id);
+        if (saved.isEmpty()) return null;
+        targets.resolve(type, id, actor, false);
+        return saved.get();
     }
 
     @Transactional(readOnly = true)
@@ -184,6 +203,15 @@ public class ExternalPaymentService {
         reference = optional(reference, 100, "Referencia");
         store.lockPayer(actor);
         var context = targets.resolve(type, id, actor, true);
+        var replay = store.replay(actor, key);
+        if (replay.isEmpty()) {
+            for (var prior : store.list(type, id)) {
+                if (prior.payerUserId().equals(actor)
+                        && Set.of("PENDING_REVIEW", "NEEDS_RESOLUTION").contains(prior.status()))
+                    throw new ReservationConflictException(
+                            "Ya tienes un comprobante pendiente; consulta su estado antes de enviar otro");
+            }
+        }
         var uploaded = images.store(input);
         // Files are not transactional: register cleanup before any further database work.
         TransactionSynchronizationManager.registerSynchronization(
@@ -193,7 +221,6 @@ public class ExternalPaymentService {
                         if (status != STATUS_COMMITTED) images.delete(uploaded.key());
                     }
                 });
-        var replay = store.replay(actor, key);
         if (replay.isPresent()) {
             images.delete(uploaded.key());
             var p = replay.get();
@@ -205,7 +232,7 @@ public class ExternalPaymentService {
                     || !p.sha256().equals(uploaded.sha256()))
                 throw new ReservationConflictException(
                         "La clave ya se utilizó para otro comprobante");
-            return p.view(targets.reviewer(context, actor));
+            return p.view(targets.reviewer(context, actor), actor);
         }
         Instant now = Instant.now();
         for (var prior : store.list(type, id)) {
@@ -241,7 +268,7 @@ public class ExternalPaymentService {
                     "La referencia ya fue registrada para este receptor");
         if (store.imageExists(recipient.phone(), uploaded.sha256(), actor, type, id))
             throw new ReservationConflictException(
-                    "La imagen ya fue registrada para este receptor");
+                    "Esta imagen coincide con un comprobante ya registrado para el receptor. No se creó otro pago; revisa tus comprobantes o contacta al receptor");
         Instant start =
                 type == TargetType.MATCH
                         ? context.match().startsAt()
@@ -274,9 +301,10 @@ public class ExternalPaymentService {
                         null,
                         null);
         store.save(proof);
+        store.clearPreparation(actor, type, id);
         store.linkSuperseded(proof);
         store.audit(proof.id(), type, id, actor, "PROOF_SUBMITTED", null);
-        return proof.view(targets.reviewer(context, actor));
+        return proof.view(targets.reviewer(context, actor), actor);
     }
 
     @Transactional
@@ -292,7 +320,7 @@ public class ExternalPaymentService {
         for (var proof : store.list(type, id)) {
             if (!reviewer && !proof.payerUserId().equals(actor)) continue;
             expire(proof, actor, Instant.now());
-            result.add(store.get(proof.id()).view(reviewer));
+            result.add(store.get(proof.id()).view(reviewer, actor));
         }
         return result;
     }
@@ -308,7 +336,7 @@ public class ExternalPaymentService {
         if (decision != Decision.CONFIRMED && note == null)
             throw new IllegalArgumentException("Indica el motivo de la decisión");
         if (proof.status().equals(decision.name()) && Objects.equals(note, proof.reviewNote()))
-            return proof.view(true);
+            return proof.view(true, actor);
         if (!Set.of("PENDING_REVIEW", "NEEDS_RESOLUTION").contains(proof.status()))
             throw new ReservationConflictException("El comprobante ya fue revisado");
         Instant now = Instant.now();
@@ -318,7 +346,7 @@ public class ExternalPaymentService {
         if (!"CONFIRMED".equals(status)) targets.release(proof, now);
         store.decide(id, status, note, now);
         store.audit(id, proof.targetType(), proof.targetId(), actor, status, note);
-        return store.get(id).view(true);
+        return store.get(id).view(true, actor);
     }
 
     @Transactional(readOnly = true)

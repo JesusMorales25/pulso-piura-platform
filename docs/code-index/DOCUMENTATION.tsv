@@ -16,6 +16,7 @@ documentation	Análisis de requerimientos importados	docs/ANALISIS_REQUERIMIENTO
 documentation	Revisión de arquitectura, seguridad y estrategia de entrega	docs/ARQUITECTURA_SEGURIDAD_REVIEW.md
 documentation	Recursos visuales de la demostración	docs/ASSET_PROVENANCE.md
 documentation	Configuraciones local y de producción	docs/CONFIGURACIONES_LOCAL_Y_PRODUCCION.md
+documentation	Fotos de canchas y portadas	docs/COURT_PHOTOS.md
 documentation	Operación segura de la demostración	docs/DEMO_SECURITY_OPERATIONS.md
 documentation	Principios profesionales de ingeniería	docs/ENGINEERING_PRINCIPLES.md
 documentation	Pagos externos y comprobantes privados	docs/EXTERNAL_PAYMENTS.md
@@ -73,9 +74,11 @@ documentation	Revisión de seguridad OWASP — 12 de septiembre de 2026	docs/REV
 documentation	Supabase para demo y PostgreSQL portable a VPS	docs/SUPABASE_MIGRATION.md
 documentation	Canchas, disponibilidad y reserva móvil Implementation Plan	docs/superpowers/plans/2026-09-27-canchas-reserva-mobile-plan.md
 documentation	Organizador, cupos y pagos de pichanga Implementation Plan	docs/superpowers/plans/2026-09-27-organizador-cupos-pagos-plan.md
+documentation	Galería de canchas e imágenes de plataforma	docs/superpowers/plans/2026-10-24-venue-photo-gallery.md
 documentation	Mejoras de partidos, reservas y experiencia movil	docs/superpowers/specs/2026-09-27-mejoras-partidos-reservas-mobile-design.md
 documentation	Compartir Pulso Piura desde VS Code	docs/VSCODE_PORT_SHARE.md
 root-or-support	This is NOT the Next.js you know	frontend/AGENTS.md
 root-or-support	CLAUDE	frontend/CLAUDE.md
+root-or-support	Imágenes de referencia	frontend/public/images/DEMO_ASSETS.md
 root-or-support	Pulso Piura	README.md
 root-or-support	Pulso Piura — contrato de experiencia	UX-CONTRACT.md

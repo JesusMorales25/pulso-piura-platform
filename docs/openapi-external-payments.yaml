@@ -92,6 +92,31 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/Destination'}
         '403': {description: No es OWNER activo del complejo}
+  /external-payments/preparation:
+    get:
+      description: Recupera solo la preparación del pagador autenticado, sin renovar su vencimiento ni cambiar la cuenta original. Respuesta privada no-store.
+      parameters:
+        - $ref: '#/components/parameters/targetType'
+        - $ref: '#/components/parameters/targetId'
+      responses:
+        '200':
+          description: Preparación guardada, incluso si venció; el servidor vuelve a validar al enviar.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  method: {type: string, enum: [YAPE, PLIN]}
+                  plan: {type: string, enum: [FULL, DEPOSIT, BALANCE]}
+                  preparation:
+                    type: object
+                    properties:
+                      amountMinor: {type: integer, minimum: 1}
+                      currency: {type: string, const: PEN}
+                      expiresAt: {type: string, format: date-time}
+                      destination: {$ref: '#/components/schemas/Destination'}
+        '204': {description: No existe una preparación del usuario para este recurso}
+        '403': {description: Sin acceso al recurso}
   /external-payments/prepare:
     post:
       description: Retiene un cupo de partido antes de mostrar los datos para transferir; valida el hold de una reserva. No confirma dinero recibido.
@@ -266,3 +291,4 @@ components:
             reviewNote: {type: [string, 'null']}
             canReview: {type: boolean}
             hasImage: {type: boolean}
+            ownPayment: {type: boolean, description: El pagador es el usuario autenticado, aunque también sea revisor}

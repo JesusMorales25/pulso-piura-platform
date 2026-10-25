@@ -10,7 +10,7 @@ async function main() {
   assert.ok(issuer && client);
   const browser = await chromium.launch({ headless: true, channel: "chrome" });
   try {
-    for (const scenario of ["create", "retry", "venue"]) {
+    for (const scenario of ["create", "retry", "venue", "courts"]) {
       const context = await browser.newContext({
         viewport: { width: 393, height: 900 },
         permissions: ["geolocation"],
@@ -50,6 +50,7 @@ async function main() {
       let venuePayload = null;
       let overviewCalls = 0;
       let fail = scenario === "retry";
+      let courtsFail = true;
       const page = await context.newPage();
       await page.route("**/api/v1/**", async (route) => {
         const endpoint = new URL(route.request().url()).pathname.replace(
@@ -112,13 +113,65 @@ async function main() {
           } else
             data = {
               venues: 0,
-              spaces: 0,
+              spaces: scenario === "courts" ? 1 : 0,
               members: 1,
               matchesToday: 0,
               reservationsToday: 0,
               expectedMinor: 0,
               locations: null,
             };
+        }
+        if (scenario === "courts") {
+          const venueId = "target-venue";
+          if (endpoint === "/organizations/" + organization.id + "/venues")
+            data = [
+              {
+                id: "other-venue",
+                name: "Otra sede",
+                address: "Otra dirección",
+                status: "PUBLISHED",
+              },
+              {
+                id: venueId,
+                name: "Sede objetivo",
+                address: "Dirección objetivo",
+                status: "PUBLISHED",
+              },
+            ];
+          if (
+            endpoint ===
+            "/organizations/" +
+              organization.id +
+              "/venues/" +
+              venueId +
+              "/spaces"
+          )
+            data = [
+              {
+                id: "draft-court",
+                venueId,
+                name: "Cancha borrador",
+                status: "DRAFT",
+              },
+              {
+                id: "target-court",
+                venueId,
+                name: "Cancha objetivo",
+                status: "PUBLISHED",
+                sportCode: "FOOTBALL",
+                formatCode: "F7",
+                capacity: 14,
+                amenityCodes: [],
+              },
+            ];
+        }
+        if (
+          scenario === "courts" &&
+          courtsFail &&
+          endpoint.endsWith("/venues")
+        ) {
+          status = 503;
+          data = { detail: "Error de prueba" };
         }
         await route.fulfill({
           status,
@@ -201,6 +254,49 @@ async function main() {
         name: "Resumen de complejos",
         exact: true,
       });
+      if (scenario === "courts") {
+        await metrics
+          .getByRole("button", { name: /^Canchas habilitadas/ })
+          .click();
+        const dialog = page.getByRole("dialog", {
+          name: "Canchas habilitadas",
+          exact: true,
+        });
+        await expect(dialog.getByRole("alert")).toContainText(
+          "No se pudieron cargar",
+        );
+        courtsFail = false;
+        await dialog
+          .getByRole("button", { name: "Reintentar", exact: true })
+          .click();
+        await expect(
+          dialog.getByRole("heading", { name: "Cancha objetivo", exact: true }),
+        ).toBeVisible();
+        await expect(dialog).not.toContainText("Cancha borrador");
+        await expect(
+          dialog.getByRole("link", { name: "Abrir panel" }),
+        ).toHaveCount(0);
+        await dialog
+          .getByRole("link", { name: "Gestionar Cancha objetivo", exact: true })
+          .click();
+        await expect(
+          page.getByRole("heading", {
+            name: "Horarios y precios",
+            exact: true,
+          }),
+        ).toBeVisible();
+        await expect(
+          page.getByRole("region", { name: "Sedes y canchas", exact: true }),
+        ).toContainText("Cancha objetivo");
+        await expect(page).toHaveURL(
+          /venueId=target-venue&spaceId=target-court/,
+        );
+        console.log(
+          "PASS: enabled courts lists published courts and opens target court availability",
+        );
+        await context.close();
+        continue;
+      }
       if (scenario === "create") {
         await expect(
           page.getByRole("button", { name: "Crear complejo", exact: true }),
@@ -233,7 +329,9 @@ async function main() {
         );
       } else {
         await expect(
-          metrics.getByRole("button", {name:/^Complejos /}).locator("strong"),
+          metrics
+            .getByRole("button", { name: /^Complejos / })
+            .locator("strong"),
         ).toHaveText("1");
         await page
           .getByRole("button", { name: "Reintentar resumen", exact: true })

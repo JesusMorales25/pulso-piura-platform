@@ -84,11 +84,6 @@ const localDate = () =>
 
 const hasExpired = (value: string) => Date.parse(value) <= Date.now();
 
-const venueImages = [
-  "/images/court-reference.svg",
-  "/images/volleyball-reference.svg",
-];
-
 type DiscoveryMode = "all" | "venues" | "matches";
 
 export function PublicVenueCatalog({
@@ -996,7 +991,7 @@ export function PublicVenueCatalog({
 
       {discoveryMode !== "matches" && listedVenues.length > 0 && (
         <div className="exploreFeaturedList" aria-label="Complejos disponibles">
-          {listedVenues.map((venue, index) => {
+          {listedVenues.map((venue) => {
             const offer = venueOffers[venue.publicSlug];
             if (!offer) {
               return (
@@ -1025,7 +1020,11 @@ export function PublicVenueCatalog({
               <VenueBookingCard
                 amenityNames={amenityNames}
                 busy={reservationBusy}
-                imageSrc={venueImages[index % venueImages.length]}
+                imageSrc={
+                  offer.space.sportCode === "VOLLEYBALL"
+                    ? "/images/demo-volleyball.png"
+                    : "/images/demo-court-night.png"
+                }
                 key={venue.publicSlug}
                 offer={offer}
                 onOpenSchedules={() => showVenueSchedules(venue)}

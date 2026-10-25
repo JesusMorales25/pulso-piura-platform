@@ -201,3 +201,19 @@ Horario semanal: día, franja horaria, precio y duración en líneas separadas; 
 - Esta composición y la adaptación móvil anterior permanecen locales, pendientes de publicación.
 
 - Cierre de escritorio: compilación de producción correcta, con 23 páginas generadas. Archivo generado next-env.d.ts conservado sin cambios.
+
+## Recuperación y unicidad de comprobantes — 24 de octubre
+- El rechazo de captura duplicada se origina en hash de imagen normalizada + receptor, incluso entre recursos; se mantiene ese control antifraude y se aclara que el intento rechazado no creó otro pago.
+- V38 conserva preparación/cuenta/importe/vencimiento en servidor. GET de recuperación no extiende retención. Lista de evidencia independiente de consulta de receptor; pendientes y requiere resolución bloquean nuevo envío, con ownPayment para el organizador que también juega. Restricción parcial de un comprobante activo por pagador/recurso, además del bloqueo transaccional.
+- Correcciones preservan versiones y auditoría; no se sobrescribe evidencia en revisión ni confirmada. Se bloquea envío duplicado antes de escribir otro objeto.
+- Java 21: 40 pruebas focalizadas, 39 correctas y una de symlink omitida por Windows; incluye 6 de PostgreSQL local, V38 aplicada, cuenta original conservada, acceso de otro usuario sin datos, prueba de inserción directa rechazada por unicidad y PNG regenerado sin payload añadido.
+- Chrome con API sintética: pagador y propietario en 320/393/768, recarga antes/después de envío, fallo de receptor y requiere resolución; seis escenarios correctos, sin desbordamiento ni violaciones axe detectadas. ESLint y 37 unitarias correctas. Compilación Next optimizada con 23 páginas correcta tras ejecutar fuera de un bloqueo EPERM de Windows.
+- Sin despliegue ni modificaciones a producción.
+
+## Galería y portadas — 24 de octubre
+- V39 incorpora metadatos de fotos y portadas. Puerto shared.media separado de pagos; filesystem local/VPS con volumen privado, Supabase bucket court-photos en Render. Recodificación JPG/PNG, claves UUID, máximo ocho imágenes por cancha, portada única con bloqueo y limpieza tras transacción.
+- Usuario confirmó publicación sin mínimo obligatorio de fotos; se recomiendan tres y se pueden completar después. Publicación exige complejo activo, sede/cancha publicadas; las imágenes desaparecen públicamente al suspender/retirar el recurso.
+- FormSheet de galería en cada cancha, portada en Explorar y vista previa de Inicio, navegación por miniaturas/flechas, borrado con confirmación y subida fallida conserva archivo. Panel Plataforma/Imágenes cambia cinco portadas sin redeploy. Se incorporaron dos fotos generadas de referencia, sin atribución a complejos reales.
+- Maven verify Java 21 correcto con pruebas PostgreSQL locales de pagos y fotos (V38/V39), permisos de medios y adaptadores filesystem/Supabase mock. Hay pruebas optativas Docker/symlink omitidas por entorno; no se hicieron cargas reales contra el bucket nuevo ni cambios en producción.
+- Chrome con datos sintéticos: galería en 320/1280 verifica tres subidas, reintento sin pérdida, portada, borrado/cancelación, vista pública y ancho; portadas globales en 320/1280 verifican JPG/PNG, rechazo SVG, vista previa y restauración. ESLint y 37 unitarias frontend correctas; build Next 24 páginas correcto. Compose VPS validado sin arrancar servicios.
+- Despliegue pendiente: crear bucket privado court-photos, MEDIA_STORAGE=supabase y MEDIA_SUPABASE_BUCKET=court-photos en Render, reutilizando URL/secreto existentes. Todo permanece local.

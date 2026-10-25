@@ -60,8 +60,8 @@ export function FeaturedMatchCardV2({
     .replace(match.sportCode, sport);
   const image =
     match.sportCode === "VOLLEYBALL"
-      ? "/images/volleyball-reference.svg"
-      : "/images/court-reference.svg";
+      ? "/images/demo-volleyball.png"
+      : "/images/demo-court-night.png";
 
   useEffect(() => {
     if (!copied) return;

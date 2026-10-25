@@ -66,4 +66,23 @@ class FileSystemPaymentProofStorageTest {
         }
         assertThrows(IllegalArgumentException.class, () -> storage.read(key));
     }
+
+    @Test
+    void dropsAppendedExecutableContentAndRejectsTruncatedImages() throws Exception {
+        var storage = new FileSystemPaymentProofStorage(directory.toString());
+        var output = new ByteArrayOutputStream();
+        ImageIO.write(new BufferedImage(4, 4, BufferedImage.TYPE_INT_RGB), "png", output);
+        byte[] valid = output.toByteArray();
+        output.write(
+                "<script>alert('payload')</script>"
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        var stored = storage.store(output.toByteArray());
+        assertArrayEquals(PaymentProofImages.normalize(valid), storage.read(stored.key()));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> storage.store(java.util.Arrays.copyOf(valid, 25)));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> storage.store("MZ executable disguised as receipt.png".getBytes()));
+    }
 }

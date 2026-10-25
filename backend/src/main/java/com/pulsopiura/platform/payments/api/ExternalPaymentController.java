@@ -38,6 +38,15 @@ public class ExternalPaymentController {
         return payments.destination(users.provision(jwt).id(), targetType, targetId);
     }
 
+    @GetMapping("/preparation")
+    public ResponseEntity<PreparationState> preparation(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam TargetType targetType,
+            @RequestParam UUID targetId) {
+        var saved = payments.preparation(users.provision(jwt).id(), targetType, targetId);
+        return saved == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(saved);
+    }
+
     @PostMapping("/prepare")
     public Preparation prepare(
             @AuthenticationPrincipal Jwt jwt,

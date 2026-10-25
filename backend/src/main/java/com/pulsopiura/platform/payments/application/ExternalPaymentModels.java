@@ -20,6 +20,8 @@ public final class ExternalPaymentModels {
     public record Preparation(
             long amountMinor, String currency, Instant expiresAt, Destination destination) {}
 
+    public record PreparationState(Preparation preparation, String method, String plan) {}
+
     public record Destination(
             String holderName,
             String phone,
@@ -68,7 +70,8 @@ public final class ExternalPaymentModels {
             Instant reviewedAt,
             String reviewNote,
             boolean canReview,
-            boolean hasImage) {}
+            boolean hasImage,
+            boolean ownPayment) {}
 
     public record Proof(
             UUID id,
@@ -93,7 +96,7 @@ public final class ExternalPaymentModels {
             Instant reviewExpiresAt,
             Instant reviewedAt,
             String reviewNote) {
-        public ProofView view(boolean reviewer) {
+        public ProofView view(boolean reviewer, UUID actor) {
             return new ProofView(
                     id,
                     targetType,
@@ -113,7 +116,8 @@ public final class ExternalPaymentModels {
                     reviewedAt,
                     reviewNote,
                     reviewer,
-                    storageKey != null);
+                    storageKey != null,
+                    payerUserId.equals(actor));
         }
     }
 }

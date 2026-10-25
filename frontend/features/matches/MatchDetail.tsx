@@ -538,7 +538,7 @@ export function MatchDetail({ publicSlug }: { publicSlug: string }) {
           fill
           priority
           sizes="100vw"
-          src="/images/court-reference.svg"
+          src="/images/demo-court-night.png"
         />
         <div className="matchExperienceShade" />
         <div className="matchExperienceTags">

@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { PlatformHeroImage } from "@/components/PlatformHeroImage";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -197,8 +197,9 @@ export function OrganizationAdmin({
       <header className="hybridHome complexPanelHero">
         <section className="hybridHero">
           <div className="hybridHeroCarousel" aria-hidden="true">
-            <Image
-              src="/images/court-reference.svg"
+            <PlatformHeroImage
+              slot="complexes"
+              src="/images/demo-court-night.png"
               alt=""
               fill
               sizes="(max-width: 760px) 100vw, 1120px"

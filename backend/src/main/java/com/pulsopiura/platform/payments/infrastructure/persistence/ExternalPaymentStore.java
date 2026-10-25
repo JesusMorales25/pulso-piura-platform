@@ -49,6 +49,62 @@ public class ExternalPaymentStore {
         this.jdbc = jdbc;
     }
 
+    public void savePreparation(UUID actor, TargetType type, UUID target, PreparationState state) {
+        var p = state.preparation();
+        var d = p.destination();
+        jdbc.update(
+                """
+            insert into app.external_payment_preparations(payer_user_id,target_type,target_id,method,plan,amount_minor,expires_at,holder_name,phone,yape_enabled,plin_enabled)
+            values (?,?,?,?,?,?,?,?,?,?,?) on conflict (payer_user_id,target_type,target_id) do update set
+            method=excluded.method,plan=excluded.plan,amount_minor=excluded.amount_minor,expires_at=excluded.expires_at,
+            holder_name=excluded.holder_name,phone=excluded.phone,yape_enabled=excluded.yape_enabled,plin_enabled=excluded.plin_enabled
+            """,
+                actor,
+                type.name(),
+                target,
+                state.method(),
+                state.plan(),
+                p.amountMinor(),
+                Timestamp.from(p.expiresAt()),
+                d.holderName(),
+                d.phone(),
+                d.yapeEnabled(),
+                d.plinEnabled());
+    }
+
+    public Optional<PreparationState> preparation(UUID actor, TargetType type, UUID target) {
+        return jdbc
+                .query(
+                        "select * from app.external_payment_preparations where payer_user_id=? and target_type=? and target_id=?",
+                        (r, n) ->
+                                new PreparationState(
+                                        new Preparation(
+                                                r.getLong("amount_minor"),
+                                                "PEN",
+                                                r.getTimestamp("expires_at").toInstant(),
+                                                new Destination(
+                                                        r.getString("holder_name"),
+                                                        r.getString("phone"),
+                                                        r.getBoolean("yape_enabled"),
+                                                        r.getBoolean("plin_enabled"),
+                                                        true)),
+                                        r.getString("method"),
+                                        r.getString("plan")),
+                        actor,
+                        type.name(),
+                        target)
+                .stream()
+                .findFirst();
+    }
+
+    public void clearPreparation(UUID actor, TargetType type, UUID target) {
+        jdbc.update(
+                "delete from app.external_payment_preparations where payer_user_id=? and target_type=? and target_id=?",
+                actor,
+                type.name(),
+                target);
+    }
+
     public void lockPayer(UUID actor) {
         jdbc.query(
                 "select pg_advisory_xact_lock(hashtextextended(?, 0))",

@@ -411,4 +411,79 @@ class ExternalPaymentDatabaseTest {
                             return null;
                         });
     }
+
+    @Test
+    void preparationPersistsSnapshotAndOneActiveProofSurvivesReload() throws Exception {
+        var r = reservation(player, 0, 2250);
+        var recipient = configureReservation();
+        var prepared =
+                payments.prepare(
+                        player,
+                        TargetType.RESERVATION,
+                        r.id(),
+                        PaymentMethod.YAPE,
+                        PaymentPlan.DEPOSIT,
+                        "prepare-reload");
+        payments.configureOrganization(
+                owner, organization, "Changed receiver", "988777666", true, true);
+        var recovered = payments.preparation(player, TargetType.RESERVATION, r.id());
+        assertThat(recovered.preparation().amountMinor()).isEqualTo(prepared.amountMinor());
+        assertThat(recovered.preparation().expiresAt())
+                .isEqualTo(prepared.expiresAt().truncatedTo(java.time.temporal.ChronoUnit.MICROS));
+        assertThat(recovered.preparation().destination().phone()).isEqualTo(recipient.phone());
+        assertThat(payments.preparation(owner, TargetType.RESERVATION, r.id())).isNull();
+        payments.configureOrganization(
+                owner, organization, "Owner receiver", "999888777", true, true);
+        var proof =
+                payments.submit(
+                        player,
+                        TargetType.RESERVATION,
+                        r.id(),
+                        PaymentMethod.YAPE,
+                        PaymentPlan.DEPOSIT,
+                        "RELOAD-OP",
+                        "reload-upload",
+                        recipient.version(),
+                        image(0xabcdef));
+        assertThat(payments.preparation(player, TargetType.RESERVATION, r.id())).isNull();
+        assertThat(payments.list(player, TargetType.RESERVATION, r.id()))
+                .extracting(ProofView::id)
+                .containsExactly(proof.id());
+        assertThatThrownBy(
+                        () ->
+                                payments.submit(
+                                        player,
+                                        TargetType.RESERVATION,
+                                        r.id(),
+                                        PaymentMethod.YAPE,
+                                        PaymentPlan.DEPOSIT,
+                                        "OTHER-OP",
+                                        "other-upload",
+                                        recipient.version(),
+                                        image(0x123456)))
+                .hasMessageContaining("comprobante pendiente");
+        assertThat(
+                        jdbc.queryForObject(
+                                "select count(*) from app.external_payment_proofs where target_id=?",
+                                Long.class,
+                                r.id()))
+                .isEqualTo(1);
+
+        jdbc.execute("SAVEPOINT duplicate_active_proof");
+        try {
+            assertThatThrownBy(
+                            () ->
+                                    jdbc.update(
+                                            """
+                insert into app.external_payment_proofs(id,target_type,target_id,receiver_id,payer_user_id,payer_name,amount_minor,method,plan,status,holder_name,phone,image_sha256,image_size,idempotency_key,created_at,review_expires_at)
+                select gen_random_uuid(),target_type,target_id,receiver_id,payer_user_id,payer_name,amount_minor,method,plan,status,holder_name,phone,repeat('f',64),image_size,'bypass-new-key',created_at,review_expires_at
+                from app.external_payment_proofs where id=?
+                """,
+                                            proof.id()))
+                    .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class)
+                    .hasMessageContaining("uq_external_payment_active_payer_target");
+        } finally {
+            jdbc.execute("ROLLBACK TO SAVEPOINT duplicate_active_proof");
+        }
+    }
 }

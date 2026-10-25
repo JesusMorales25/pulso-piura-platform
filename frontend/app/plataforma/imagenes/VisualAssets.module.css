@@ -1,0 +1,54 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+  margin-block: 24px;
+}
+.card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  align-content: start;
+}
+.card h2,
+.card p {
+  margin: 0;
+}
+.card h2 {
+  font-size: 1.15rem;
+}
+.image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+.form {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.form label {
+  display: grid;
+  gap: 8px;
+}
+.form input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--bg);
+  font: inherit;
+}
+.form input::file-selector-button {
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  margin-right: 8px;
+}

@@ -38,11 +38,17 @@ services:
       PLATFORM_ADMIN_EMAIL: ${PLATFORM_ADMIN_EMAIL:-}
       WEB_ALLOWED_ORIGIN: ${WEB_ALLOWED_ORIGIN:?}
       PAYMENTS_MODE: ${PAYMENTS_MODE:-disabled}
+      MEDIA_STORAGE: ${MEDIA_STORAGE:-filesystem}
+      MEDIA_DIRECTORY: /srv/pulso/private/court-photos
+      MEDIA_SUPABASE_URL: ${MEDIA_SUPABASE_URL:-}
+      MEDIA_SUPABASE_SECRET_KEY: ${MEDIA_SUPABASE_SECRET_KEY:-}
+      MEDIA_SUPABASE_BUCKET: ${MEDIA_SUPABASE_BUCKET:-court-photos}
       PAYMENT_PROOF_DIRECTORY: /srv/pulso/private/payment-proofs
       PAYMENT_PROOF_RETENTION_DAYS: ${PAYMENT_PROOF_RETENTION_DAYS:-90}
       EXTERNAL_PAYMENT_REVIEW_MINUTES: ${EXTERNAL_PAYMENT_REVIEW_MINUTES:-30}
     volumes:
       - payment_proofs:/srv/pulso/private/payment-proofs
+      - court_photos:/srv/pulso/private/court-photos
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health >/dev/null"]
       interval: 15s
@@ -67,6 +73,7 @@ networks:
   edge:
 volumes:
   app_postgres:
+  court_photos:
   payment_proofs:
   caddy_data:
   caddy_config:

@@ -11,7 +11,7 @@ WORKDIR /app
 COPY --from=build /workspace/target/platform-backend-*.jar app.jar
 COPY render-entrypoint.sh /app/render-entrypoint.sh
 RUN chmod 0555 /app/render-entrypoint.sh
-RUN mkdir -p /srv/pulso/private/payment-proofs && chown -R pulso:pulso /srv/pulso/private && chmod 0700 /srv/pulso/private/payment-proofs
+RUN mkdir -p /srv/pulso/private/payment-proofs /srv/pulso/private/court-photos && chown -R pulso:pulso /srv/pulso/private && chmod 0700 /srv/pulso/private/payment-proofs /srv/pulso/private/court-photos
 USER 10001
 EXPOSE 8080
 ENTRYPOINT ["/app/render-entrypoint.sh"]

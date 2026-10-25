@@ -266,3 +266,13 @@ Pruebas de dominio cubren revisión, confirmación, corrección sin extensión y
 Suite backend sin fallos ni errores (238 casos registrados, 7 omitidos por condiciones de ejecución),
 34 pruebas frontend correctas y seis escenarios móviles sin desbordamientos ni fallos axe.
 Pendiente publicación y aplicación de V37 en el despliegue; no se alteró Supabase de producción.
+
+### Preparación del pago bajo demanda
+
+El pagador abre Preparar pago en un FormSheet del sistema. Método, importe, cuenta validada, referencia, captura y aceptación permanecen dentro del popup. Cerrar conserva el borrador sin renovar la retención; enviar correctamente cierra el popup. Los totales Confirmado y En revisión se muestran únicamente cuando existe al menos un comprobante enviado. Aplica a reservas y partidos mediante el panel compartido.
+
+### Recuperación y comprobante único
+
+V38 guarda la preparación en PostgreSQL, incluyendo la cuenta original y vencimiento, y agrega unicidad de comprobante activo por pagador/recurso (pendiente o requiere resolución). GET /external-payments/preparation recupera solo el borrador del actor y no renueva retención. El archivo no se guarda en el navegador: si no se envió, debe seleccionarse de nuevo. La lista de comprobantes se recupera aunque falle la cuenta receptora; los errores de consulta bloquean nuevos envíos hasta reintentar. ownPayment diferencia al organizador que también juega de los comprobantes de otros participantes.
+
+Las capturas iguales para un mismo receptor siguen bloqueadas entre reservas/partidos. Una corrección solicitada crea una versión auditada enlazada; no se sobrescribe evidencia que ya está en revisión o confirmada. Preparación/envío se serializan por pagador y el servidor determina importe y autorización. Los formatos falsos y dimensiones excesivas se rechazan; se recodifican los píxeles a PNG y se descarta contenido añadido. Esto reduce el riesgo de archivos maliciosos; no sustituye actualizaciones del runtime ni constituye un escaneo antivirus.

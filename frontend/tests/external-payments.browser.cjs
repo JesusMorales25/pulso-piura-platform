@@ -106,6 +106,8 @@ async function main() {
             : [];
         let uploaded = 0;
         let preparedCalls = 0;
+        let savedPreparation = null;
+        let destinationUnavailable = false;
         let clockOffset = 0;
         let saved = false;
         let imageRequested = false;
@@ -285,8 +287,13 @@ async function main() {
             }
             return json(destination);
           }
-          if (endpoint === "/external-payments/destination")
+          if (endpoint === "/external-payments/destination") {
+            if (destinationUnavailable)
+              return json({ detail: "Cuenta no disponible" }, 503);
             return json(destination);
+          }
+          if (endpoint === "/external-payments/preparation")
+            return json(savedPreparation);
           if (endpoint === "/external-payments/prepare") {
             assert.deepEqual(request.postDataJSON(), {
               targetType: "RESERVATION",
@@ -296,14 +303,16 @@ async function main() {
             });
             assert.ok(request.headers()["idempotency-key"]);
             preparedCalls++;
-            return json({
+            const preparation = {
               amountMinor: 2000,
               currency: "PEN",
               expiresAt: new Date(
                 Date.now() + clockOffset + 300000,
               ).toISOString(),
               destination,
-            });
+            };
+            savedPreparation = { preparation, method: "YAPE", plan: "DEPOSIT" };
+            return json(preparation);
           }
           if (
             endpoint ===
@@ -415,8 +424,34 @@ async function main() {
           await panel
             .getByRole("button", { name: "Preparar pago", exact: true })
             .click();
+          const paymentDialog = page.getByRole("dialog", {
+            name: "Pago por Yape o Plin",
+            exact: true,
+          });
+          await paymentDialog.waitFor();
+          assert.equal(await panel.locator("dl").count(), 0);
+          await paymentDialog
+            .getByRole("button", {
+              name: "Verificar disponibilidad",
+              exact: true,
+            })
+            .click();
           await panel.getByText("Celular: 987654321").waitFor();
           assert.equal(preparedCalls, 1);
+          await page.reload();
+          await panel
+            .getByRole("button", { name: "Continuar pago", exact: true })
+            .click();
+          await paymentDialog.waitFor();
+          await panel.getByText("Celular: 987654321").waitFor();
+          assert.equal(preparedCalls, 1, "Reload must not renew preparation");
+          assert.equal(
+            await paymentDialog
+              .getByLabel(/Captura del comprobante/)
+              .evaluate((input) => input.files.length),
+            0,
+          );
+
           const amount = panel
             .getByRole("status")
             .filter({ hasText: "Importe verificado" })
@@ -507,6 +542,44 @@ async function main() {
             .getByRole("heading", { name: "Enviado, pendiente de validación" })
             .waitFor();
           assert.equal(uploaded, 2);
+          await paymentDialog.waitFor({ state: "hidden" });
+          await panel.getByText("En revisión", { exact: true }).waitFor();
+          destinationUnavailable = true;
+          await page.reload();
+          await panel
+            .getByRole("heading", { name: "Enviado, pendiente de validación" })
+            .waitFor();
+          assert.equal(
+            await panel
+              .getByRole("button", { name: "Preparar pago", exact: true })
+              .count(),
+            0,
+          );
+          proofs = proofs.map((proof) => ({
+            ...proof,
+            status: "NEEDS_RESOLUTION",
+            ownPayment: true,
+          }));
+          await page.reload();
+          await panel
+            .getByRole("heading", { name: /Requiere resolución/ })
+            .waitFor();
+          assert.equal(
+            await panel
+              .getByRole("button", { name: "Preparar pago", exact: true })
+              .count(),
+            0,
+          );
+          proofs = proofs.map((proof) => ({
+            ...proof,
+            status: "PENDING_REVIEW",
+          }));
+          destinationUnavailable = false;
+          await page.reload();
+          await panel
+            .getByRole("heading", { name: "Enviado, pendiente de validación" })
+            .waitFor();
+
           assert.equal(
             await page
               .getByText("Reserva confirmada.", { exact: false })

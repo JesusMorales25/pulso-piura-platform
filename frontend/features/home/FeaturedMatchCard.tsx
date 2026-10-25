@@ -39,18 +39,18 @@ export function FeaturedMatchCard({
     FOOTBALL: {
       label: "Fútbol",
       Icon: SoccerBall,
-      image: "/images/court-reference.svg",
+      image: "/images/demo-court-night.png",
     },
     VOLLEYBALL: {
       label: "Vóley",
       Icon: Volleyball,
-      image: "/images/volleyball-reference.svg",
+      image: "/images/demo-volleyball.png",
     },
     BASKETBALL: { label: "Básquet", Icon: Basketball, image: "" },
     PADEL: {
       label: "Pádel",
       Icon: TennisBall,
-      image: "/images/court-reference.svg",
+      image: "/images/demo-court-night.png",
     },
     FRONTON: { label: "Frontón", Icon: Target, image: "" },
   };

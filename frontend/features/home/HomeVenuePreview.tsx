@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Clock, MapPin } from "@phosphor-icons/react";
 import type { HomeVenue } from "@/features/home/HomeDashboard";
-import { apiRequest } from "@/lib/api";
+import { apiAssetUrl, apiRequest } from "@/lib/api";
 
-type Space = { id: string; name: string };
+type Space = { id: string; name: string; sportCode?: string };
 type Slot = {
   startsAt: string;
   endsAt: string;
@@ -26,10 +26,58 @@ type VenueOffer = {
   slot: Slot;
 };
 
-const previewImages = [
-  "/images/court-reference.svg",
-  "/images/volleyball-reference.svg",
-];
+function VenuePreviewPhoto({ offer }: { offer: VenueOffer }) {
+  const [cover, setCover] = useState<string | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    void apiRequest<{ id: string; cover: boolean }[]>(
+      "/public/spaces/" + offer.space.id + "/photos",
+      null,
+      { signal: controller.signal },
+    )
+      .then((photos) => {
+        if (!controller.signal.aborted)
+          setCover(
+            (photos.find((photo) => photo.cover) ?? photos[0])?.id ?? null,
+          );
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [offer.space.id]);
+  const fallback =
+    offer.space.sportCode === "VOLLEYBALL"
+      ? "/images/demo-volleyball.png"
+      : "/images/demo-court-night.png";
+  return (
+    <div className="venueShowcaseImage">
+      <Image
+        alt={
+          cover
+            ? "Portada de " + offer.space.name
+            : "Imagen de referencia de una cancha"
+        }
+        fill
+        sizes="(max-width: 760px) 76vw, 360px"
+        src={
+          cover
+            ? apiAssetUrl(
+                "/api/v1/public/spaces/" +
+                  offer.space.id +
+                  "/photos/" +
+                  encodeURIComponent(cover) +
+                  "/image",
+              )
+            : fallback
+        }
+        unoptimized={!!cover}
+        onError={() => setCover(null)}
+      />
+      <span>
+        {!cover ? "Referencia · " : ""}Desde {time(offer.slot.startsAt)}
+      </span>
+    </div>
+  );
+}
 
 const todayInPiura = () =>
   new Intl.DateTimeFormat("en-CA", {
@@ -138,7 +186,7 @@ export function HomeVenuePreview({
         <div className="venueMiniSkeleton" aria-label="Cargando canchas" />
       ) : offers.length ? (
         <div className="venueMiniGrid">
-          {offers.slice(0, 4).map((offer, index) => {
+          {offers.slice(0, 4).map((offer) => {
             const query = new URLSearchParams({
               date: offer.availability.date,
               venue: offer.venue.publicSlug,
@@ -152,15 +200,7 @@ export function HomeVenuePreview({
                 className="venueShowcaseCard"
                 key={offer.venue.publicSlug}
               >
-                <div className="venueShowcaseImage">
-                  <Image
-                    alt={`Cancha deportiva en ${offer.venue.name}`}
-                    fill
-                    sizes="(max-width: 760px) 76vw, 360px"
-                    src={previewImages[index % previewImages.length]}
-                  />
-                  <span>Desde {time(offer.slot.startsAt)}</span>
-                </div>
+                <VenuePreviewPhoto offer={offer} />
                 <div className="venueShowcaseCopy">
                   <strong>{offer.venue.name}</strong>
                   <small>

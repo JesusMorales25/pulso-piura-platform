@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { PlatformHeroImage } from "@/components/PlatformHeroImage";
 import { useState } from "react";
 import { PlusCircle, SoccerBall } from "@phosphor-icons/react";
 import { FormSheet } from "@/components/forms/FormSheet";
@@ -16,8 +16,9 @@ export function MatchCreationWorkspace() {
       <header className="hybridHome complexPanelHero">
         <section className="hybridHero">
           <div className="hybridHeroCarousel" aria-hidden="true">
-            <Image
-              src="/images/court-reference.svg"
+            <PlatformHeroImage
+              slot="create"
+              src="/images/demo-court-night.png"
               alt=""
               fill
               sizes="(max-width: 760px) 100vw, 1120px"

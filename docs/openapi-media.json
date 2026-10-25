@@ -1,0 +1,576 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pulso Piura - galerías y portadas",
+    "version": "2026-10-24",
+    "description": "Los objetos permanecen en bucket privado. Solo la API publica fotos de canchas publicadas y portadas; las escrituras requieren permisos por organización o administrador. Se permite publicar canchas y completar fotos después."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearer": []
+    }
+  ],
+  "paths": {
+    "/organizations/{organizationId}/spaces/{spaceId}/photos": {
+      "parameters": [
+        {
+          "name": "organizationId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "spaceId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Miembro con permiso VIEW; incluye borradores",
+        "responses": {
+          "200": {
+            "description": "Operación autorizada completada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Photo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Propietario/administrador autorizado; máximo ocho, primera portada, auditoría",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "JPG/PNG hasta 5 MiB; backend recodifica PNG"
+                  },
+                  "caption": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Operación autorizada completada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Photo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Archivo, descripción o límite inválidos"
+          },
+          "403": {
+            "description": "Sin permiso del complejo"
+          }
+        }
+      }
+    },
+    "/organizations/{organizationId}/spaces/{spaceId}/photos/{photoId}/cover": {
+      "parameters": [
+        {
+          "name": "organizationId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "spaceId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "photoId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Selecciona una única portada de forma atómica",
+        "responses": {
+          "200": {
+            "description": "Operación autorizada completada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Photo"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "404": {
+            "description": "Foto/cancha no corresponde al complejo"
+          }
+        }
+      }
+    },
+    "/organizations/{organizationId}/spaces/{spaceId}/photos/{photoId}": {
+      "parameters": [
+        {
+          "name": "organizationId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "spaceId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "photoId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Retira metadatos y programa limpieza del objeto tras commit; reasigna portada",
+        "responses": {
+          "204": {
+            "description": "Foto retirada"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "404": {
+            "description": "Foto no encontrada"
+          }
+        }
+      }
+    },
+    "/organizations/{organizationId}/spaces/{spaceId}/photos/{photoId}/image": {
+      "parameters": [
+        {
+          "name": "organizationId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "spaceId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "photoId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PNG procesado; nosniff, no-store",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "404": {
+            "description": "Foto no encontrada"
+          }
+        }
+      }
+    },
+    "/public/spaces/{spaceId}/photos": {
+      "parameters": [
+        {
+          "name": "spaceId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "security": [],
+        "description": "Exige complejo activo, sede y cancha publicadas",
+        "responses": {
+          "200": {
+            "description": "Operación autorizada completada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Photo"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso no publicado"
+          }
+        }
+      }
+    },
+    "/public/spaces/{spaceId}/photos/{photoId}/image": {
+      "parameters": [
+        {
+          "name": "spaceId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "photoId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "PNG procesado; nosniff, no-store",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Foto/cancha no pública"
+          }
+        }
+      }
+    },
+    "/public/visual-assets": {
+      "get": {
+        "security": [],
+        "description": "Portadas configuradas",
+        "responses": {
+          "200": {
+            "description": "Operación autorizada completada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VisualAsset"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/platform/visual-assets": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Solo administrador de plataforma",
+        "responses": {
+          "200": {
+            "description": "Operación autorizada completada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VisualAsset"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/visual-assets/{slot}/image": {
+      "parameters": [
+        {
+          "name": "slot",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "home-matches",
+              "home-venues",
+              "activity",
+              "create",
+              "complexes"
+            ]
+          }
+        }
+      ],
+      "get": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "PNG procesado; nosniff, no-store",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ubicación sin imagen configurada"
+          }
+        }
+      }
+    },
+    "/platform/visual-assets/{slot}": {
+      "parameters": [
+        {
+          "name": "slot",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "home-matches",
+              "home-venues",
+              "activity",
+              "create",
+              "complexes"
+            ]
+          }
+        }
+      ],
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Solo administrador; imagen pública al guardar",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "JPG/PNG hasta 5 MiB; backend recodifica PNG"
+                  },
+                  "caption": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operación autorizada completada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisualAsset"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Archivo o ubicación inválida"
+          },
+          "403": {
+            "description": "No es administrador"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Solo administrador; vuelve al respaldo visual del frontend",
+        "responses": {
+          "204": {
+            "description": "Portada retirada"
+          },
+          "403": {
+            "description": "No es administrador"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Photo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "caption": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "cover": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "imageUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "VisualAsset": {
+        "type": "object",
+        "properties": {
+          "slot": {
+            "type": "string",
+            "enum": [
+              "home-matches",
+              "home-venues",
+              "activity",
+              "create",
+              "complexes"
+            ]
+          },
+          "imageUrl": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

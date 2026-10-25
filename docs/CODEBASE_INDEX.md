@@ -3,8 +3,8 @@
 > Generado automaticamente. No editar a mano.
 > Actualizar: powershell -ExecutionPolicy Bypass -File scripts/update-codebase-index.ps1
 
-- Huella del inventario: 07f410d8104fdc95
-- Archivos indexados: 679
+- Huella del inventario: d2e1bf8acd13d86f
+- Archivos indexados: 714
 - Excluye .env, node_modules, .next, target, build, Git y artefactos temporales.
 
 ## Uso
@@ -67,6 +67,7 @@
 - /partidos/invitaciones/[invitationId] -> frontend/app/partidos/invitaciones/[invitationId]/page.tsx
 - /partidos -> frontend/app/partidos/page.tsx
 - /perfil -> frontend/app/perfil/page.tsx
+- /plataforma/imagenes -> frontend/app/plataforma/imagenes/page.tsx
 - /plataforma/negocios -> frontend/app/plataforma/negocios/page.tsx
 - /plataforma/organizaciones -> frontend/app/plataforma/organizaciones/page.tsx
 - /plataforma -> frontend/app/plataforma/page.tsx
@@ -83,10 +84,10 @@
 - home (12): FeaturedMatchCard.module.css, FeaturedMatchCard.tsx, FeaturedMatchCardV2.module.css, FeaturedMatchCardV2.tsx, HomeDashboard.tsx, HomeModeSwitch.tsx, HomeVenuePreview.tsx, MatchDiscoveryPanel.tsx, NextMatchCard.module.css, NextMatchCard.tsx, ThirdTimeSection.tsx, VenueAgendaPanel.tsx
 - matches (18): DemoMatchBuilder.tsx, DemoMatchDetail.tsx, draft.ts, MatchBuilder.tsx, MatchCatalog.tsx, MatchCheckInScanner.tsx, MatchCreationWorkspace.tsx, MatchDetail.tsx, MatchInvitationAcceptance.tsx, MatchOrganizerDashboard.module.css, MatchOrganizerDashboard.tsx, MatchQrPass.tsx, mobile-checkout.ts, MobileMatchCheckout.tsx, MyMatchParticipations.tsx, organizer-summary.ts, presentation.ts, types.ts
 - navigation (3): AppNavigation.tsx, LocationProvider.tsx, LocationSelector.tsx
-- organizations (6): InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx, PlatformRequestsDashboard.tsx, PlatformUserDirectory.tsx, user-directory.ts
+- organizations (7): EnabledCourts.tsx, InvitationAcceptance.tsx, OrganizationAdmin.tsx, OrganizationWorkspace.tsx, PlatformRequestsDashboard.tsx, PlatformUserDirectory.tsx, user-directory.ts
 - payments (3): ExternalPaymentPanel.module.css, ExternalPaymentPanel.tsx, proof-validation.ts
 - reservations (14): MyReservations.tsx, OrganizationReservations.module.css, OrganizationReservations.tsx, OrganizationSchedule.tsx, payment-options.ts, PlayerReservationOverview.tsx, presentation.ts, ReservationCheckInScanner.tsx, ReservationCheckout.tsx, ReservationDrilldown.module.css, ReservationQrPass.tsx, types.ts, useReservationDashboard.ts, VenueOwnerReservationsDashboard.tsx
-- venues (7): AvailabilityAdmin.tsx, PublicVenueCatalog.tsx, VenueAdmin.tsx, VenueBookingCard.module.css, VenueBookingCard.tsx, VenueScheduleDialog.module.css, VenueScheduleDialog.tsx
+- venues (9): AvailabilityAdmin.tsx, CourtPhotos.module.css, CourtPhotos.tsx, PublicVenueCatalog.tsx, VenueAdmin.tsx, VenueBookingCard.module.css, VenueBookingCard.tsx, VenueScheduleDialog.module.css, VenueScheduleDialog.tsx
 
 ### Compartido
 
@@ -100,17 +101,18 @@
 
 ### Modulos
 
-- audit: 6 clases, 0 pruebas.
+- audit: 7 clases, 0 pruebas.
 - foundation: 8 clases, 4 pruebas.
 - identity: 13 clases, 5 pruebas.
 - matches: 43 clases, 12 pruebas.
+- media: 5 clases, 1 pruebas.
 - organizations: 22 clases, 7 pruebas.
 - partners: 2 clases, 2 pruebas.
 - payments: 24 clases, 9 pruebas.
 - profiles: 7 clases, 1 pruebas.
 - reservations: 46 clases, 13 pruebas.
-- shared: 2 clases, 1 pruebas.
-- venues: 44 clases, 10 pruebas.
+- shared: 7 clases, 3 pruebas.
+- venues: 47 clases, 12 pruebas.
 
 ### Controladores y endpoints declarados
 
@@ -118,11 +120,12 @@
 - /api/v1/me | backend/src/main/java/com/pulsopiura/platform/identity/api/MeController.java | GET; GET /profile; PATCH /profile; GET /capability-requests; POST /capability-requests
 - /api/v1/platform | backend/src/main/java/com/pulsopiura/platform/identity/api/PlatformAdminController.java | GET /summary; GET /users; GET /capability-requests; POST /capability-requests/{requestId}/review; POST /capability-requests/{requestId}/revoke
 - /api/v1/matches | backend/src/main/java/com/pulsopiura/platform/matches/api/MatchController.java | GET; GET /{publicSlug:[a-z0-9-]+}; GET /mine; GET /{matchId:[0-9a-fA-F-]{36}}/participants; DELETE /{matchId:[0-9a-fA-F-]{36}}/participants/{userId:[0-9a-fA-F-]{36}}; POST /{matchId:[0-9a-fA-F-]{36}}/manual-participants; DELETE; PATCH; GET /participations/me; POST /{publicSlug:[a-z0-9-]+}/check-in-pass; POST /{matchId:[0-9a-fA-F-]{36}}/check-in/preview; POST /{matchId:[0-9a-fA-F-]{36}}/check-in; GET /{publicSlug:[a-z0-9-]+}/participants/me; GET /join-orders/capabilities; GET /{publicSlug:[a-z0-9-]+}/join-orders/me; POST /{publicSlug:[a-z0-9-]+}/join-orders; POST /join-orders/{orderId:[0-9a-fA-F-]{36}}/simulate; POST; POST /{matchId:[0-9a-fA-F-]{36}}/publish; GET /{matchId:[0-9a-fA-F-]{36}}/invitations; POST /{matchId:[0-9a-fA-F-]{36}}/invitations; DELETE /{matchId:[0-9a-fA-F-]{36}}/invitations/{invitationId:[0-9a-fA-F-]{36}}; POST /invitations/{invitationId:[0-9a-fA-F-]{36}}/accept; POST /{publicSlug:[a-z0-9-]+}/participants/me; DELETE /{publicSlug:[a-z0-9-]+}/participants/me
+- /api/v1 | backend/src/main/java/com/pulsopiura/platform/media/api/VisualAssetController.java | GET /public/visual-assets; GET /public/visual-assets/{slot}/image; GET /platform/visual-assets; PUT; DELETE /platform/visual-assets/{slot}
 - /api/v1/organizations | backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java | POST; GET; GET /{organizationId}; POST /{organizationId}/invitations; POST /invitations/{invitationId}/accept; GET /{organizationId}/members; DELETE /{organizationId}/members/{userId}
 - /api/v1/organizations/{organizationId} | backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationOperationsController.java | GET /overview; GET /staff; GET /schedule
 - /api/v1/platform/organizations | backend/src/main/java/com/pulsopiura/platform/organizations/api/PlatformOrganizationAdminController.java | GET; POST /{organizationId}/owners; DELETE /{organizationId}/owners/{userId}
 - sin prefijo | backend/src/main/java/com/pulsopiura/platform/partners/api/PartnerBusinessController.java | GET /api/v1/businesses; GET /api/v1/businesses/{businessId}/image; GET /api/v1/platform/businesses; GET /api/v1/platform/businesses/{businessId}/image; POST /api/v1/platform/businesses; PUT /api/v1/platform/businesses/{businessId}; PUT
-- /api/v1/external-payments | backend/src/main/java/com/pulsopiura/platform/payments/api/ExternalPaymentController.java | GET /capabilities; GET /destination; POST /prepare; PUT /destination; GET; POST; POST /{proofId}/decision; GET
+- /api/v1/external-payments | backend/src/main/java/com/pulsopiura/platform/payments/api/ExternalPaymentController.java | GET /capabilities; GET /destination; GET /preparation; POST /prepare; PUT /destination; GET; POST; POST /{proofId}/decision; GET
 - /api/v1/organizations/{organizationId}/external-payment-destination | backend/src/main/java/com/pulsopiura/platform/payments/api/OrganizationExternalPaymentController.java | GET; PUT
 - /api/v1/payment-orders | backend/src/main/java/com/pulsopiura/platform/payments/api/PaymentOrderController.java | GET /capabilities; GET; GET /{orderId}; POST; POST /{orderId}/simulate
 - /api/v1/spaces/{spaceId}/bookable-slots | backend/src/main/java/com/pulsopiura/platform/reservations/api/BookableAvailabilityController.java | GET
@@ -133,6 +136,7 @@
 - sin prefijo | backend/src/main/java/com/pulsopiura/platform/reservations/api/ReservationDashboardController.java | GET /api/v1/me/reservations/dashboard; GET /api/v1/organizations/{organizationId}/reservations/dashboard
 - /api/v1/organizations/{organizationId}/spaces/{spaceId} | backend/src/main/java/com/pulsopiura/platform/venues/api/AvailabilityController.java | POST /availability-rules; PUT /availability-rules/{ruleId}; GET /availability-rules; POST /availability-rules/{ruleId}/activate; DELETE /availability-rules/{ruleId}; POST /exceptions; GET /exceptions; DELETE /exceptions/{exceptionId}
 - /api/v1 | backend/src/main/java/com/pulsopiura/platform/venues/api/PublicVenueController.java | GET /venues/districts; GET /venues; GET /venues/{publicSlug}; GET /venues/{publicSlug}/spaces; GET /spaces/{spaceId}/availability
+- /api/v1 | backend/src/main/java/com/pulsopiura/platform/venues/api/SpacePhotoController.java | GET /organizations/{organizationId}/spaces/{spaceId}/photos; POST; PUT /organizations/{organizationId}/spaces/{spaceId}/photos/{photoId}/cover; DELETE /organizations/{organizationId}/spaces/{spaceId}/photos/{photoId}; GET /organizations/{organizationId}/spaces/{spaceId}/photos/{photoId}/image; GET /public/spaces/{spaceId}/photos; GET /public/spaces/{spaceId}/photos/{photoId}/image
 - /api/v1/organizations/{organizationId}/spaces | backend/src/main/java/com/pulsopiura/platform/venues/api/SportSpaceController.java | PUT /{spaceId}; POST /{spaceId}/publish; DELETE /{spaceId}
 - /api/v1/venue-catalogs | backend/src/main/java/com/pulsopiura/platform/venues/api/VenueCatalogController.java | GET; GET /districts
 - /api/v1/organizations/{organizationId}/venues | backend/src/main/java/com/pulsopiura/platform/venues/api/VenueController.java | POST; GET; PUT /{venueId}; POST /{venueId}/publish; DELETE /{venueId}; POST /{venueId}/spaces; GET /{venueId}/spaces
@@ -176,6 +180,8 @@
 - backend/src/main/resources/db/migration/V35__shared_write_rate_limits.sql
 - backend/src/main/resources/db/migration/V36__external_manual_payments.sql
 - backend/src/main/resources/db/migration/V37__reservation_payment_confirmation_state.sql
+- backend/src/main/resources/db/migration/V38__external_payment_recovery.sql
+- backend/src/main/resources/db/migration/V39__court_photos_and_visual_assets.sql
 
 ## Operacion y validacion
 

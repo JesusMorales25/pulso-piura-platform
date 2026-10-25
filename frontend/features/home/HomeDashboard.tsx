@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { PlatformHeroImage } from "@/components/PlatformHeroImage";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
@@ -23,14 +23,14 @@ type Me = { displayName: string };
 
 const heroSlides: Record<HomeMode, string[]> = {
   matches: [
-    "/images/court-reference.svg",
-    "/images/court-reference.svg",
-    "/images/volleyball-reference.svg",
+    "/images/demo-court-night.png",
+    "/images/demo-court-night.png",
+    "/images/demo-volleyball.png",
   ],
   venues: [
-    "/images/court-reference.svg",
-    "/images/volleyball-reference.svg",
-    "/images/court-reference.svg",
+    "/images/demo-court-night.png",
+    "/images/demo-volleyball.png",
+    "/images/demo-court-night.png",
   ],
 };
 
@@ -127,7 +127,8 @@ export function HomeDashboard({
         <div aria-hidden="true" className="hybridHeroCarousel">
           {Array.from(new Set(Object.values(heroSlides).flat())).map(
             (slide) => (
-              <Image
+              <PlatformHeroImage
+                slot={mode === "matches" ? "home-matches" : "home-venues"}
                 alt=""
                 className={`hybridHeroImage ${slide === slides[heroIndex] ? "active" : ""}`}
                 fill

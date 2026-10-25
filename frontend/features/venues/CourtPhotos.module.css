@@ -1,0 +1,75 @@
+.gallery {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.stage {
+  min-width: 0;
+}
+.large {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #071827;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.controls button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.thumbnails {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding: 4px;
+}
+.thumbnails button {
+  flex: 0 0 72px;
+  padding: 3px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #10283b;
+}
+.thumbnails button[aria-pressed="true"] {
+  border-color: #18c6c8;
+}
+.thumbnails img,
+.thumbnails span {
+  display: block;
+  width: 62px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.upload {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid #315064;
+  padding-top: 16px;
+}
+.upload h3,
+.upload p {
+  margin: 0;
+}
+.upload label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.upload input {
+  max-width: 100%;
+  min-width: 0;
+}
+.gallery button:focus-visible {
+  outline: 2px solid #18c6c8;
+  outline-offset: 3px;
+}

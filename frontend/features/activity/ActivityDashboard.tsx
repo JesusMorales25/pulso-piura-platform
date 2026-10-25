@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { PlatformHeroImage } from "@/components/PlatformHeroImage";
 import {
   ArrowLeft,
   CalendarCheck,
@@ -48,11 +48,12 @@ export function ActivityDashboard({
       )}
       <section className="hybridHero activityUnifiedHero">
         <div className="hybridHeroCarousel" aria-hidden="true">
-          <Image
+          <PlatformHeroImage
+            slot="activity"
             src={
               activeTab === "matches"
-                ? "/images/volleyball-reference.svg"
-                : "/images/court-reference.svg"
+                ? "/images/demo-volleyball.png"
+                : "/images/demo-court-night.png"
             }
             alt=""
             fill

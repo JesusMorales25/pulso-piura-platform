@@ -77,3 +77,7 @@ Se conserva el diseño móvil y la misma identidad Manrope/nocturno/turquesa/lim
 - Los diálogos de gestión se centran y amplían. Desde 1280 px, reservas de jugador y propietario permiten lista y detalle simultáneos; en móvil permanece lista → detalle. Un solo formulario de pago por reserva seleccionada.
 
 Plan de implementación: (1) navegación y geometría compartida; (2) espacios de trabajo y formulario de escritorio; (3) pruebas de los cuatro roles en móvil/tableta/escritorio, revisión visual y compilación. Reutilizar lógica/API actuales; no duplicar autorización ni datos para cada dispositivo.
+
+## Fotografías y publicación
+
+Las fotos reales pertenecen a cada cancha, con galería bajo demanda en FormSheet, hasta ocho imágenes y una portada. Se recomienda tres, pero se permite publicar y completarlas después. Portada y galería sustituyen la referencia generada sin atribuir imágenes ficticias a un negocio. Administración configura cinco portadas globales (Explorar partidos/canchas, actividad, crear y complejos) desde una pantalla específica; las variables de entorno configuran almacenamiento, no contenido editorial.

@@ -50,6 +50,7 @@ export type ExternalProof = {
   phone: string;
   canReview: boolean;
   hasImage: boolean;
+  ownPayment?: boolean;
 };
 const labels: Record<ExternalProof["status"], string> = {
   PENDING_REVIEW: "Enviado, pendiente de validación",
@@ -111,11 +112,15 @@ function ExternalPaymentPanelInner({
   const [destination, setDestination] = useState<Destination | null>(null);
   const [proofs, setProofs] = useState<ExternalProof[]>([]);
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [paymentsLoaded, setPaymentsLoaded] = useState(false);
+  const recoveryLoaded = useRef(false);
   const [busy, setBusy] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [editingDestination, setEditingDestination] = useState(false);
   const [destinationSaved, setDestinationSaved] = useState(false);
   const [image, setImage] = useState<string | null>(null);
+  const [paymentOpen, setPaymentOpen] = useState(false);
   const [prepared, setPrepared] = useState<PreparedPayment | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const preparationKey = useRef(crypto.randomUUID());
@@ -139,28 +144,67 @@ function ExternalPaymentPanelInner({
     const controller = new AbortController();
     async function load() {
       try {
-        const [recipient, items] = await Promise.all([
-          apiRequest<Destination>(
+        const [recipientResult, proofResult, preparationResult] =
+          await Promise.allSettled([
+            apiRequest<Destination>(
+              organizationSettings
+                ? destinationPath
+                : destinationPath + "?" + query,
+              accessToken,
+              { signal: controller.signal },
+            ),
             organizationSettings
-              ? destinationPath
-              : `${destinationPath}?${query}`,
-            accessToken,
-            { signal: controller.signal },
-          ),
-          organizationSettings
-            ? Promise.resolve([] as ExternalProof[])
-            : apiRequest<ExternalProof[]>(
-                `/external-payments?${query}`,
-                accessToken,
-                { signal: controller.signal },
-              ),
-        ]);
+              ? Promise.resolve([] as ExternalProof[])
+              : apiRequest<ExternalProof[]>(
+                  "/external-payments?" + query,
+                  accessToken,
+                  { signal: controller.signal },
+                ),
+            allowUpload && !recoveryLoaded.current
+              ? apiRequest<{
+                  preparation: Omit<PreparedPayment, "method" | "plan">;
+                  method: string;
+                  plan: string;
+                } | null>(
+                  "/external-payments/preparation?" + query,
+                  accessToken,
+                  { signal: controller.signal },
+                )
+              : Promise.resolve(null),
+          ]);
         if (!controller.signal.aborted) {
-          // Keep the account shown before the transfer, even if it changes during review.
-          setDestination((current) =>
-            current?.configured ? current : recipient,
+          if (proofResult.status === "rejected") throw proofResult.reason;
+          const items = proofResult.value;
+          const blocked = items.some(
+            (item) =>
+              (item.ownPayment ?? !item.canReview) &&
+              ["PENDING_REVIEW", "NEEDS_RESOLUTION"].includes(item.status),
           );
           setProofs(items);
+          if (recipientResult.status === "fulfilled") {
+            setDestination((current) =>
+              current?.configured ? current : recipientResult.value,
+            );
+          } else if (!blocked && items.length === 0)
+            throw recipientResult.reason;
+          if (blocked && allowUpload) {
+            setPrepared(null);
+            setPaymentOpen(false);
+            recoveryLoaded.current = true;
+          } else if (!recoveryLoaded.current && allowUpload) {
+            if (preparationResult.status === "rejected")
+              throw preparationResult.reason;
+            const saved = preparationResult.value;
+            if (saved?.preparation)
+              setPrepared({
+                ...saved.preparation,
+                method: saved.method,
+                plan: saved.plan,
+              });
+            recoveryLoaded.current = true;
+          }
+          setPaymentsLoaded(true);
+          setLoadError("");
           const state = items
             .map((item) => `${item.id}:${item.status}`)
             .join(",");
@@ -173,7 +217,7 @@ function ExternalPaymentPanelInner({
         }
       } catch (reason) {
         if (!controller.signal.aborted)
-          setError(
+          setLoadError(
             reason instanceof Error
               ? reason.message
               : "No se pudieron consultar los pagos.",
@@ -193,6 +237,7 @@ function ExternalPaymentPanelInner({
     refresh,
     destinationPath,
     organizationSettings,
+    allowUpload,
   ]);
   useEffect(
     () => () => {
@@ -246,26 +291,41 @@ function ExternalPaymentPanelInner({
     }
     await mutate(async () => {
       try {
-        await apiRequest("/external-payments", accessToken, {
-          method: "POST",
-          headers: { "Idempotency-Key": key.current },
-          body: data,
-          redirect: "error",
-        });
+        const sent = await apiRequest<ExternalProof>(
+          "/external-payments",
+          accessToken,
+          {
+            method: "POST",
+            headers: { "Idempotency-Key": key.current },
+            body: data,
+            redirect: "error",
+          },
+        );
+        setProofs((current) => [
+          ...current.filter((item) => item.id !== sent.id),
+          sent,
+        ]);
       } catch (reason) {
-        if (reason instanceof ApiError && reason.status === 409)
+        if (reason instanceof ApiError && reason.status === 409) {
+          setRefresh((value) => value + 1);
           throw new Error(
-            `${reason.message} No vuelvas a transferir; contacta al receptor para resolver el pago. Conservamos la captura y el número de operación en este formulario.`,
+            reason.message +
+              " No vuelvas a transferir; revisa el estado o contacta al receptor.",
           );
+        }
         throw reason;
       }
       key.current = crypto.randomUUID();
       form.reset();
+      setPaymentOpen(false);
+      setPrepared(null);
     });
   }
   if (!enabled) return null;
   const pending = proofs.some(
-    (proof) => !proof.canReview && proof.status === "PENDING_REVIEW",
+    (proof) =>
+      (proof.ownPayment ?? !proof.canReview) &&
+      ["PENDING_REVIEW", "NEEDS_RESOLUTION"].includes(proof.status),
   );
   const preparedActive =
     allowUpload &&
@@ -291,6 +351,153 @@ function ExternalPaymentPanelInner({
     : reviewer && (organizationSettings || targetType === "MATCH")
       ? destination
       : null;
+  const paymentControls = (
+    <>
+      {shownDestination?.configured && (
+        <p className={styles.destinationSummary}>
+          <strong>{shownDestination.holderName}</strong>
+          <br />
+          Celular: {shownDestination.phone}
+          <br />
+          {[
+            shownDestination.yapeEnabled && "Yape",
+            shownDestination.plinEnabled && "Plin",
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+      )}
+      {!destination?.configured && (organizationSettings || !reviewer) && (
+        <p role="status">
+          El {recipientLabel} todavía debe configurar su cuenta receptora. No
+          realices la transferencia hasta verla aquí.
+        </p>
+      )}
+      {allowUpload && destination?.configured && !pending && (
+        <form
+          onChange={() => {
+            preparationKey.current = crypto.randomUUID();
+          }}
+          onSubmit={(event) => {
+            event.preventDefault();
+            const data = new FormData(event.currentTarget);
+            const method = String(data.get("method"));
+            const plan = String(data.get("plan"));
+            void mutate(async () => {
+              const result = await apiRequest<
+                Omit<PreparedPayment, "method" | "plan">
+              >("/external-payments/prepare", accessToken, {
+                method: "POST",
+                headers: { "Idempotency-Key": preparationKey.current },
+                body: JSON.stringify({ targetType, targetId, method, plan }),
+              });
+              setPrepared({ ...result, method, plan });
+              key.current = crypto.randomUUID();
+              preparationKey.current = crypto.randomUUID();
+            });
+          }}
+        >
+          <p>
+            Prepara el pago para verificar y retener el horario o cupo antes de
+            transferir. Si ya transferiste, conserva los datos y contacta al
+            responsable; no realices otro pago.
+          </p>
+          <label>
+            Método
+            <select name="method" defaultValue={prepared?.method}>
+              {destination.yapeEnabled && <option value="YAPE">Yape</option>}
+              {destination.plinEnabled && <option value="PLIN">Plin</option>}
+            </select>
+          </label>
+          <label>
+            Importe a pagar
+            <select name="plan" defaultValue={prepared?.plan}>
+              {plans.map((item) => (
+                <option key={item.plan} value={item.plan}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="primary" type="submit" disabled={busy}>
+            {busy
+              ? "Verificando disponibilidad…"
+              : prepared
+                ? "Actualizar preparación"
+                : "Verificar disponibilidad"}
+          </button>
+        </form>
+      )}
+      {prepared && !pending && (
+        <form
+          onSubmit={(event) => void upload(event)}
+          onChange={() => {
+            key.current = crypto.randomUUID();
+          }}
+        >
+          {preparedActive ? (
+            <div role="status" className={styles.preparationNotice}>
+              <p>Importe verificado</p>
+              <strong className={styles.preparationAmount}>
+                {new Intl.NumberFormat("es-PE", {
+                  style: "currency",
+                  currency: prepared.currency,
+                }).format(prepared.amountMinor / 100)}
+              </strong>
+              <p>
+                {prepared.method === "YAPE" ? "Yape" : "Plin"} · Retenido hasta{" "}
+                {new Date(prepared.expiresAt).toLocaleTimeString("es-PE", {
+                  timeZone: "America/Lima",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })}
+              </p>
+              <p>Envía el comprobante antes de esa hora.</p>
+            </div>
+          ) : (
+            <p role="alert">
+              La preparación venció. No transfieras. Si ya pagaste, no vuelvas a
+              transferir; contacta al responsable y conserva esta captura y
+              referencia para resolverlo.
+            </p>
+          )}
+          <label>
+            Número de operación (opcional)
+            <input name="reference" maxLength={100} />
+          </label>
+          <label>
+            Captura del comprobante JPG o PNG (máximo 5 MB)
+            <input
+              name="file"
+              type="file"
+              accept="image/png,image/jpeg"
+              required
+            />
+          </label>
+          <label className={styles.methodChoice}>
+            <input type="checkbox" required />
+            Acepto las{" "}
+            <Link
+              href="/informacion/cancelaciones"
+              target="_blank"
+              rel="noreferrer"
+            >
+              condiciones de pagos y cancelaciones
+            </Link>{" "}
+            y entiendo que el pago requiere validación manual.
+          </label>
+          <button
+            className="primary"
+            type="submit"
+            disabled={busy || !preparedActive}
+          >
+            {busy ? "Enviando…" : "Enviar para validación"}
+          </button>
+        </form>
+      )}
+    </>
+  );
   return (
     <section
       className={`${styles.panel} ${organizationSettings ? styles.accountPanel : ""} card`}
@@ -322,17 +529,29 @@ function ExternalPaymentPanelInner({
                 : "Primero prepara el pago para verificar disponibilidad; después transfiere desde tu aplicación. Enviar una captura no confirma el pago: el responsable debe verificarlo."}
         </p>
       )}
+      {loadError && (
+        <div className="notice" role="alert">
+          <p>{loadError}</p>
+          <button
+            className="secondary"
+            type="button"
+            onClick={() => setRefresh((value) => value + 1)}
+          >
+            Reintentar consulta de pagos
+          </button>
+        </div>
+      )}
       {destinationSaved && (
         <p className={styles.saved} role="status">
           Cuenta receptora actualizada.
         </p>
       )}
-      {error && (
+      {error && !paymentOpen && (
         <p role="alert" className="errorNotice">
           {error}
         </p>
       )}
-      {!organizationSettings && (
+      {!organizationSettings && proofs.length > 0 && (
         <dl className="reservationSummary">
           <div>
             <dt>
@@ -467,148 +686,47 @@ function ExternalPaymentPanelInner({
           </FormSheet>
         </>
       )}
-      {shownDestination?.configured && (
-        <p className={styles.destinationSummary}>
-          <strong>{shownDestination.holderName}</strong>
-          <br />
-          Celular: {shownDestination.phone}
-          <br />
-          {[
-            shownDestination.yapeEnabled && "Yape",
-            shownDestination.plinEnabled && "Plin",
-          ]
-            .filter(Boolean)
-            .join(" · ")}
-        </p>
-      )}
-      {!destination?.configured && (organizationSettings || !reviewer) && (
-        <p role="status">
-          El {recipientLabel} todavía debe configurar su cuenta receptora. No
-          realices la transferencia hasta verla aquí.
-        </p>
-      )}
-      {allowUpload && destination?.configured && !pending && (
-        <form
-          onChange={() => {
-            preparationKey.current = crypto.randomUUID();
-          }}
-          onSubmit={(event) => {
-            event.preventDefault();
-            const data = new FormData(event.currentTarget);
-            const method = String(data.get("method"));
-            const plan = String(data.get("plan"));
-            void mutate(async () => {
-              const result = await apiRequest<
-                Omit<PreparedPayment, "method" | "plan">
-              >("/external-payments/prepare", accessToken, {
-                method: "POST",
-                headers: { "Idempotency-Key": preparationKey.current },
-                body: JSON.stringify({ targetType, targetId, method, plan }),
-              });
-              setPrepared({ ...result, method, plan });
-              key.current = crypto.randomUUID();
-              preparationKey.current = crypto.randomUUID();
-            });
-          }}
-        >
-          <p>
-            Prepara el pago para verificar y retener el horario o cupo antes de
-            transferir. Si ya transferiste, conserva los datos y contacta al
-            responsable; no realices otro pago.
-          </p>
-          <label>
-            Método
-            <select name="method">
-              {destination.yapeEnabled && <option value="YAPE">Yape</option>}
-              {destination.plinEnabled && <option value="PLIN">Plin</option>}
-            </select>
-          </label>
-          <label>
-            Importe a pagar
-            <select name="plan">
-              {plans.map((item) => (
-                <option key={item.plan} value={item.plan}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button className="primary" type="submit" disabled={busy}>
-            {busy
-              ? "Verificando disponibilidad…"
-              : prepared
-                ? "Actualizar preparación"
-                : "Preparar pago"}
-          </button>
-        </form>
-      )}
-      {prepared && !pending && (
-        <form
-          onSubmit={(event) => void upload(event)}
-          onChange={() => {
-            key.current = crypto.randomUUID();
-          }}
-        >
-          {preparedActive ? (
-            <div role="status" className={styles.preparationNotice}>
-              <p>Importe verificado</p>
-              <strong className={styles.preparationAmount}>
-                {new Intl.NumberFormat("es-PE", {
-                  style: "currency",
-                  currency: prepared.currency,
-                }).format(prepared.amountMinor / 100)}
-              </strong>
-              <p>
-                {prepared.method === "YAPE" ? "Yape" : "Plin"} · Retenido hasta{" "}
-                {new Date(prepared.expiresAt).toLocaleTimeString("es-PE", {
-                  timeZone: "America/Lima",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </p>
-              <p>Envía el comprobante antes de esa hora.</p>
-            </div>
-          ) : (
-            <p role="alert">
-              La preparación venció. No transfieras. Si ya pagaste, no vuelvas a
-              transferir; contacta al responsable y conserva esta captura y
-              referencia para resolverlo.
+      {allowUpload ? (
+        <>
+          {!pending && (
+            <button
+              className="primary"
+              type="button"
+              disabled={
+                busy ||
+                !paymentsLoaded ||
+                !!loadError ||
+                !destination?.configured
+              }
+              onClick={() => setPaymentOpen(true)}
+            >
+              {prepared ? "Continuar pago" : "Preparar pago"}
+            </button>
+          )}
+          {!destination?.configured && (
+            <p role="status">
+              El {recipientLabel} todavía debe configurar su cuenta receptora.
             </p>
           )}
-          <label>
-            Número de operación (opcional)
-            <input name="reference" maxLength={100} />
-          </label>
-          <label>
-            Captura del comprobante JPG o PNG (máximo 5 MB)
-            <input
-              name="file"
-              type="file"
-              accept="image/png,image/jpeg"
-              required
-            />
-          </label>
-          <label className={styles.methodChoice}>
-            <input type="checkbox" required />
-            Acepto las{" "}
-            <Link
-              href="/informacion/cancelaciones"
-              target="_blank"
-              rel="noreferrer"
-            >
-              condiciones de pagos y cancelaciones
-            </Link>{" "}
-            y entiendo que el pago requiere validación manual.
-          </label>
-          <button
-            className="primary"
-            type="submit"
-            disabled={busy || !preparedActive}
+          <FormSheet
+            open={paymentOpen}
+            title="Pago por Yape o Plin"
+            onClose={() => {
+              if (!busy) setPaymentOpen(false);
+            }}
           >
-            {busy ? "Enviando…" : "Enviar para validación"}
-          </button>
-        </form>
+            <div className={styles.panel}>
+              {error && (
+                <p role="alert" className="errorNotice">
+                  {error}
+                </p>
+              )}
+              {paymentControls}
+            </div>
+          </FormSheet>
+        </>
+      ) : (
+        paymentControls
       )}
       <div aria-live="polite">
         {proofs.map((proof) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { PlatformHeroImage } from "@/components/PlatformHeroImage";
 import { useState } from "react";
 import { Buildings, CalendarCheck } from "@phosphor-icons/react";
 import { useUserCapabilities } from "@/features/access/useUserCapabilities";
@@ -72,8 +72,9 @@ export function VenueOwnerReservationsDashboard() {
       <header className="hybridHome complexPanelHero">
         <section className="hybridHero">
           <div className="hybridHeroCarousel" aria-hidden="true">
-            <Image
-              src="/images/court-reference.svg"
+            <PlatformHeroImage
+              slot="activity"
+              src="/images/demo-court-night.png"
               alt=""
               fill
               sizes="(max-width: 760px) 100vw, 1120px"

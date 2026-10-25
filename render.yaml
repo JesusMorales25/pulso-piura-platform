@@ -50,6 +50,10 @@ services:
         value: "3"
       - key: PAYMENTS_MODE
         value: external_manual
+      - key: MEDIA_STORAGE
+        value: supabase
+      - key: MEDIA_SUPABASE_BUCKET
+        value: court-photos
       - key: PAYMENT_PROOF_STORAGE
         value: supabase
       - key: SUPABASE_STORAGE_URL

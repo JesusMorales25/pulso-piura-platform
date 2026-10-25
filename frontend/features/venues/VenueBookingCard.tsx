@@ -1,6 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { apiRequest } from "@/lib/api";
+import {
+  CourtPhotoGallery,
+  CourtPhotoImage,
+  type CourtPhoto,
+} from "./CourtPhotos";
 import {
   CalendarBlank,
   MapPin,
@@ -76,6 +83,27 @@ export function VenueBookingCard({
   onReserve,
   onOpenSchedules,
 }: Props) {
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [coverId, setCoverId] = useState<string | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    queueMicrotask(() => {
+      if (!controller.signal.aborted) setCoverId(null);
+    });
+    void apiRequest<CourtPhoto[]>(
+      `/public/spaces/${offer.space.id}/photos`,
+      null,
+      { signal: controller.signal },
+    )
+      .then((photos) => {
+        if (!controller.signal.aborted)
+          setCoverId(
+            (photos.find((photo) => photo.cover) ?? photos[0])?.id ?? null,
+          );
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [offer.space.id]);
   const visibleSlots = slots.slice(0, 5);
   const selectedSlot =
     visibleSlots.find((slot) => slot.startsAt === selectedStartsAt) ??
@@ -103,14 +131,22 @@ export function VenueBookingCard({
       aria-label={`Disponibilidad de ${venue.name}`}
     >
       <header className={styles.header}>
-        <Image
-          alt={`Cancha deportiva en ${venue.name}`}
-          className={styles.image}
-          height={64}
-          loading="eager"
-          src={imageSrc}
-          width={64}
-        />
+        {coverId ? (
+          <CourtPhotoImage
+            path={`/public/spaces/${space.id}/photos/${coverId}/image`}
+            alt={`Portada de ${space.name}`}
+            className={styles.image}
+          />
+        ) : (
+          <Image
+            alt="Imagen de referencia de una cancha"
+            className={styles.image}
+            height={64}
+            loading="eager"
+            src={imageSrc}
+            width={64}
+          />
+        )}
         <div className={styles.identity}>
           <h2>{venue.name}</h2>
           <p>
@@ -143,7 +179,21 @@ export function VenueBookingCard({
         </div>
       </header>
 
+      <CourtPhotoGallery
+        open={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
+        spaceId={space.id}
+        name={space.name}
+        fallback={imageSrc}
+      />
       <div className={styles.links}>
+        <button
+          className="secondary"
+          type="button"
+          onClick={() => setGalleryOpen(true)}
+        >
+          Ver fotos
+        </button>
         {whatsappHref && (
           <a href={whatsappHref} rel="noreferrer" target="_blank">
             <WhatsappLogo aria-hidden="true" size={15} /> Contactar

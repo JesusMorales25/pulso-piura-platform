@@ -161,6 +161,15 @@ export default function PlatformPage() {
               </small>
             </span>
           </Link>
+          <Link href="/plataforma/imagenes">
+            <Buildings size={30} />
+            <span>
+              <strong>Imágenes de plataforma</strong>
+              <small>
+                Cambiar las portadas de explorar, reservas y creación.
+              </small>
+            </span>
+          </Link>
           <Link href="/plataforma/negocios">
             <Storefront size={30} />
             <span>

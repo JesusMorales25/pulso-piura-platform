@@ -147,7 +147,8 @@ class ExternalPaymentServiceTest {
                         PaymentPlan.DEPOSIT,
                         "prepare-key");
         assertThat(result.amountMinor()).isEqualTo(2250);
-        assertThat(result.expiresAt()).isEqualTo(expiry);
+        assertThat(result.expiresAt())
+                .isEqualTo(expiry.truncatedTo(java.time.temporal.ChronoUnit.MICROS));
         assertThat(result.destination()).isEqualTo(destination);
         verify(targets)
                 .prepare(
@@ -358,5 +359,54 @@ class ExternalPaymentServiceTest {
         assertThatThrownBy(() -> service.image(owner, p.id()))
                 .isInstanceOf(AccessDeniedException.class);
         verify(images, never()).read(any());
+    }
+
+    @Test
+    void pendingProofStopsDifferentKeyBeforeWritingImage() {
+        for (String status : List.of("PENDING_REVIEW", "NEEDS_RESOLUTION")) {
+            when(store.list(TargetType.RESERVATION, target))
+                    .thenReturn(List.of(proof(status, Instant.now().plusSeconds(60))));
+            assertThatThrownBy(
+                            () ->
+                                    service.submit(
+                                            actor,
+                                            TargetType.RESERVATION,
+                                            target,
+                                            PaymentMethod.YAPE,
+                                            PaymentPlan.FULL,
+                                            null,
+                                            "new-key",
+                                            destination.version(),
+                                            new byte[] {1}))
+                    .hasMessageContaining("comprobante pendiente");
+        }
+        verify(images, never()).store(any());
+        verify(store, never()).save(any());
+    }
+
+    @Test
+    void recoveryKeepsOriginalAccountAndExpiryAndRequiresTargetAccess() {
+        var saved =
+                new PreparationState(
+                        new Preparation(2250, "PEN", Instant.now().plusSeconds(60), destination),
+                        "YAPE",
+                        "DEPOSIT");
+        when(store.preparation(actor, TargetType.RESERVATION, target))
+                .thenReturn(Optional.of(saved));
+        assertThat(service.preparation(actor, TargetType.RESERVATION, target)).isEqualTo(saved);
+        verify(targets).resolve(TargetType.RESERVATION, target, actor, false);
+        verify(targets, never()).prepare(any(), any(), any(), any(), any(), any(), any());
+        doThrow(new AccessDeniedException("Sin acceso"))
+                .when(targets)
+                .resolve(TargetType.RESERVATION, target, actor, false);
+        assertThatThrownBy(() -> service.preparation(actor, TargetType.RESERVATION, target))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void recipientWhoAlsoPaysOwnsOnlyTheirOwnProof() {
+        var p = proof("PENDING_REVIEW", Instant.now().plusSeconds(60));
+        assertThat(p.view(true, actor).ownPayment()).isTrue();
+        assertThat(p.view(true, owner).ownPayment()).isFalse();
     }
 }

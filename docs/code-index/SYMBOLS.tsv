@@ -3,6 +3,7 @@ java	audit	class	IdentityAuditListener	backend/src/main/java/com/pulsopiura/plat
 java	audit	class	MatchAuditListener	backend/src/main/java/com/pulsopiura/platform/audit/application/MatchAuditListener.java
 java	audit	class	OrganizationAuditListener	backend/src/main/java/com/pulsopiura/platform/audit/application/OrganizationAuditListener.java
 java	audit	class	VenueAuditListener	backend/src/main/java/com/pulsopiura/platform/audit/application/VenueAuditListener.java
+java	audit	class	VisualAssetAuditListener	backend/src/main/java/com/pulsopiura/platform/audit/application/VisualAssetAuditListener.java
 java	audit	class	AuditEventEntity	backend/src/main/java/com/pulsopiura/platform/audit/infrastructure/persistence/AuditEventEntity.java
 java	audit	interface	AuditEventRepository	backend/src/main/java/com/pulsopiura/platform/audit/infrastructure/persistence/AuditEventRepository.java
 java	foundation	class	CorsConfig	backend/src/main/java/com/pulsopiura/platform/foundation/security/CorsConfig.java
@@ -98,6 +99,12 @@ java	matches	class	MatchParticipantJpaEntity	backend/src/main/java/com/pulsopiur
 java	matches	interface	MatchParticipantJpaRepository	backend/src/main/java/com/pulsopiura/platform/matches/infrastructure/persistence/MatchParticipantJpaRepository.java
 java	matches	class	SportsMatchJpaEntity	backend/src/main/java/com/pulsopiura/platform/matches/infrastructure/persistence/SportsMatchJpaEntity.java
 java	matches	interface	SportsMatchJpaRepository	backend/src/main/java/com/pulsopiura/platform/matches/infrastructure/persistence/SportsMatchJpaRepository.java
+java	media	class	MediaPrivacyAdvice	backend/src/main/java/com/pulsopiura/platform/media/api/MediaPrivacyAdvice.java
+java	media	class	VisualAssetController	backend/src/main/java/com/pulsopiura/platform/media/api/VisualAssetController.java
+java	media	record	VisualAssetAuditEvent	backend/src/main/java/com/pulsopiura/platform/media/application/VisualAssetAuditEvent.java
+java	media	class	VisualAssetService	backend/src/main/java/com/pulsopiura/platform/media/application/VisualAssetService.java
+java	media	record	AssetView	backend/src/main/java/com/pulsopiura/platform/media/application/VisualAssetService.java
+java	media	class	VisualAssetStore	backend/src/main/java/com/pulsopiura/platform/media/infrastructure/VisualAssetStore.java
 java	organizations	class	OrganizationController	backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java
 java	organizations	record	CreateOrganizationRequest	backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java
 java	organizations	record	InviteMemberRequest	backend/src/main/java/com/pulsopiura/platform/organizations/api/OrganizationController.java
@@ -146,6 +153,7 @@ java	payments	class	ExternalPaymentModels	backend/src/main/java/com/pulsopiura/p
 java	payments	enum	TargetType	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
 java	payments	enum	Decision	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
 java	payments	record	Preparation	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
+java	payments	record	PreparationState	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
 java	payments	record	Destination	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
 java	payments	record	ProofView	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
 java	payments	record	Proof	backend/src/main/java/com/pulsopiura/platform/payments/application/ExternalPaymentModels.java
@@ -245,10 +253,17 @@ java	reservations	class	ReservationStatusHistoryEntity	backend/src/main/java/com
 java	reservations	interface	ReservationStatusHistoryJpaRepository	backend/src/main/java/com/pulsopiura/platform/reservations/infrastructure/persistence/ReservationStatusHistoryJpaRepository.java
 java	shared	class	ApiExceptionHandler	backend/src/main/java/com/pulsopiura/platform/shared/api/ApiExceptionHandler.java
 java	shared	class	DistrictCatalog	backend/src/main/java/com/pulsopiura/platform/shared/DistrictCatalog.java
+java	shared	class	MediaObjects	backend/src/main/java/com/pulsopiura/platform/shared/media/application/MediaObjects.java
+java	shared	interface	MediaStorage	backend/src/main/java/com/pulsopiura/platform/shared/media/application/MediaStorage.java
+java	shared	record	StoredImage	backend/src/main/java/com/pulsopiura/platform/shared/media/application/MediaStorage.java
+java	shared	class	FileSystemMediaStorage	backend/src/main/java/com/pulsopiura/platform/shared/media/infrastructure/FileSystemMediaStorage.java
+java	shared	class	MediaImages	backend/src/main/java/com/pulsopiura/platform/shared/media/infrastructure/MediaImages.java
+java	shared	class	SupabaseMediaStorage	backend/src/main/java/com/pulsopiura/platform/shared/media/infrastructure/SupabaseMediaStorage.java
 java	venues	class	AvailabilityController	backend/src/main/java/com/pulsopiura/platform/venues/api/AvailabilityController.java
 java	venues	record	CreateAvailabilityRuleRequest	backend/src/main/java/com/pulsopiura/platform/venues/api/AvailabilityController.java
 java	venues	record	CreateAvailabilityExceptionRequest	backend/src/main/java/com/pulsopiura/platform/venues/api/AvailabilityController.java
 java	venues	class	PublicVenueController	backend/src/main/java/com/pulsopiura/platform/venues/api/PublicVenueController.java
+java	venues	class	SpacePhotoController	backend/src/main/java/com/pulsopiura/platform/venues/api/SpacePhotoController.java
 java	venues	class	SportSpaceController	backend/src/main/java/com/pulsopiura/platform/venues/api/SportSpaceController.java
 java	venues	record	UpdateSportSpaceRequest	backend/src/main/java/com/pulsopiura/platform/venues/api/SportSpaceController.java
 java	venues	class	VenueCatalogController	backend/src/main/java/com/pulsopiura/platform/venues/api/VenueCatalogController.java
@@ -268,6 +283,8 @@ java	venues	record	Space	backend/src/main/java/com/pulsopiura/platform/venues/ap
 java	venues	record	Availability	backend/src/main/java/com/pulsopiura/platform/venues/application/PublicVenueViews.java
 java	venues	record	Slot	backend/src/main/java/com/pulsopiura/platform/venues/application/PublicVenueViews.java
 java	venues	class	SlotNotBookableException	backend/src/main/java/com/pulsopiura/platform/venues/application/SlotNotBookableException.java
+java	venues	class	SpacePhotoService	backend/src/main/java/com/pulsopiura/platform/venues/application/SpacePhotoService.java
+java	venues	record	PhotoView	backend/src/main/java/com/pulsopiura/platform/venues/application/SpacePhotoService.java
 java	venues	record	SportSpaceView	backend/src/main/java/com/pulsopiura/platform/venues/application/SportSpaceView.java
 java	venues	record	VenueAuditEvent	backend/src/main/java/com/pulsopiura/platform/venues/application/VenueAuditEvent.java
 java	venues	interface	VenueAvailabilityQuery	backend/src/main/java/com/pulsopiura/platform/venues/application/VenueAvailabilityQuery.java
@@ -292,6 +309,8 @@ java	venues	class	AvailabilityExceptionEntity	backend/src/main/java/com/pulsopiu
 java	venues	interface	AvailabilityExceptionRepository	backend/src/main/java/com/pulsopiura/platform/venues/infrastructure/persistence/AvailabilityExceptionRepository.java
 java	venues	class	AvailabilityRuleEntity	backend/src/main/java/com/pulsopiura/platform/venues/infrastructure/persistence/AvailabilityRuleEntity.java
 java	venues	interface	AvailabilityRuleRepository	backend/src/main/java/com/pulsopiura/platform/venues/infrastructure/persistence/AvailabilityRuleRepository.java
+java	venues	class	SpacePhotoStore	backend/src/main/java/com/pulsopiura/platform/venues/infrastructure/persistence/SpacePhotoStore.java
+java	venues	record	Photo	backend/src/main/java/com/pulsopiura/platform/venues/infrastructure/persistence/SpacePhotoStore.java
 java	venues	class	SportCatalogEntity	backend/src/main/java/com/pulsopiura/platform/venues/infrastructure/persistence/SportCatalogEntity.java
 java	venues	interface	SportCatalogRepository	backend/src/main/java/com/pulsopiura/platform/venues/infrastructure/persistence/SportCatalogRepository.java
 java	venues	class	SportFormatCatalogEntity	backend/src/main/java/com/pulsopiura/platform/venues/infrastructure/persistence/SportFormatCatalogEntity.java
@@ -328,6 +347,7 @@ java	matches	class	PublicOrganizerPrivacyTest	backend/src/test/java/com/pulsopiu
 java	matches	class	MatchParticipantTest	backend/src/test/java/com/pulsopiura/platform/matches/domain/MatchParticipantTest.java
 java	matches	class	SportsMatchTest	backend/src/test/java/com/pulsopiura/platform/matches/domain/SportsMatchTest.java
 java	matches	class	MatchInvitationEntityTest	backend/src/test/java/com/pulsopiura/platform/matches/infrastructure/persistence/MatchInvitationEntityTest.java
+java	media	class	MediaAuthorizationTest	backend/src/test/java/com/pulsopiura/platform/media/api/MediaAuthorizationTest.java
 java	organizations	class	MembershipVerifiedEmailTest	backend/src/test/java/com/pulsopiura/platform/organizations/application/MembershipVerifiedEmailTest.java
 java	organizations	class	OrganizationAuthorizationTest	backend/src/test/java/com/pulsopiura/platform/organizations/application/OrganizationAuthorizationTest.java
 java	organizations	class	OrganizationLocationTest	backend/src/test/java/com/pulsopiura/platform/organizations/application/OrganizationLocationTest.java
@@ -362,10 +382,14 @@ java	reservations	class	ReservationTest	backend/src/test/java/com/pulsopiura/pla
 java	reservations	class	JdbcReservationCheckInPassStoreTest	backend/src/test/java/com/pulsopiura/platform/reservations/infrastructure/persistence/JdbcReservationCheckInPassStoreTest.java
 java	reservations	class	ReservationDashboardDatabaseTest	backend/src/test/java/com/pulsopiura/platform/reservations/infrastructure/persistence/ReservationDashboardDatabaseTest.java
 java	shared	class	DistrictCatalogTest	backend/src/test/java/com/pulsopiura/platform/shared/DistrictCatalogTest.java
+java	shared	class	FileSystemMediaStorageTest	backend/src/test/java/com/pulsopiura/platform/shared/media/infrastructure/FileSystemMediaStorageTest.java
+java	shared	class	SupabaseMediaStorageTest	backend/src/test/java/com/pulsopiura/platform/shared/media/infrastructure/SupabaseMediaStorageTest.java
 java	venues	class	AvailabilityControllerTest	backend/src/test/java/com/pulsopiura/platform/venues/api/AvailabilityControllerTest.java
 java	venues	class	VenuePhoneValidationTest	backend/src/test/java/com/pulsopiura/platform/venues/api/VenuePhoneValidationTest.java
 java	venues	class	AvailabilityServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/AvailabilityServiceTest.java
 java	venues	class	PublicVenueQueryServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/PublicVenueQueryServiceTest.java
+java	venues	class	SpacePhotoDatabaseTest	backend/src/test/java/com/pulsopiura/platform/venues/application/SpacePhotoDatabaseTest.java
+java	venues	class	SpacePhotoServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/SpacePhotoServiceTest.java
 java	venues	class	VenueCatalogServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/VenueCatalogServiceTest.java
 java	venues	class	VenueServiceTest	backend/src/test/java/com/pulsopiura/platform/venues/application/VenueServiceTest.java
 java	venues	class	AvailabilityExceptionEntityTest	backend/src/test/java/com/pulsopiura/platform/venues/infrastructure/persistence/AvailabilityExceptionEntityTest.java
@@ -395,6 +419,7 @@ typescript	partidos	function	DemoVolleyballMatchPage	frontend/app/partidos/demo-
 typescript	partidos	function	MatchInvitationPage	frontend/app/partidos/invitaciones/[invitationId]/page.tsx
 typescript	partidos	function	MatchesPage	frontend/app/partidos/page.tsx
 typescript	perfil	function	ProfilePage	frontend/app/perfil/page.tsx
+typescript	plataforma	function	PlatformImagesPage	frontend/app/plataforma/imagenes/page.tsx
 typescript	plataforma	function	PlatformBusinessesPage	frontend/app/plataforma/negocios/page.tsx
 typescript	plataforma	function	PlatformOrganizationsPage	frontend/app/plataforma/organizaciones/page.tsx
 typescript	plataforma	function	PlatformPage	frontend/app/plataforma/page.tsx
@@ -411,6 +436,12 @@ typescript	-	function	DistrictSelect	frontend/components/forms/DistrictSelect.ts
 typescript	-	function	FormSheet	frontend/components/forms/FormSheet.tsx
 typescript	-	function	FriendlyLocationPicker	frontend/components/forms/FriendlyLocationPicker.tsx
 typescript	-	function	LegalLinks	frontend/components/LegalLinks.tsx
+typescript	-	const	visualSlots	frontend/components/PlatformHeroImage.tsx
+typescript	-	type	VisualSlot	frontend/components/PlatformHeroImage.tsx
+typescript	-	const	visualSlotLabels	frontend/components/PlatformHeroImage.tsx
+typescript	-	type	VisualAsset	frontend/components/PlatformHeroImage.tsx
+typescript	-	function	visualAssetPath	frontend/components/PlatformHeroImage.tsx
+typescript	-	function	PlatformHeroImage	frontend/components/PlatformHeroImage.tsx
 typescript	access	type	OrganizationRole	frontend/features/access/capabilities.ts
 typescript	access	type	OrganizationMembership	frontend/features/access/capabilities.ts
 typescript	access	type	UserCapabilities	frontend/features/access/capabilities.ts
@@ -461,6 +492,7 @@ typescript	navigation	function	AppNavigation	frontend/features/navigation/AppNav
 typescript	navigation	function	LocationProvider	frontend/features/navigation/LocationProvider.tsx
 typescript	navigation	const	useLocation	frontend/features/navigation/LocationProvider.tsx
 typescript	navigation	function	LocationSelector	frontend/features/navigation/LocationSelector.tsx
+typescript	organizations	function	EnabledCourts	frontend/features/organizations/EnabledCourts.tsx
 typescript	organizations	function	InvitationAcceptance	frontend/features/organizations/InvitationAcceptance.tsx
 typescript	organizations	function	OrganizationAdmin	frontend/features/organizations/OrganizationAdmin.tsx
 typescript	organizations	function	OrganizationWorkspace	frontend/features/organizations/OrganizationWorkspace.tsx
@@ -499,6 +531,9 @@ typescript	reservations	type	ReservationDashboard	frontend/features/reservations
 typescript	reservations	function	useReservationDashboard	frontend/features/reservations/useReservationDashboard.ts
 typescript	reservations	function	VenueOwnerReservationsDashboard	frontend/features/reservations/VenueOwnerReservationsDashboard.tsx
 typescript	venues	function	AvailabilityAdmin	frontend/features/venues/AvailabilityAdmin.tsx
+typescript	venues	type	CourtPhoto	frontend/features/venues/CourtPhotos.tsx
+typescript	venues	function	CourtPhotoImage	frontend/features/venues/CourtPhotos.tsx
+typescript	venues	function	CourtPhotoGallery	frontend/features/venues/CourtPhotos.tsx
 typescript	venues	function	PublicVenueCatalog	frontend/features/venues/PublicVenueCatalog.tsx
 typescript	venues	function	VenueAdmin	frontend/features/venues/VenueAdmin.tsx
 typescript	venues	type	BookingSlot	frontend/features/venues/VenueBookingCard.tsx

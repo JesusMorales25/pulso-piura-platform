@@ -33,8 +33,8 @@ export function DemoMatchDetail({ sport = "football" }: DemoMatchDetailProps) {
           sizes="100vw"
           src={
             isFootball
-              ? "/images/court-reference.svg"
-              : "/images/volleyball-reference.svg"
+              ? "/images/demo-court-night.png"
+              : "/images/demo-volleyball.png"
           }
         />
         <div className="matchDetailShade" />
