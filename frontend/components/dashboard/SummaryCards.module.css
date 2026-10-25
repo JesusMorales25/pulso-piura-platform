@@ -96,3 +96,91 @@
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
+
+/* Player overview: compact category cards, detail remains in the shared sheet. */
+.player .card {
+  --category-color: var(--cyan);
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  align-content: start;
+  align-items: start;
+  column-gap: 12px;
+  row-gap: 4px;
+  min-height: 128px;
+  padding: 14px 12px;
+  border-color: color-mix(in srgb, var(--category-color) 22%, var(--line));
+  background: linear-gradient(
+    120deg,
+    color-mix(in srgb, var(--category-color) 6%, var(--navy)),
+    var(--midnight)
+  );
+}
+.player .card[data-tone="confirmed"] {
+  --category-color: var(--lime);
+}
+.player .card[data-tone="muted"] {
+  --category-color: var(--muted);
+}
+.player .icon {
+  display: grid;
+  place-items: center;
+  grid-column: 1;
+  grid-row: 1 / 3;
+  width: 40px;
+  height: 46px;
+  border-radius: var(--radius-sm);
+  color: var(--category-color);
+  background: color-mix(in srgb, var(--category-color) 15%, transparent);
+}
+.player .icon svg {
+  width: 26px;
+  height: 26px;
+}
+.player .label {
+  grid-column: 2;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.player .card strong {
+  grid-column: 2;
+  color: var(--category-color);
+  font-size: 1.7rem;
+}
+.player .action {
+  grid-column: 2;
+  width: 100%;
+  padding-top: 7px;
+  margin-top: 2px;
+  border-top: 1px solid var(--line);
+  color: var(--category-color);
+  font-size: 0.75rem;
+}
+.player .card:hover,
+.player .card[aria-pressed="true"] {
+  border-color: var(--category-color);
+  background: color-mix(in srgb, var(--category-color) 10%, var(--navy));
+}
+@media (max-width: 360px) {
+  .player .card {
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 8px;
+    padding: 12px 9px;
+  }
+  .player .icon {
+    width: 30px;
+    height: 40px;
+  }
+  .player .icon svg {
+    width: 23px;
+    height: 23px;
+  }
+  .player .label {
+    font-size: 0.75rem;
+  }
+}
+@media (min-width: 1440px) {
+  .grid.player:has(> .card:nth-child(6):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,28 @@
+.overview {
+  min-width: 0;
+}
+.overview .search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 60%, var(--line));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--cyan) 6%, transparent);
+  color: var(--cyan);
+  font-size: 0.8rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.overview .search svg {
+  flex-shrink: 0;
+}
+@media (max-width: 360px) {
+  .overview .search {
+    padding-inline: 9px;
+    gap: 5px;
+    font-size: 0.75rem;
+  }
+}

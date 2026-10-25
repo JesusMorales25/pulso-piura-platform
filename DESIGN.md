@@ -91,3 +91,7 @@ Ajuste solicitado: filtros de fecha/deporte/distrito, distrito a ancho completo;
 ## Consola de plataforma y turnos bajo demanda
 
 Plataforma conserva métricas reales, accesos y popups autorizados, con cabecera ilustrada mediante iconos, resumen en tarjetas y herramientas visibles. No se añade filtro temporal ficticio. Reserva tu cancha presenta cinco fechas sin desplazamiento horizontal; cada ficha abre sus turnos en FormSheet desde un botón de ancho completo. Selección, adelanto, pago completo y otros horarios mantienen el flujo existente y cierran la ficha antes de continuar.
+
+## Resumen del jugador — Mis inscripciones
+
+La variante player de SummaryCards presenta seis categorías con icono, etiqueta, cantidad y acceso a detalle. Dos columnas en móvil, tres en escritorio; turquesa para acciones y pagos, lima para confirmados y tonos neutros para espera/historial. Se conserva el banner fotográfico de actividad y los popups existentes; no cambian las categorías ni el cálculo financiero.

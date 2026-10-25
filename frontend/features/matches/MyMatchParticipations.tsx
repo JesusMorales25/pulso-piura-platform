@@ -1,9 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import styles from "./MyMatchParticipations.module.css";
 import { useEffect, useState } from "react";
 import {
   CalendarDots,
+  CreditCard,
+  Wallet,
+  Clock,
+  ClipboardText,
+  SoccerBall,
+  MagnifyingGlass,
   CheckCircle,
   MapPin,
   UsersThree,
@@ -140,16 +147,30 @@ export function MyMatchParticipations() {
     },
     { id: "all", label: "Todos mis partidos", match: () => true },
   ];
+  const categoryIcons = {
+    review: CreditCard,
+    payment: Wallet,
+    confirmed: CheckCircle,
+    waiting: Clock,
+    history: ClipboardText,
+    all: SoccerBall,
+  };
   const group = groups.find((item) => item.id === category);
   const filtered = items.filter(group?.match ?? (() => true));
   return (
-    <section className="activityMatches" aria-labelledby="my-matches-title">
+    <section
+      className={`activityMatches ${styles.overview}`}
+      aria-labelledby="my-matches-title"
+    >
       <div className="activitySectionTitle">
         <div>
           <p className="eyebrow">MIS INSCRIPCIONES</p>
           <h2 id="my-matches-title">Partidos</h2>
         </div>
-        <Link href="/partidos">Buscar partidos</Link>
+        <Link className={styles.search} href="/partidos">
+          <MagnifyingGlass size={19} aria-hidden="true" />
+          Buscar partidos
+        </Link>
       </div>
       {loading && <p className="notice">Cargando tus inscripciones…</p>}
       {error && (
@@ -166,6 +187,7 @@ export function MyMatchParticipations() {
       )}
       {!loading && !error && items.length > 0 && (
         <SummaryCards
+          variant="player"
           selectedId={category}
           onSelect={(id) => {
             setSelected(null);
@@ -174,6 +196,17 @@ export function MyMatchParticipations() {
           items={groups.map((group) => ({
             id: group.id,
             label: group.label,
+            icon: (() => {
+              const Icon =
+                categoryIcons[group.id as keyof typeof categoryIcons];
+              return <Icon weight="duotone" />;
+            })(),
+            tone:
+              group.id === "confirmed"
+                ? "confirmed"
+                : ["history", "waiting"].includes(group.id)
+                  ? "muted"
+                  : "primary",
             value: items.filter(group.match).length,
           }))}
         />

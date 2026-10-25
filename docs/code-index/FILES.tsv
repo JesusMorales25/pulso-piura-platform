@@ -382,7 +382,7 @@ infrastructure	example	762	deploy/vps/.env.example
 infrastructure	-	49	deploy/vps/Caddyfile
 infrastructure	yaml	2662	deploy/vps/compose.auth0.yaml
 infrastructure	yaml	2059	deploy/vps/compose.external-db.yaml
-root-or-support	md	7889	DESIGN.md
+root-or-support	md	8311	DESIGN.md
 root-or-support	md	2498	design-qa.md
 architecture-decision	md	334	docs/adr/ADR-001-monolito-modular.md
 architecture-decision	md	437	docs/adr/ADR-002-identidad-y-autorizacion.md
@@ -524,8 +524,8 @@ root-or-support	tsx	3715	frontend/components/AccessibleDialogs.tsx
 root-or-support	tsx	1800	frontend/components/BusinessImage.tsx
 root-or-support	css	1361	frontend/components/dashboard/DesktopDrilldown.module.css
 root-or-support	tsx	2609	frontend/components/dashboard/DesktopDrilldown.tsx
-root-or-support	css	1916	frontend/components/dashboard/SummaryCards.module.css
-root-or-support	tsx	1072	frontend/components/dashboard/SummaryCards.tsx
+root-or-support	css	3930	frontend/components/dashboard/SummaryCards.module.css
+root-or-support	tsx	1692	frontend/components/dashboard/SummaryCards.tsx
 root-or-support	tsx	1240	frontend/components/feedback/FloatingNotice.tsx
 root-or-support	tsx	1717	frontend/components/forms/DistrictSelect.tsx
 root-or-support	tsx	1647	frontend/components/forms/FormSheet.tsx
@@ -566,7 +566,8 @@ frontend-feature	tsx	45706	frontend/features/matches/MatchOrganizerDashboard.tsx
 frontend-feature	tsx	4500	frontend/features/matches/MatchQrPass.tsx
 frontend-feature	ts	588	frontend/features/matches/mobile-checkout.ts
 frontend-feature	tsx	3523	frontend/features/matches/MobileMatchCheckout.tsx
-frontend-feature	tsx	9853	frontend/features/matches/MyMatchParticipations.tsx
+frontend-feature	css	598	frontend/features/matches/MyMatchParticipations.module.css
+frontend-feature	tsx	10733	frontend/features/matches/MyMatchParticipations.tsx
 frontend-feature	ts	842	frontend/features/matches/organizer-summary.ts
 frontend-feature	ts	1928	frontend/features/matches/presentation.ts
 frontend-feature	ts	2050	frontend/features/matches/types.ts
@@ -646,6 +647,7 @@ frontend-test	cjs	17437	frontend/tests/mobile-layout.browser.cjs
 frontend-test	cjs	12829	frontend/tests/organization-workspace.browser.cjs
 frontend-test	cjs	2670	frontend/tests/organizer-summary.test.cjs
 frontend-test	cjs	5812	frontend/tests/platform-visual-assets.browser.cjs
+frontend-test	cjs	5776	frontend/tests/player-overview.browser.cjs
 frontend-test	cjs	10871	frontend/tests/product-improvements.test.cjs
 frontend-test	cjs	9486	frontend/tests/reservation-dashboard.browser.cjs
 frontend-test	cjs	1745	frontend/tests/venue-contact.test.cjs
