@@ -131,3 +131,7 @@ Mis inscripciones y Mis reservas muestran una tarjeta de acceso con explicación
 ## Directorio de jugadores de plataforma
 
 El popup Usuarios utiliza buscador y filtros internos con cantidades reales, avatares y tarjetas con nombre, rol, estado, correo y distrito. Gestionar privilegios mantiene la navegación existente al usuario correspondiente. Los filtros usan las categorías disponibles (Todos, Jugadores, Organizadores y Dueños); no se inventa un contador de administradores que la API no entrega. Búsqueda por nombre, correo, distrito y rol, controles con foco y sin desbordamiento desde 320 px. No se añaden menús de acciones sin funcionamiento.
+
+## Ajuste aprobado — categorías y solicitudes
+
+Usuarios activos reutiliza las tarjetas player con icono por categoría, cantidades reales y Ver detalle en dos columnas móviles. Las solicitudes usan ficha con estado traducido, icono de capacidad, identidad sin correo duplicado y bloque Solicitud original. Revocadas presenta Acceso revocado en ámbar y explica únicamente el acceso retirado; no interpreta el texto de solicitud como motivo de revocación. Mantiene acciones autorizadas de aprobar, rechazar y retirar, y añade Volver a solicitudes como cierre del mismo popup. Diseño seleccionado tras las vistas previas; sin cambios en permisos ni reglas de aprobación.

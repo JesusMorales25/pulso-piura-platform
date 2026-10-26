@@ -54,6 +54,15 @@ async function main() {
           capability: "MATCH_ORGANIZER",
           status: "APPROVED",
         },
+        {
+          id: "request-3",
+          userId: "user-3",
+          displayName: "revocado@example.test",
+          email: "revocado@example.test",
+          capability: "MATCH_ORGANIZER",
+          status: "REVOKED",
+          reason: "Activación solicitada por el jugador",
+        },
       ];
       await page.route("**/*", async (route) => {
         const url = new URL(route.request().url());
@@ -102,7 +111,13 @@ async function main() {
             },
           ];
         else if (endpoint === "/platform/capability-requests") data = rows;
-        else if (endpoint.endsWith("/review")) {
+        else if (endpoint.endsWith("/revoke")) {
+          const row = rows.find(
+            (item) => item.id === endpoint.split("/").at(-2),
+          );
+          row.status = "REVOKED";
+          data = row;
+        } else if (endpoint.endsWith("/review")) {
           rows[0].status = JSON.parse(route.request().postData()).decision;
           data = rows[0];
         }
@@ -158,6 +173,12 @@ async function main() {
       await dialog.getByRole("button", { name: "Cerrar formulario" }).click();
       await expect(pending).toHaveCount(0);
       await page.getByRole("button", { name: /Usuarios activos/ }).click();
+      await page.screenshot({
+        path: require("node:path").join(
+          __dirname,
+          "../../.local/platform-user-summary-" + width + ".png",
+        ),
+      });
       await page.getByRole("button", { name: /^Organizadores/ }).click();
       await expect(
         dialog.getByText("Luis usuario", { exact: true }),
@@ -224,7 +245,72 @@ async function main() {
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       );
-      console.log(`admin dashboard ${width}px passed`);
+      await page.goto(
+        (process.env.A11Y_BASE_URL || "http://localhost:3004") +
+          "/plataforma/solicitudes",
+      );
+      await page.getByRole("button", { name: /^Revocadas/ }).click();
+      const revoked = page.getByRole("dialog", {
+        name: "Solicitudes · Revocadas",
+        exact: true,
+      });
+      await expect(
+        revoked.getByText("Acceso revocado", { exact: true }),
+      ).toBeVisible();
+      await expect(
+        revoked.getByText("revocado@example.test", { exact: true }),
+      ).toHaveCount(1);
+      await expect(
+        revoked.getByRole("heading", {
+          name: "Solicitud original",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        revoked.getByText("Activación solicitada por el jugador", {
+          exact: true,
+        }),
+      ).toBeVisible();
+      assert.equal(
+        await revoked.evaluate(
+          (element) => element.scrollWidth > element.clientWidth + 1,
+        ),
+        false,
+      );
+      await page.screenshot({
+        path: require("node:path").join(
+          __dirname,
+          "../../.local/platform-revoked-" + width + ".png",
+        ),
+      });
+      await revoked
+        .getByRole("button", { name: "Volver a solicitudes", exact: true })
+        .click();
+      await expect(revoked).toBeHidden();
+      await page.getByRole("button", { name: /^Aprobadas/ }).click();
+      const approved = page.getByRole("dialog", {
+        name: "Solicitudes · Aprobadas",
+        exact: true,
+      });
+      await approved
+        .getByRole("button", { name: "Retirar acceso", exact: true })
+        .first()
+        .click();
+      await expect(
+        approved.getByText("Acceso habilitado", { exact: true }),
+      ).toHaveCount(1);
+      await approved
+        .getByRole("button", { name: "Volver a solicitudes", exact: true })
+        .click();
+      await page.getByRole("button", { name: /^Revocadas/ }).click();
+      await expect(
+        revoked.getByText("Acceso revocado", { exact: true }),
+      ).toHaveCount(2);
+      console.log(
+        "admin dashboard " +
+          width +
+          "px: categories, translated request cards, unique email and approval/revocation passed",
+      );
       await context.close();
     }
   } finally {

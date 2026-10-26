@@ -387,7 +387,7 @@ infrastructure	example	762	deploy/vps/.env.example
 infrastructure	-	49	deploy/vps/Caddyfile
 infrastructure	yaml	2662	deploy/vps/compose.auth0.yaml
 infrastructure	yaml	2059	deploy/vps/compose.external-db.yaml
-root-or-support	md	12937	DESIGN.md
+root-or-support	md	13617	DESIGN.md
 root-or-support	md	2498	design-qa.md
 architecture-decision	md	334	docs/adr/ADR-001-monolito-modular.md
 architecture-decision	md	437	docs/adr/ADR-002-identidad-y-autorizacion.md
@@ -589,9 +589,10 @@ frontend-feature	tsx	3410	frontend/features/organizations/EnabledCourts.tsx
 frontend-feature	tsx	2483	frontend/features/organizations/InvitationAcceptance.tsx
 frontend-feature	tsx	11699	frontend/features/organizations/OrganizationAdmin.tsx
 frontend-feature	tsx	19677	frontend/features/organizations/OrganizationWorkspace.tsx
-frontend-feature	tsx	9076	frontend/features/organizations/PlatformRequestsDashboard.tsx
-frontend-feature	css	5363	frontend/features/organizations/PlatformUserDirectory.module.css
-frontend-feature	tsx	6635	frontend/features/organizations/PlatformUserDirectory.tsx
+frontend-feature	css	3310	frontend/features/organizations/PlatformRequestsDashboard.module.css
+frontend-feature	tsx	11740	frontend/features/organizations/PlatformRequestsDashboard.tsx
+frontend-feature	css	5944	frontend/features/organizations/PlatformUserDirectory.module.css
+frontend-feature	tsx	7182	frontend/features/organizations/PlatformUserDirectory.tsx
 frontend-feature	ts	1378	frontend/features/organizations/user-directory.ts
 frontend-feature	css	5761	frontend/features/payments/ExternalPaymentPanel.module.css
 frontend-feature	tsx	32468	frontend/features/payments/ExternalPaymentPanel.tsx
@@ -660,7 +661,7 @@ root-or-support	svg	403	frontend/public/images/map-reference.svg
 root-or-support	svg	579	frontend/public/images/third-time-reference.svg
 root-or-support	svg	693	frontend/public/images/volleyball-reference.svg
 frontend-test	cjs	9912	frontend/tests/accessibility.browser.cjs
-frontend-test	cjs	8011	frontend/tests/admin-dashboard.browser.cjs
+frontend-test	cjs	10873	frontend/tests/admin-dashboard.browser.cjs
 frontend-test	cjs	10419	frontend/tests/auth-security.test.cjs
 frontend-test	cjs	13994	frontend/tests/court-gallery.browser.cjs
 frontend-test	cjs	21934	frontend/tests/desktop-responsive.browser.cjs

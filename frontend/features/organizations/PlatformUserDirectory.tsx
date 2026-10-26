@@ -42,15 +42,29 @@ export function PlatformUserDirectory({ users }: { users: PlatformUser[] }) {
         </div>
         <span className="countBadge">{uniqueUsers.length}</span>
       </div>
-      <SummaryCards
-        items={profiles.map((item) => ({
-          id: item,
-          label: item,
-          value: uniqueUsers.filter((user) => belongs(user, item)).length,
-        }))}
-        selectedId={profile}
-        onSelect={(id) => setProfile(id as UserProfile)}
-      />
+      <p className={styles.intro}>Gestiona las cuentas de tu plataforma.</p>
+      <div className={styles.categorySummary}>
+        <SummaryCards
+          variant="player"
+          items={profiles.map((item) => ({
+            id: item,
+            label: item,
+            icon:
+              item === "Todos" ? (
+                <UsersThree weight="duotone" />
+              ) : item === "Jugadores" ? (
+                <User weight="duotone" />
+              ) : item === "Organizadores" ? (
+                <SoccerBall weight="duotone" />
+              ) : (
+                <Buildings weight="duotone" />
+              ),
+            value: uniqueUsers.filter((user) => belongs(user, item)).length,
+          }))}
+          selectedId={profile}
+          onSelect={(id) => setProfile(id as UserProfile)}
+        />
+      </div>
       {uniqueUsers.length === 0 && (
         <p className="empty">No hay usuarios en esta categoría.</p>
       )}

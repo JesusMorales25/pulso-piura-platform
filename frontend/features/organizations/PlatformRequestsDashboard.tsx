@@ -1,5 +1,15 @@
 "use client";
 
+import styles from "./PlatformRequestsDashboard.module.css";
+import {
+  ArrowLeft,
+  Buildings,
+  SoccerBall,
+  Prohibit,
+  CheckCircle,
+  Clock,
+  XCircle,
+} from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { apiRequest } from "@/lib/api";
@@ -26,6 +36,19 @@ const requestStates = [
   { id: "REJECTED", label: "Rechazadas" },
   { id: "REVOKED", label: "Revocadas" },
 ] as const;
+
+const statusLabels = {
+  PENDING: "En revisión",
+  APPROVED: "Acceso habilitado",
+  REJECTED: "Solicitud rechazada",
+  REVOKED: "Acceso revocado",
+} as const;
+const stateIcons = {
+  PENDING: Clock,
+  APPROVED: CheckCircle,
+  REJECTED: XCircle,
+  REVOKED: Prohibit,
+};
 
 const capabilityLabel: Record<CapabilityRequest["capability"], string> = {
   MATCH_ORGANIZER: "Organizador de partidos",
@@ -185,7 +208,12 @@ export function PlatformRequestsDashboard({
           {message}
         </p>
       )}
-      <div className="platformRequestList">
+      <p className={styles.intro}>
+        {selectedStatus === "REVOKED"
+          ? "Consulta los accesos retirados."
+          : "Revisa la información de las solicitudes."}
+      </p>
+      <div className={styles.list}>
         {requestsLoading ? (
           <p className="notice" role="status">
             Cargando solicitudes…
@@ -197,53 +225,100 @@ export function PlatformRequestsDashboard({
         ) : (
           scopedRequests
             .filter((request) => request.status === selectedStatus)
-            .map((request) => (
-              <article className="platformRequestCard" key={request.id}>
-                <div>
-                  <span className="pill">{request.status}</span>
-                  <h2>{capabilityLabel[request.capability]}</h2>
-                  <p>
-                    <strong>{request.displayName}</strong>
-                  </p>
-                  <p className="muted">{request.email}</p>
-                  {request.reason && <p>{request.reason}</p>}
-                </div>
-                {request.status === "PENDING" && (
-                  <div className="platformRequestActions">
-                    <button
-                      className="primary borderless"
-                      disabled={reviewing !== null}
-                      onClick={() => void review(request.id, "APPROVED")}
-                      type="button"
-                    >
-                      Aprobar
-                    </button>
-                    <button
-                      className="secondary"
-                      disabled={reviewing !== null}
-                      onClick={() => void review(request.id, "REJECTED")}
-                      type="button"
-                    >
-                      Rechazar
-                    </button>
+            .map((request) => {
+              const CapabilityIcon =
+                request.capability === "MATCH_ORGANIZER"
+                  ? SoccerBall
+                  : Buildings;
+              const StateIcon = stateIcons[request.status];
+              const distinctName =
+                request.displayName?.trim() &&
+                request.displayName.trim().toLocaleLowerCase() !==
+                  request.email?.trim().toLocaleLowerCase();
+              return (
+                <article className={styles.card} key={request.id}>
+                  <span className={styles.badge} data-state={request.status}>
+                    <StateIcon aria-hidden="true" />
+                    {statusLabels[request.status]}
+                  </span>
+                  <header className={styles.heading}>
+                    <span className={styles.capabilityIcon}>
+                      <CapabilityIcon aria-hidden="true" weight="duotone" />
+                    </span>
+                    <h2>{capabilityLabel[request.capability]}</h2>
+                  </header>
+                  <div className={styles.identity}>
+                    <span className={styles.avatar} aria-hidden="true">
+                      {(request.displayName || request.email || "JU")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </span>
+                    <div>
+                      {distinctName && <strong>{request.displayName}</strong>}
+                      <p>{request.email || "Correo no disponible"}</p>
+                    </div>
                   </div>
-                )}
-                {request.status === "APPROVED" && (
-                  <div className="platformRequestActions">
-                    <button
-                      className="secondary"
-                      disabled={reviewing !== null}
-                      onClick={() => void revoke(request.id)}
-                      type="button"
-                    >
-                      Retirar acceso
-                    </button>
-                  </div>
-                )}
-              </article>
-            ))
+                  {request.status === "REVOKED" && (
+                    <p className={styles.explanation}>
+                      {request.capability === "MATCH_ORGANIZER"
+                        ? "El acceso para organizar partidos fue retirado."
+                        : "El acceso para administrar complejos fue retirado."}
+                    </p>
+                  )}
+                  {request.reason && (
+                    <div className={styles.reason}>
+                      <h3>Solicitud original</h3>
+                      <p>{request.reason}</p>
+                    </div>
+                  )}
+                  {request.status === "PENDING" && (
+                    <div className={styles.actions}>
+                      <button
+                        className="primary borderless"
+                        disabled={reviewing !== null}
+                        onClick={() => void review(request.id, "APPROVED")}
+                        type="button"
+                      >
+                        Aprobar
+                      </button>
+                      <button
+                        className="secondary"
+                        disabled={reviewing !== null}
+                        onClick={() => void review(request.id, "REJECTED")}
+                        type="button"
+                      >
+                        Rechazar
+                      </button>
+                    </div>
+                  )}
+                  {request.status === "APPROVED" && (
+                    <div className={styles.actions}>
+                      <button
+                        className="secondary"
+                        disabled={reviewing !== null}
+                        onClick={() => void revoke(request.id)}
+                        type="button"
+                      >
+                        Retirar acceso
+                      </button>
+                    </div>
+                  )}
+                </article>
+              );
+            })
         )}
       </div>
+      <button
+        type="button"
+        className={styles.back}
+        onClick={() => {
+          setSelectedStatus(null);
+          onClose?.();
+        }}
+      >
+        <ArrowLeft aria-hidden="true" />
+        Volver a solicitudes
+      </button>
     </FormSheet>
   );
   if (embedded) return requestSheet;
